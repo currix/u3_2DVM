@@ -209,4 +209,98 @@ CONTAINS
     !
   END SUBROUTINE BUILD_MOD_HAM
   !
+  FUNCTION POCCHAMMER_S(a, b)
+    !
+    ! Pocchammer symbol as defined in Frank and Isacker 5.176 p.162
+    ! (rising factorial)
+    !
+    ! by Currix TM
+    !
+    USE nrtype
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND=I4B), INTENT(IN) :: a, b
+    INTEGER(KIND=I4B) :: POCCHAMMER_S
+    !
+    INTEGER(KIND=I4B) :: index  
+    !
+    POCCHAMMER_S = a
+    !
+    DO index = 1, b - 1
+       POCCHAMMER_S = POCCHAMMER_S * (a + index)
+    ENDDO
+    !
+    !
+    !
+  END FUNCTION POCCHAMMER_S
+  !
+  FUNCTION Inv_Part_Ratio(N_val, L_val, dim_block, U2_Basis, eigenvector)
+    !
+    ! Subroutine to compute the IPR for a 2DVM eigenstate
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    TYPE(u2_bas), DIMENSION(:), INTENT(IN) :: U2_Basis   ! U2 basis   { | [N] np L > }
+    !
+    REAL(KIND = DP), DIMENSION(:), INTENT(IN) :: eigenvector ! Eigenvector components (U(2) basis)
+    !
+    REAL(KIND = DP) :: Inv_Part_Ratio
+    !
+    ! Local Variables
+    INTEGER(KIND = I4B) :: n1, n2, n3, n4, i1, i2, i3, i4, iprod
+    REAL(KIND = DP) :: prodval
+    !
+    Inv_Part_Ratio = 0.0_DP
+    !
+    DO i1 = 1, dim_block
+       n1 = U2_Basis(i1)%np_U2_val
+       !
+       DO i2 = 1, dim_block
+          n2 = U2_Basis(i2)%np_U2_val
+          !
+          DO i3 = 1, dim_block
+             n3 = U2_Basis(i3)%np_U2_val
+             !
+             DO i4 = 1, dim_block
+                n4 = U2_Basis(i4)%np_U2_val
+                !
+                IF (n1 + n2 /= n3 + n4) CYCLE
+                !
+                prodval = SQRT( REAL(POCCHAMMER_S(N_val - n1 + 1, n1),DP)/&
+                     (GAMMA(REAL((n1 + l_val)/2 + 1,DP))*GAMMA(REAL((n1 - l_val)/2 + 1,DP)) ) ) * &
+                     SQRT( REAL(POCCHAMMER_S(N_val - n2 + 1, n2),DP)/&
+                     (GAMMA(REAL((n2 + l_val)/2 + 1,DP))*GAMMA(REAL((n2 - l_val)/2 + 1,DP)) ) ) * &
+                     SQRT( REAL(POCCHAMMER_S(N_val - n3 + 1, n3),DP)/&
+                     (GAMMA(REAL((n3 + l_val)/2 + 1,DP))*GAMMA(REAL((n3 - l_val)/2 + 1,DP)) ) ) * &
+                     SQRT( REAL(POCCHAMMER_S(N_val - n4 + 1, n4),DP)/&
+                     (GAMMA(REAL((n4 + l_val)/2 + 1,DP))*GAMMA(REAL((n4 - l_val)/2 + 1,DP)) ) )
+                !
+                prodval = prodval * eigenvector(i1)* eigenvector(i2)* eigenvector(i3)* eigenvector(i4)
+                !
+                prodval = prodval * GAMMA(REAL((n1+n2)/2+1, DP))**2 * GAMMA(REAL(2*N_val - n1 - n2 + 1,DP))
+                !
+                Inv_Part_Ratio = Inv_Part_Ratio + prodval
+                !
+             ENDDO
+             !
+          ENDDO
+          !
+       ENDDO
+       !
+    ENDDO
+    !
+    Inv_Part_Ratio = Inv_Part_Ratio * REAL(N_val + 2_I4B, DP)/2.0_DP
+    !
+  END FUNCTION Inv_Part_Ratio
+  !
+  !
 END MODULE u3_2dvm_mod

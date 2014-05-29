@@ -17,8 +17,14 @@ VERSION = "3.0"
 #
 # ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN)
 #
-AVECSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 avalavec_modelH_2dvm.f90 
-AVECOBJ = $(AVECSRC:.f90=.o)
+AVECMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 avalavec_modelH_2dvm.f90 
+AVECMODOBJ = $(AVECMODSRC:.f90=.o)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN)
+#
+IPRMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_modelH_2dvm.f90 
+IPRMODOBJ = $(IPRMODSRC:.f90=.o)
 #
 ####################################################################
 ####################################################################
@@ -39,7 +45,7 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avecmodh
+all: avecmodh iprmodh
 #
 .PHONY : all
 #
@@ -55,12 +61,16 @@ all: avecmodh
 	$(FC) $(FOPT) $<
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
-avecmodh: $(AVECOBJ)
-	$(FC) -o $(BINPATH)/avec_U3_mh $(AVECOBJ) $(LIBS)
+avecmodh: $(AVECMODOBJ)
+	$(FC) -o $(BINPATH)/avec_U3_mh $(AVECMODOBJ) $(LIBS)
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
+iprmodh: $(IPRMODOBJ)
+	$(FC) -o $(BINPATH)/ipr_U3_mh $(IPRMODOBJ) $(LIBS)
 #################################################################
 clean:
 	@echo "Cleaning object files"
-	@rm -f $(AVECOBJ)
+	@rm -f $(AVECMODOBJ) $(IPRMODOBJ)
 
 
 
