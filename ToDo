@@ -1,0 +1,28 @@
+To Do
+ 
+(0) Model Hamiltonian Eigenvalues and Eigenvectors      [Done]
+
+(1) Model Hamiltonian Eigenvectors IPR
+
+(2) General Hamiltonian Eigenvalues and Eigenvectors
+
+(3) IR Intensity
+
+(4) Fit with minuit and General Hamiltonian
+
+(5) Translate Perl scripts:
+
+    alg_U3_dos*     
+    alg_U3_energy_tri*     
+    fidelity_U3*   
+    intensity_IR,v*    
+    expected_val_n*          
+    minuit_U3_genH*   
+    alg_U3_energy*  
+    exc_energ_diag_U3_mh*  
+    intensity_IR*  
+    sub_binning* 
+
+(6) Documentation
+
+(7) Install makefile

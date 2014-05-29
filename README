@@ -1,0 +1,14 @@
+Suite of programs for calculations using the two-dimensional limit of
+the Vibron Model (2DVM). Includes Minuit minimization program for
+molecular bending modelling.
+
+by Currix 
+
+The program user's guide can be found in the doc directory in pdf,
+html, and txt formats.
+
+Major upgrades
+3.0 27 May 2014
+2.1 12 Apr 2010
+2.2 06 Oct 2010
+
