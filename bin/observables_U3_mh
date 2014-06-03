@@ -1,0 +1,148 @@
+#!/usr/bin/perl
+#
+# perl program to calculate observables
+# for the model U(3) Hamiltonian in a xi 
+# control parameter value interval
+#
+#  by Currix TM.
+#
+use strict;
+use warnings;
+#
+use Getopt::Std;
+#
+# Switches:
+my %options;
+getopts("EIvhe:",\%options);
+#
+#
+use File::Temp qw/ tempfile /;
+#
+# bin files path
+my $binpath = "~/PR_Fortran/U3/PureBending/triat_U3_3.0/bin";
+#
+(my $prgname) = $0 =~ m#.*/(.+$)#;
+#
+my $usemessage = <<"EOF";
+
+Usage: $prgname [-vh] [-E/I] [-e progpath] Nval lval scale u_states ximin ximax xistep
+       
+
+  Options:
+    E : obtain correlation energy diagram (default)
+    I : obtain inverse participation ration diagram 
+    v : verbose output
+    h : help message
+    e : provide the path to executable fortran files
+
+EOF
+## 
+die "\n\tPerl script to calculate the observable dependence with the control parameter\n for the u first eigenvalues (g.s. -> u = 1) of 
+the algebraic U(3) model Hamiltonian in a given xi value interval.
+ 
+If  u = 0 all anergies are included.
+
+\tNote that energy values are normalized by the number of bosons N (E/N).\n\n by Currix TM\n$usemessage" if ($options{"h"});
+#
+my ($Nval,$lval,$scale);
+my $xi;
+my ($u,$ximin,$ximax,$xistep);
+my @output;
+#
+#
+#
+my $program;
+if ($options{"e"}) {
+    $program = $options{"e"};
+} else {
+    $program = "$binpath/ipr_U3_mh";
+}
+#
+print "Executable program: $program \n" if ($options{"v"});
+#
+#
+die "$usemessage" if ($#ARGV!=6);
+($Nval,$lval,$scale,$u,$ximin,$ximax,$xistep) = @ARGV;
+# Check if $u >= 0
+die "\n\tError. The u argument is less than or equal to zero.\n\t For more info execute $prgname -h\n" if ($u < 0);
+#
+print "\tNVal = $Nval\n\tLVal = $lval\n\tSCale: $scale \n\tu: $u\n\n\tximin: $ximin\n\n\tximax: $ximax\n\n\txistep: $xistep\n\n" if ($options{"v"});  
+#
+#
+$xi = $ximin;
+#
+#
+while (&ltequal($xi,$ximax,4)) {
+    print "\tXI = $xi\n" if ($options{"v"});
+#
+    @output = &runprog($Nval,$lval,$scale,$xi);
+#
+    print "----------------\nProgram output:\n @output\n-------------\n" if ($options{"v"});
+#
+    print "$xi ";
+#
+#   Check how many states will be printed
+    my $nstates;
+    if ($u) {
+	$nstates = $u;
+    } else {
+	$nstates = $#output+1;
+    }
+# Print
+    foreach (1..$nstates) {
+	my @columns = split ' ', $output[$_-1];
+	if ($options{"I"}) {
+	    print $columns[2]," ";
+	} else {
+	    print $columns[1]/$Nval," ";
+	}
+    }
+#
+    print "\n";
+#
+    $xi+=$xistep;
+}
+###################################################################
+#    SUBROUTINES
+###################################################################
+sub runprog {
+    my ($Nval,$lval,$scale,$xi) = @_;
+# Temporary input file
+    my ($fh, $name) = tempfile("currixXXXX", DIR => "");
+#
+# par_aux line
+    if ($options{"I"}) {
+	print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T.    /\n";
+    } else {
+	print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .F., Excitation_Log = .T.    /\n"; 
+    }
+#
+# par_0 line
+    print $fh "\&par_0   N_val = $Nval, L_val = $lval /\n"; 
+#
+# par_0 line
+    print $fh "\&par_1   epsilon = $scale, xi = $xi /\n"; 
+#
+    if ($options{"v"}) {
+	print "Input file : \n";
+	system "cat $name";
+    }
+#
+    my @output =  `$program < $name`;
+#
+    unlink($name) or die "Couldn't unlink $name : $!\n";
+#
+    @output;
+}
+######################### Perl Cookbook #########################            
+# equal(NUM1, NUM2, ACCURACY) : returns true if NUM1.le.NUM2
+# to ACCURACY number of decimal places
+
+sub ltequal {
+    my ($A, $B, $dp) = @_;
+#
+    return sprintf("%.${dp}g", $A) le sprintf("%.${dp}g", $B);
+}
+
+
+

@@ -229,7 +229,7 @@ PROGRAM ipr_modelH_2DVM
   !
   ! CALCULATE IPR
   !
-  WRITE(UNIT = *, FMT = *) "L_val = ", L_val
+  IF (Iprint > 0) WRITE(UNIT = *, FMT = *) "L_val = ", L_val
   !
   DO state_index = 1, dim_block
      !

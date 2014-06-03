@@ -153,7 +153,7 @@ CONTAINS
     !
     TYPE(u2_bas), DIMENSION(:), INTENT(IN) :: U2_Basis   ! U2 basis   { | [N] np L > }
     !
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2_casimir ! SO(3) W^2 casimir matrix
+    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2_casimir ! SO(3) W^2 casimir matrix 
     !
     REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: Ham_U3_mat ! Hamiltonian matrix
     !
@@ -186,9 +186,9 @@ CONTAINS
           !
        CASE (2) ! Pairing Operator
           !
-          CALL SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2_matrix)
+          CALL SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2_casimir)
           !
-          Ham_U3_mat = Ham_U3_mat -  ModHam_parameter(2)*W2_matrix
+          Ham_U3_mat = Ham_U3_mat -  ModHam_parameter(2)*W2_casimir
           !
           ! Diagonal Pairing contribution
           DO U2_state = 1, dim_block
@@ -256,7 +256,7 @@ CONTAINS
     REAL(KIND = DP) :: Inv_Part_Ratio
     !
     ! Local Variables
-    INTEGER(KIND = I4B) :: n1, n2, n3, n4, i1, i2, i3, i4, iprod
+    INTEGER(KIND = I4B) :: n1, n2, n3, n4, i1, i2, i3, i4
     REAL(KIND = DP) :: prodval
     !
     Inv_Part_Ratio = 0.0_DP
@@ -275,18 +275,18 @@ CONTAINS
                 !
                 IF (n1 + n2 /= n3 + n4) CYCLE
                 !
-                prodval = SQRT( REAL(POCCHAMMER_S(N_val - n1 + 1, n1),DP)/&
-                     (GAMMA(REAL((n1 + l_val)/2 + 1,DP))*GAMMA(REAL((n1 - l_val)/2 + 1,DP)) ) ) * &
-                     SQRT( REAL(POCCHAMMER_S(N_val - n2 + 1, n2),DP)/&
-                     (GAMMA(REAL((n2 + l_val)/2 + 1,DP))*GAMMA(REAL((n2 - l_val)/2 + 1,DP)) ) ) * &
-                     SQRT( REAL(POCCHAMMER_S(N_val - n3 + 1, n3),DP)/&
-                     (GAMMA(REAL((n3 + l_val)/2 + 1,DP))*GAMMA(REAL((n3 - l_val)/2 + 1,DP)) ) ) * &
-                     SQRT( REAL(POCCHAMMER_S(N_val - n4 + 1, n4),DP)/&
-                     (GAMMA(REAL((n4 + l_val)/2 + 1,DP))*GAMMA(REAL((n4 - l_val)/2 + 1,DP)) ) )
+                prodval = SQRT( &
+                     (GAMMA(REAL(N_val - n1 + 1,DP))*GAMMA(REAL((n1 + l_val)/2 + 1,DP))*GAMMA(REAL((n1 - l_val)/2 + 1,DP)) )  * &
+                     (GAMMA(REAL(N_val - n2 + 1,DP))*GAMMA(REAL((n2 + l_val)/2 + 1,DP))*GAMMA(REAL((n2 - l_val)/2 + 1,DP)) )  * &
+                     (GAMMA(REAL(N_val - n3 + 1,DP))*GAMMA(REAL((n3 + l_val)/2 + 1,DP))*GAMMA(REAL((n3 - l_val)/2 + 1,DP)) )  * &
+                     (GAMMA(REAL(N_val - n4 + 1,DP))*GAMMA(REAL((n4 + l_val)/2 + 1,DP))*GAMMA(REAL((n4 - l_val)/2 + 1,DP)) ) )
                 !
-                prodval = prodval * eigenvector(i1)* eigenvector(i2)* eigenvector(i3)* eigenvector(i4)
+                prodval = eigenvector(i1)* eigenvector(i2)* eigenvector(i3)* eigenvector(i4)/prodval
                 !
-                prodval = prodval * GAMMA(REAL((n1+n2)/2+1, DP))**2 * GAMMA(REAL(2*N_val - n1 - n2 + 1,DP))
+                prodval = prodval * &
+                     GAMMA(REAL( (n1+n2)/2 - L_val + 1, DP)) * &
+                     GAMMA(REAL( (n1+n2)/2 + L_val + 1, DP)) * &
+                     GAMMA(REAL(2*N_val - n1 - n2 + 1,DP))
                 !
                 Inv_Part_Ratio = Inv_Part_Ratio + prodval
                 !
@@ -298,7 +298,7 @@ CONTAINS
        !
     ENDDO
     !
-    Inv_Part_Ratio = Inv_Part_Ratio * REAL(N_val + 2_I4B, DP)/2.0_DP
+    Inv_Part_Ratio = Inv_Part_Ratio *GAMMA(REAL(N_val + 3,DP))*GAMMA(REAL(N_val + 1,DP))/GAMMA(REAL(2*N_val + 3, DP))
     !
   END FUNCTION Inv_Part_Ratio
   !
