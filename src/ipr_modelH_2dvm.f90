@@ -1,7 +1,7 @@
 PROGRAM ipr_modelH_2DVM
   !
-  ! Program to compute Inverse Participation Ratio of the U(3) 2DVM 
-  ! Model Hamiltonian
+  ! Program to compute Energy or Inverse Participation Ratio 
+  ! of the U(3) 2DVM Model Hamiltonian
   !
   ! by Currix TM.
   !
@@ -231,12 +231,24 @@ PROGRAM ipr_modelH_2DVM
   !
   IF (Iprint > 0) WRITE(UNIT = *, FMT = *) "L_val = ", L_val
   !
-  DO state_index = 1, dim_block
+  IF (Eigenvec_Log) THEN 
      !
-     WRITE(UNIT = *, FMT = *) state_index, Eigenval_vector(state_index), &
-          Inv_Part_Ratio(N_val, L_val, dim_block, U2_Basis, Ham_matrix(1:dim_block, state_index))
+     DO state_index = 1, dim_block
+        !
+        WRITE(UNIT = *, FMT = *) state_index, Eigenval_vector(state_index), &
+             Inv_Part_Ratio(N_val, L_val, dim_block, U2_Basis, Ham_matrix(1:dim_block, state_index))
+        !
+     ENDDO
      !
-  ENDDO
+  ELSE
+     !
+     DO state_index = 1, dim_block
+        !
+        WRITE(UNIT = *, FMT = *) state_index, Eigenval_vector(state_index)
+        !
+     ENDDO
+     !
+  ENDIF
   !
 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2)
 10 FORMAT(1X, "Reading  N_val, L_val")
