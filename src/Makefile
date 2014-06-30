@@ -21,6 +21,12 @@ AVECMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 avalavec_modelH_2dvm.f
 AVECMODOBJ = $(AVECMODSRC:.f90=.o)
 #
 #
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
+#
+IPRHMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_Husimi_modelH_2dvm.f90 
+IPRHMODOBJ = $(IPRHMODSRC:.f90=.o)
+#
+#
 # ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN)
 #
 IPRMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_modelH_2dvm.f90 
@@ -45,7 +51,7 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avecmodh iprmodh
+all: avecmodh iprHmodh iprmodh
 #
 .PHONY : all
 #
@@ -65,12 +71,16 @@ avecmodh: $(AVECMODOBJ)
 	$(FC) -o $(BINPATH)/avec_U3_mh $(AVECMODOBJ) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
+iprHmodh: $(IPRHMODOBJ)
+	$(FC) -o $(BINPATH)/ipr_Husimi_U3_mh $(IPRHMODOBJ) $(LIBS)
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
 iprmodh: $(IPRMODOBJ)
 	$(FC) -o $(BINPATH)/ipr_U3_mh $(IPRMODOBJ) $(LIBS)
 #################################################################
 clean:
 	@echo "Cleaning object files"
-	@rm -f $(AVECMODOBJ) $(IPRMODOBJ)
+	@rm -f $(AVECMODOBJ) $(IPRHMODOBJ) $(IPRMODOBJ)
 
 
 

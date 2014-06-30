@@ -235,9 +235,9 @@ CONTAINS
     !
   END FUNCTION POCCHAMMER_S
   !
-  FUNCTION Inv_Part_Ratio(N_val, L_val, dim_block, U2_Basis, eigenvector)
+  FUNCTION H_Inv_Part_Ratio(N_val, L_val, dim_block, U2_Basis, eigenvector)
     !
-    ! Subroutine to compute the IPR for a 2DVM eigenstate
+    ! Subroutine to compute the Husimi IPR for a 2DVM eigenstate
     !
     !  by Currix TM.
     !
@@ -253,13 +253,13 @@ CONTAINS
     !
     REAL(KIND = DP), DIMENSION(:), INTENT(IN) :: eigenvector ! Eigenvector components (U(2) basis)
     !
-    REAL(KIND = DP) :: Inv_Part_Ratio
+    REAL(KIND = DP) :: H_Inv_Part_Ratio
     !
     ! Local Variables
     INTEGER(KIND = I4B) :: n1, n2, n3, n4, i1, i2, i3, i4
     REAL(KIND = DP) :: prodval
     !
-    Inv_Part_Ratio = 0.0_DP
+    H_Inv_Part_Ratio = 0.0_DP
     !
     DO i1 = 1, dim_block
        n1 = U2_Basis(i1)%np_U2_val
@@ -288,7 +288,7 @@ CONTAINS
                      GAMMA(REAL( (n1+n2)/2 + L_val + 1, DP)) * &
                      GAMMA(REAL(2*N_val - n1 - n2 + 1,DP))
                 !
-                Inv_Part_Ratio = Inv_Part_Ratio + prodval
+                H_Inv_Part_Ratio = H_Inv_Part_Ratio + prodval
                 !
              ENDDO
              !
@@ -298,9 +298,25 @@ CONTAINS
        !
     ENDDO
     !
-    Inv_Part_Ratio = Inv_Part_Ratio *GAMMA(REAL(N_val + 3,DP))*GAMMA(REAL(N_val + 1,DP))/GAMMA(REAL(2*N_val + 3, DP))
+    H_Inv_Part_Ratio = H_Inv_Part_Ratio *GAMMA(REAL(N_val + 3,DP))*GAMMA(REAL(N_val + 1,DP))/GAMMA(REAL(2*N_val + 3, DP))
+    !
+  END FUNCTION H_Inv_Part_Ratio
+  !
+  FUNCTION Inv_Part_Ratio(eigenvector)
+    !
+    ! Subroutine to compute the IPR for a 2DVM eigenstate
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    REAL(KIND = DP), DIMENSION(:), INTENT(IN) :: eigenvector ! Eigenvector components (U(2) basis)
+    !
+    REAL(KIND = DP) :: Inv_Part_Ratio
+    !
+    !
+    Inv_Part_Ratio = 1.0_DP/SUM(eigenvector**4)
     !
   END FUNCTION Inv_Part_Ratio
-  !
   !
 END MODULE u3_2dvm_mod

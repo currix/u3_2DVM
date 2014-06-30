@@ -236,10 +236,10 @@ PROGRAM ipr_modelH_2DVM
      DO state_index = 1, dim_block
         !
         WRITE(UNIT = *, FMT = *) state_index, Eigenval_vector(state_index), &
-             Inv_Part_Ratio(Ham_matrix(1:dim_block, state_index))
+             H_Inv_Part_Ratio(N_val, L_val, dim_block, U2_Basis, Ham_matrix(1:dim_block, state_index))
         !
      ENDDO
-     ! 
+     !
   ELSE
      !
      DO state_index = 1, dim_block

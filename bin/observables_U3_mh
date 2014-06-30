@@ -13,7 +13,7 @@ use Getopt::Std;
 #
 # Switches:
 my %options;
-getopts("EIvhe:",\%options);
+getopts("EIivhe:",\%options);
 #
 #
 use File::Temp qw/ tempfile /;
@@ -25,12 +25,13 @@ my $binpath = "~/PR_Fortran/U3/PureBending/triat_U3_3.0/bin";
 #
 my $usemessage = <<"EOF";
 
-Usage: $prgname [-vh] [-E/I] [-e progpath] Nval lval scale u_states ximin ximax xistep
+Usage: $prgname [-vh] [-E/I/i] [-e progpath] Nval lval scale u_states ximin ximax xistep
        
 
   Options:
     E : obtain correlation energy diagram (default)
-    I : obtain inverse participation ration diagram 
+    I : obtain Husimi inverse participation ration diagram 
+    i : obtain inverse participation ration diagram 
     v : verbose output
     h : help message
     e : provide the path to executable fortran files
@@ -54,8 +55,10 @@ my @output;
 my $program;
 if ($options{"e"}) {
     $program = $options{"e"};
-} else {
+} elsif ($options{"i"}) {
     $program = "$binpath/ipr_U3_mh";
+} else {
+    $program = "$binpath/ipr_Husimi_U3_mh";
 }
 #
 print "Executable program: $program \n" if ($options{"v"});
@@ -91,7 +94,7 @@ while (&ltequal($xi,$ximax,4)) {
 # Print
     foreach (1..$nstates) {
 	my @columns = split ' ', $output[$_-1];
-	if ($options{"I"}) {
+	if ($options{"I"} || $options{"i"}) {
 	    print $columns[2]," ";
 	} else {
 	    print $columns[1]/$Nval," ";
@@ -111,7 +114,7 @@ sub runprog {
     my ($fh, $name) = tempfile("currixXXXX", DIR => "");
 #
 # par_aux line
-    if ($options{"I"}) {
+    if ($options{"I"} || $options{"i"}) {
 	print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T.    /\n";
     } else {
 	print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .F., Excitation_Log = .T.    /\n"; 
