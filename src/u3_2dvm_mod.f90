@@ -16,6 +16,9 @@ MODULE u3_2dvm_mod
   REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
   ! Cylindrical Oscillator Basis
   TYPE(u2_bas), DIMENSION(:), ALLOCATABLE :: U2_Basis !  U(3) > U(2) > SO(2) basis
+  ! Displaced Oscillator Basis
+  TYPE(so3_bas), DIMENSION(:), ALLOCATABLE :: SO3_Basis !  U(3) > SO(3) > SO(2) basis
+  !
   ! Model Hamiltonian Parameters
   INTEGER(KIND = I4B), PARAMETER :: n_modham_param = 2
   REAL(KIND = DP), DIMENSION(1:n_modham_param) :: ModHam_parameter 
@@ -89,9 +92,46 @@ CONTAINS
     !
   END SUBROUTINE U2_BASIS_VIBRON
   !
+  !
+  SUBROUTINE SO3_BASIS_VIBRON(N_val, L_val, SO3_Basis) 
+    !
+    ! Subroutine to build the U(3) > SO(3) > SO(2) basis in the 2DVM
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Vibrational Angular momentum
+    !
+    TYPE(so3_bas), DIMENSION(:), INTENT(OUT) :: SO3_Basis
+    !
+    ! Local Variables
+    INTEGER(KIND = I4B) :: index, omega
+    !
+    index = 1_I4B
+    !
+    omega = L_val + MOD(N_val-L_val,2)
+    !
+    DO WHILE (omega <= N_val) 
+       !
+       SO3_Basis(index)%omega_SO3_val = omega
+       !
+       index = index + 1_I4B
+       omega = omega + 2_I4B
+       !
+    ENDDO
+    !
+    SO3_Basis(1:Index-1)%N_U3_val = N_val
+    SO3_Basis(1:Index-1)%L_val = L_val
+    !
+    !
+  END SUBROUTINE SO3_BASIS_VIBRON
+  !
   SUBROUTINE SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2_matrix)
     !
-    ! Subroutine to build the SO(3) W^2 Casimir operator in the 2DVM
+    ! Subroutine to build the SO(3) W^2 Casimir operator in the 2DVM Chain I
     !
     !  by Currix TM.
     !
@@ -234,6 +274,136 @@ CONTAINS
     !
     !
   END FUNCTION POCCHAMMER_S
+  !
+    !
+  SUBROUTINE Build_Mod_Ham_SO3(N_val, L_val, dim_block, SO3_Basis, Ham_U3_mat) 
+    !
+    !
+    ! Subroutine to build the U(3) 2DVM Model Hamiltonian
+    ! Displaced Oscillator Basis SO(3)
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    TYPE(so3_bas), DIMENSION(:), INTENT(IN) :: SO3_Basis   ! SO3 basis   { | [N] w L > }
+    !
+    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: Ham_U3_mat ! Hamiltonian matrix
+    !
+    INTEGER(KIND = I4B) :: oper, SO3_state
+    REAL(KIND = DP) :: omegaval, Nvalue
+    !
+    !
+    Nvalue = REAL(N_val, DP)
+    !
+    ! Build Hamiltonian
+    operator : DO oper = 1, n_modham_param
+       !
+       IF (Iprint > 1) WRITE(*,*) "Operator number ", oper
+       !
+       IF (ABS(ModHam_parameter(oper)) < Zero_Parameter) CYCLE ! Skip not needed operators
+       !
+       SELECT CASE (oper)
+          !
+       CASE (1) ! Number Operator n ---> NON DIAGONAL Eq. (35) PRA (Check Typos)
+          !
+          ! Diagonal contribution 
+          DO SO3_state = 1, dim_block
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state) = Ham_U3_mat(SO3_state, SO3_state) + &
+                  ModHam_parameter(1)*n_elem_diag(Nvalue,omegaval,L_val)
+             !
+          ENDDO
+          !
+          !
+          ! Non-Diagonal contribution (B_0)
+          DO SO3_state = 1, dim_block - 1
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state + 1) = Ham_U3_mat(SO3_state, SO3_state + 1) + &
+                  ModHam_parameter(1)*B0(Nvalue,omegaval,L_val)
+             !
+          ENDDO
+          !
+          !
+       CASE (2) ! Pairing Operator P ---> DIAGONAL
+          !
+          ! Diagonal Pairing contribution
+          DO SO3_state = 1, dim_block
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state) = Ham_U3_mat(SO3_state, SO3_state) + &
+                  ModHam_parameter(2)*( &
+                  Nvalue*(Nvalue + 1.0_DP) - omegaval*(omegaval + 1.0_DP) )
+             !
+          ENDDO
+          !
+       CASE DEFAULT
+          !
+          STOP 'You should not be here. Invalid nonzero parameter number. Sayonara baby.'
+          !
+       END SELECT
+       !
+    ENDDO operator
+    !
+    !
+  END SUBROUTINE BUILD_MOD_HAM_SO3
+  !
+  FUNCTION n_elem_diag(Nv, wv, L_val)
+    !
+    REAL(KIND = DP), INTENT(IN) :: Nv, wv ! REAL N and omega
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    REAL(KIND = DP) :: n_elem_diag
+    !
+    !  Local variables
+    REAL(KIND = DP) :: lv 
+    !
+    lv = REAL(L_val,DP)
+    !
+    !
+    n_elem_diag = (Nv - wv) * &
+         ((wv-lv+2.0_DP)*(wv-lv+1.0_DP) + (wv+lv+2.0_DP)*(wv+lv+1.0_DP)) / &
+         (2.0_DP*(2.0_DP*wv+1.0_DP)*(2.0_DP*wv+3.0_DP)) + &
+         (Nv + wv + 1.0_DP) * &
+         ((wv+lv)*(wv+lv-1.0_DP) + (wv-lv)*(wv-lv-1.0_DP)) / &
+         (2.0_DP*(2.0_DP*wv-1.0_DP)*(2.0_DP*wv+1.0_DP))
+    !
+  END FUNCTION n_elem_diag
+  !
+  FUNCTION B0(Nv, wv, L_val)
+    !
+    REAL(KIND = DP), INTENT(IN) :: Nv, wv ! REAL N and omega
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    REAL(KIND = DP) :: B0
+    !
+    !  Local variables
+    REAL(KIND = DP) :: lv 
+    !
+    lv = REAL(L_val,DP)
+    !
+    !
+    B0 = SQRT( &
+         (Nv - wv)*(Nv + wv + 3.0_DP) * &
+         (wv-lv+2.0_DP)*(wv+lv+2.0_DP)*(wv+lv+1.0_DP)*(wv-lv+1.0_DP) / &
+         ((2.0_DP*wv+1.0_DP)*(2.0_DP*wv+3.0_DP)**2*(2.0_DP*wv+5.0_DP)) &
+         )
+    !
+  END FUNCTION B0
+  !
   !
   FUNCTION H_Inv_Part_Ratio(N_val, L_val, dim_block, U2_Basis, eigenvector)
     !

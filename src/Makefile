@@ -15,10 +15,16 @@ VERSION = "3.0"
 ####################################################################
 ####################################################################
 #
-# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN)
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain I
 #
 AVECMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 avalavec_modelH_2dvm.f90 
 AVECMODOBJ = $(AVECMODSRC:.f90=.o)
+#
+#
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain II
+#
+AVECMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 avalavec_modelH_2dvm_II.f90 
+AVECMODIIOBJ = $(AVECMODIISRC:.f90=.o)
 #
 #
 # ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
@@ -27,10 +33,16 @@ IPRHMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_Husimi_modelH_2dvm
 IPRHMODOBJ = $(IPRHMODSRC:.f90=.o)
 #
 #
-# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN)
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain I
 #
 IPRMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_modelH_2dvm.f90 
 IPRMODOBJ = $(IPRMODSRC:.f90=.o)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain II
+#
+IPRMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_modelH_2dvm_II.f90 
+IPRMODIIOBJ = $(IPRMODIISRC:.f90=.o)
 #
 ####################################################################
 ####################################################################
@@ -51,7 +63,7 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avecmodh iprHmodh iprmodh
+all: avecmodh avecIImodh iprHmodh iprmodh iprIImodh
 #
 .PHONY : all
 #
@@ -66,21 +78,29 @@ all: avecmodh iprHmodh iprmodh
 %.o: %.f
 	$(FC) $(FOPT) $<
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain I)
 avecmodh: $(AVECMODOBJ)
 	$(FC) -o $(BINPATH)/avec_U3_mh $(AVECMODOBJ) $(LIBS)
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain II)
+avecIImodh: $(AVECMODIIOBJ)
+	$(FC) -o $(BINPATH)/avec_U3_mh_SO3 $(AVECMODIIOBJ) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
 iprHmodh: $(IPRHMODOBJ)
 	$(FC) -o $(BINPATH)/ipr_Husimi_U3_mh $(IPRHMODOBJ) $(LIBS)
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain I)
 iprmodh: $(IPRMODOBJ)
 	$(FC) -o $(BINPATH)/ipr_U3_mh $(IPRMODOBJ) $(LIBS)
 #################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain II)
+iprIImodh: $(IPRMODIIOBJ)
+	$(FC) -o $(BINPATH)/ipr_U3_mh_SO3 $(IPRMODIIOBJ) $(LIBS)
+#################################################################
 clean:
 	@echo "Cleaning object files"
-	@rm -f $(AVECMODOBJ) $(IPRHMODOBJ) $(IPRMODOBJ)
+	@rm -f *.o *.mod
 
 
 
