@@ -425,6 +425,9 @@ CONTAINS
     !
     REAL(KIND = DP) :: H_Inv_Part_Ratio
     !
+    ! External function
+    REAL(KIND = DP), EXTERNAL :: loggamma
+    !
     ! Local Variables
     INTEGER(KIND = I4B) :: n1, n2, n3, n4, i1, i2, i3, i4
     REAL(KIND = DP) :: prodval
@@ -445,18 +448,21 @@ CONTAINS
                 !
                 IF (n1 + n2 /= n3 + n4) CYCLE
                 !
-                prodval = SQRT( &
-                     (GAMMA(REAL(N_val - n1 + 1,DP))*GAMMA(REAL((n1 + l_val)/2 + 1,DP))*GAMMA(REAL((n1 - l_val)/2 + 1,DP)) )  * &
-                     (GAMMA(REAL(N_val - n2 + 1,DP))*GAMMA(REAL((n2 + l_val)/2 + 1,DP))*GAMMA(REAL((n2 - l_val)/2 + 1,DP)) )  * &
-                     (GAMMA(REAL(N_val - n3 + 1,DP))*GAMMA(REAL((n3 + l_val)/2 + 1,DP))*GAMMA(REAL((n3 - l_val)/2 + 1,DP)) )  * &
-                     (GAMMA(REAL(N_val - n4 + 1,DP))*GAMMA(REAL((n4 + l_val)/2 + 1,DP))*GAMMA(REAL((n4 - l_val)/2 + 1,DP)) ) )
+                prodval = EXP( &
+                     loggamma(REAL(N_val + 1,DP)) + loggamma(REAL(N_val + 3,DP)) - loggamma(REAL(2_I4B*N_val + 3_I4B,DP)) &
+                     + loggamma(REAL( (n1+n2)/2 - L_val + 1, DP)) + loggamma(REAL( (n1+n2)/2 + L_val + 1, DP)) &
+                     + loggamma(REAL(2_I4B*N_val - n1 - n2 + 1_I4B,DP)) &
+                     - 0.5_DP * &
+                     (loggamma(REAL(N_val-n1+1,DP)) + loggamma(REAL(N_val-n2+1,DP)) &
+                     + loggamma(REAL(N_val-n3+1,DP)) + loggamma(REAL(N_val-n4+1,DP)) &
+                     + loggamma(REAL((n1 + l_val)/2 + 1,DP)) +  loggamma(REAL((n2 + l_val)/2 + 1,DP)) & 
+                     + loggamma(REAL((n3 + l_val)/2 + 1,DP)) +  loggamma(REAL((n4 + l_val)/2 + 1,DP)) & 
+                     + loggamma(REAL((n1 - l_val)/2 + 1,DP)) +  loggamma(REAL((n2 - l_val)/2 + 1,DP)) & 
+                     + loggamma(REAL((n3 - l_val)/2 + 1,DP)) +  loggamma(REAL((n4 - l_val)/2 + 1,DP)) &
+                     ) &
+                     )
                 !
-                prodval = eigenvector(i1)* eigenvector(i2)* eigenvector(i3)* eigenvector(i4)/prodval
-                !
-                prodval = prodval * &
-                     GAMMA(REAL( (n1+n2)/2 - L_val + 1, DP)) * &
-                     GAMMA(REAL( (n1+n2)/2 + L_val + 1, DP)) * &
-                     GAMMA(REAL(2*N_val - n1 - n2 + 1,DP))
+                prodval = eigenvector(i1)* eigenvector(i2)* eigenvector(i3)* eigenvector(i4)*prodval
                 !
                 H_Inv_Part_Ratio = H_Inv_Part_Ratio + prodval
                 !
@@ -468,7 +474,6 @@ CONTAINS
        !
     ENDDO
     !
-    H_Inv_Part_Ratio = H_Inv_Part_Ratio *GAMMA(REAL(N_val + 3,DP))*GAMMA(REAL(N_val + 1,DP))/GAMMA(REAL(2*N_val + 3, DP))
     !
   END FUNCTION H_Inv_Part_Ratio
   !
@@ -488,5 +493,7 @@ CONTAINS
     Inv_Part_Ratio = 1.0_DP/SUM(eigenvector**4)
     !
   END FUNCTION Inv_Part_Ratio
+  !
+  !
   !
 END MODULE u3_2dvm_mod

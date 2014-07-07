@@ -15,33 +15,35 @@ VERSION = "3.0"
 ####################################################################
 ####################################################################
 #
+# Check how to reduce the number of invocations of loggamma.f90 to the Husimi case.
+#
 # ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain I
 #
-AVECMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 avalavec_modelH_2dvm.f90 
+AVECMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm.f90 
 AVECMODOBJ = $(AVECMODSRC:.f90=.o)
 #
 #
 # ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain II
 #
-AVECMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 avalavec_modelH_2dvm_II.f90 
+AVECMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_II.f90 
 AVECMODIIOBJ = $(AVECMODIISRC:.f90=.o)
 #
 #
 # ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
 #
-IPRHMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_Husimi_modelH_2dvm.f90 
+IPRHMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_Husimi_modelH_2dvm.f90 
 IPRHMODOBJ = $(IPRHMODSRC:.f90=.o)
 #
 #
 # ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain I
 #
-IPRMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_modelH_2dvm.f90 
+IPRMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm.f90 
 IPRMODOBJ = $(IPRMODSRC:.f90=.o)
 #
 #
 # ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain II
 #
-IPRMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 ipr_modelH_2dvm_II.f90 
+IPRMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm_II.f90 
 IPRMODIIOBJ = $(IPRMODIISRC:.f90=.o)
 #
 ####################################################################
