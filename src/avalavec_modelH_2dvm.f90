@@ -25,7 +25,7 @@ PROGRAM avalavec_modelH_2DVM
   !
   !
   ! NAMELISTS
-  NAMELIST/par_aux/ Iprint, Eigenvec_Log, Excitation_Log
+  NAMELIST/par_aux/ Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
   NAMELIST/par_0/ N_val, L_val
   NAMELIST/par_1/ epsilon, xi
   !
@@ -203,7 +203,7 @@ PROGRAM avalavec_modelH_2DVM
   time_check_ref = time_check
   !
   ! Diagonalize Hamiltonian matrix (LAPACK95)
-  IF (Eigenvec_Log) THEN
+  IF (Eigenvec_Log .OR. Save_avec_Log) THEN
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
   ELSE
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='N', UPLO='U')
@@ -235,9 +235,10 @@ PROGRAM avalavec_modelH_2DVM
      !
      WRITE(UNIT = *, FMT = *) np, Eigenval_vector(state_index)
      !
-     ! Display eigenvectors
-     IF (Eigenvec_Log) THEN
+     !
+     IF (Eigenvec_Log .AND. Iprint > 0) THEN
         !
+        ! Display eigenvectors
         DO state_index_2 = 1, dim_block
            !
            np = U2_Basis(state_index_2)%np_U2_val
@@ -249,6 +250,9 @@ PROGRAM avalavec_modelH_2DVM
      ENDIF
      !
   ENDDO
+  ! Save eigenvector components
+  IF (Save_avec_Log) CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, "u2", Ham_matrix)
+  !
   !
 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2)
 10 FORMAT(1X, "Reading  N_val, L_val")

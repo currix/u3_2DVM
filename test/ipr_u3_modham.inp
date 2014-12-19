@@ -1,7 +1,7 @@
 #
 #       INPUT FILE FOR U(3) Model Hamiltonian Calculations
 #
-&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T., Save_avec_Log = .T.  /
+&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T. /
 &par_0   N_val = 500, L_val = 0 /
 &par_1   epsilon = 1.0,   xi = 0.75 /
 

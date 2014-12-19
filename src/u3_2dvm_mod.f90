@@ -27,6 +27,7 @@ MODULE u3_2dvm_mod
   !
   LOGICAL :: Eigenvec_Log     ! If .T. compute eigenvalues and eigenvectors
   LOGICAL :: Excitation_Log   ! If .T. compute excitation energy with respect to L = 0 g.s.
+  LOGICAL :: Save_avec_Log   ! If .T. save eigenvector components.
   !
   !
   REAL(KIND = DP) :: GS_energy = 0.0_DP ! L = 0 Ground state energy 
@@ -275,7 +276,7 @@ CONTAINS
     !
   END FUNCTION POCCHAMMER_S
   !
-    !
+  !
   SUBROUTINE Build_Mod_Ham_SO3(N_val, L_val, dim_block, SO3_Basis, Ham_U3_mat) 
     !
     !
@@ -495,5 +496,51 @@ CONTAINS
   END FUNCTION Inv_Part_Ratio
   !
   !
+  SUBROUTINE SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, Basis, Ham_U3_mat)
+    !
+    ! Subroutine to save the components of the eigenvectors 
+    ! of the U(3) 2DVM Model Hamiltonian
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    CHARACTER(LEN=*), INTENT(IN) :: Basis
+    !
+    REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: Ham_U3_mat ! Hamiltonian matrix
+    !
+    INTEGER(KIND = I4B) :: basis_index
+    !
+    CHARACTER(LEN=65) :: output_filename
+    !
+    !
+    ! Build filename
+    IF ( N_val < 10) THEN !to avoid spaces
+       WRITE(output_filename, '("eigvec_",A,"_N",I1,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+    ELSE IF ( dim_block < 100) THEN 
+       WRITE(output_filename, '("eigvec_",A,"_N",I2,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+    ELSE IF ( dim_block < 1000) THEN 
+       WRITE(output_filename, '("eigvec_",A,"_N",I3,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+    ELSE IF ( dim_block < 10000) THEN 
+       WRITE(output_filename, '("eigvec_",A,"_N",I4,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+    ELSE
+       WRITE(output_filename, '("eigvec_",A,"_N",I6,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+    ENDIF
+    !
+    OPEN(UNIT = 76, FILE = output_filename, STATUS = "UNKNOWN", ACTION = "WRITE")
+    !
+    WRITE(UNIT=76, FMT=*) "# N = ", N_val, "; L = ", L_val, "; ", Basis, " basis"
+    !
+    DO basis_index = 1, dim_block
+       WRITE(UNIT=76, FMT=*) Ham_U3_mat(basis_index, 1:dim_block)
+    ENDDO
+    !
+  END SUBROUTINE SAVE_EIGENV_COMPONENTS
   !
 END MODULE u3_2dvm_mod
