@@ -30,8 +30,8 @@ Usage: $prgname [-vh] [-E/I/i] [-e progpath] Nval lval scale u_states ximin xima
 
   Options:
     E : obtain correlation energy diagram (default)
-    I : obtain Husimi inverse participation ration diagram 
-    i : obtain inverse participation ration diagram 
+    I : obtain Husimi inverse participation ratio diagram 
+    i : obtain inverse participation ratio diagram 
     v : verbose output
     h : help message
     e : provide the path to executable fortran files
