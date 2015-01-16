@@ -41,7 +41,7 @@ EOF
 die "\n\tPerl script to calculate the observable dependence with the control parameter\n for the u first eigenvalues (g.s. -> u = 1) of 
 the algebraic U(3) model Hamiltonian in a given xi value interval.
  
-If  u = 0 all anergies are included.
+If  u = 0 all energies are included.
 
 \tNote that energy values are normalized by the number of bosons N (E/N).\n\n by Currix TM\n$usemessage" if ($options{"h"});
 #
@@ -123,7 +123,7 @@ sub runprog {
 # par_0 line
     print $fh "\&par_0   N_val = $Nval, L_val = $lval /\n"; 
 #
-# par_0 line
+# par_1 line
     print $fh "\&par_1   epsilon = $scale, xi = $xi /\n"; 
 #
     if ($options{"v"}) {
