@@ -496,7 +496,7 @@ CONTAINS
   END FUNCTION Inv_Part_Ratio
   !
   !
-  SUBROUTINE SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, Basis, Ham_U3_mat)
+  SUBROUTINE SAVE_EIGENV_COMPONENTS(N_val, L_val, xi, dim_block, Basis, Ham_U3_mat)
     !
     ! Subroutine to save the components of the eigenvectors 
     ! of the U(3) 2DVM Model Hamiltonian
@@ -507,7 +507,9 @@ CONTAINS
     !
     INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
     !
-    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum    
+    !
+    REAL(KIND = DP),  INTENT(IN) :: xi ! Control Parameter
     !
     INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
     !
@@ -535,7 +537,7 @@ CONTAINS
     !
     OPEN(UNIT = 76, FILE = output_filename, STATUS = "UNKNOWN", ACTION = "WRITE")
     !
-    WRITE(UNIT=76, FMT=*) "# N = ", N_val, "; L = ", L_val, "; ", Basis, " basis"
+    WRITE(UNIT=76, FMT=*) "# N = ", N_val, "; L = ", L_val, ";  xi = ", xi, " ; ", Basis,  " basis"
     !
     DO basis_index = 1, dim_block
        WRITE(UNIT=76, FMT=*) Ham_U3_mat(basis_index, 1:dim_block)

@@ -235,7 +235,7 @@ PROGRAM avalavec_modelH_2DVM_II
   ENDDO
   !
   ! Save eigenvector components
-  IF (Save_avec_Log) CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, "so3", Ham_matrix)
+  IF (Save_avec_Log) CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, xi, dim_block, "so3", Ham_matrix)
   !
 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2)
 10 FORMAT(1X, "Reading  N_val, L_val")
