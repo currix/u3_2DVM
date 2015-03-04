@@ -6,9 +6,18 @@ by Currix TM
 
 Programs
 
-avec_U3_mh  :: Eigenvalues and eigenvectors of the model Hamiltonian
+avec_U3_mh        :: Eigenvalues and eigenvectors of the model Hamiltonian using the cylindrical oscillator basis
 
-ipr_U3_mh   :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian
+ipr_U3_mh         :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian  using the cylindrical oscillator basis
+
+avec_U3_mh_SO3    :: Eigenvalues and eigenvectors of the model Hamiltonian using the displaced oscillator basis
+
+ipr_U3_mh_SO3     :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian  using the displaced oscillator basis
+
+observables_U3_mh :: Perl script to launch the Fortran programs and compute the different observables in a range of control parameter values.
+
+
+select_eigstate_components  :: Perl script to select a particular eigenstate components from an array of eigenstate components saved in a file.
 
 
 The program user's guide will be found in the doc directory in pdf,
