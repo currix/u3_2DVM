@@ -52,7 +52,7 @@ def compute_surv_prob(Energies, Eigenstates, index_basis, time_grid):
     surv_prob = np.zeros(len(time_grid))
     #
     # component corresponding to the index_basis state
-    alpha_values = Eigenstates[:,index_basis-1] # Note that eigstates are organized in rows and that the -1 :: index_basis = 1 ==> First state
+    alpha_values = Eigenstates[index_basis-1,:] # Note that eigstates are organized in COLUMNS (file u3_2dvm_mod.f90) and that the -1 :: index_basis = 1 ==> First state
     #
     for index in range(alpha_values.shape[0]):
         surv_prob = surv_prob + alpha_values[index]**2*np.exp(Energies[index]*1j*time_grid)
@@ -83,7 +83,7 @@ def energy_basis_I(N_value, n_value, l_value, xi_value):
     #
     '''Computes the diagonal matrix element <[N]n^l|H(xi)|[N]n^l> '''
     #
-    return (1-xi_value)*n_value + xi_value*((N_value - n_value)*(n_value + 2.0) + (N_value - n_value + 1.0)*n_value + l_value*l_value)/(N_value - 1.0)
+    return  (1-xi_value)*n_value + xi_value*(N_value*(N_value + 1) - (N_value - n_value)*(n_value + 2.0) - (N_value - n_value + 1.0)*n_value - l_value*l_value)/(N_value - 1.0)
 #########################################################################
 #########################################################################
 def energy_basis_II(N_value, omega_value, l_value, xi_value):
