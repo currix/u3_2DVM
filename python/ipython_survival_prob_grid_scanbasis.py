@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 #
-from survival_probability_basis import survival_probability_basis_states, read_energy_data, read_eigenstates, energy_basis_I, energy_basis_II
+from survival_probability_basis import survival_probability_basis_states, read_energy_data, read_eigenstates
 #
 N_value = 500
 l_value = 0
