@@ -17,7 +17,6 @@ time_max = 1.0
 time_points = 200
 ##time_max = 16
 ##time_points = 300
-nvals = np.arange(0, N_value + 2, 2)
 #
 eigstates=read_eigenstates(eigenvectors)
 eigvals= read_energy_data(eigenvalues)
