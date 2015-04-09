@@ -14,8 +14,10 @@ def main():
     # Define alpha
     alpha = np.array([1.0/2.0,1/np.sqrt(2),1./2.0])
     #
-    # Plot survival probability
+    # Compute survival probability
     sp_results = survival_probability(eigval,alpha)
+    #
+    # Plot survival probability
     #
     # Define Figure
     pyplot.figure(figsize=(20.0,6.0))

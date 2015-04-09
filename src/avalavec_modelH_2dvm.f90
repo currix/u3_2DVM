@@ -46,7 +46,7 @@ PROGRAM avalavec_modelH_2DVM
   !
   !
   IF (Iprint > 1) THEN
-     WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log
+     WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
      WRITE(UNIT = *, FMT = 15) N_val, L_val
      WRITE(UNIT = *, FMT = 25) epsilon, xi
   ENDIF
@@ -254,8 +254,32 @@ PROGRAM avalavec_modelH_2DVM
   ! Save eigenvector components
   IF (Save_avec_Log) CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, xi, dim_block, "u2", Ham_matrix)
   !
+  !    
+  ! DEALLOCATE EIGENVALUES VECTOR
+  DEALLOCATE(Eigenval_vector, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Eigenval_vector deallocation request denied."
+     STOP
+  ENDIF
+  ! DEALLOCATE Hamiltonian Matrix and W^2 Casimir matrix
+  DEALLOCATE(Ham_matrix, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
+     STOP
+  ENDIF
+  DEALLOCATE(W2_matrix, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "W2_casimir deallocation request denied."
+     STOP
+  ENDIF
+  ! DEALLOCATE BASIS
+  DEALLOCATE(U2_Basis, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "U2_Basis deallocation request denied."
+     STOP
+  ENDIF
   !
-5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2)
+5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2, "; Save_Avec_Log = ", L2)
 10 FORMAT(1X, "Reading  N_val, L_val")
 15 FORMAT(1X, "N_val = ", I6, "; L_val = ", I6)
 20 FORMAT(1X, "Reading  epsilon, xi")
