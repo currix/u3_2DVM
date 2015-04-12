@@ -1,6 +1,6 @@
 def plot_components(eigvec_file, eigval_file, bas_state_index, majorX = 50, majorY = 0.02, col="b-o"):
     ###
-    '''Plot squared components in all eigenvectors of a bas_state_index basis elementa (min bas_state_index = 0) as a function of the state energy.''' 
+    '''Plot squared components in all eigenvectors of a bas_state_index basis element (min bas_state_index = 0) as a function of the state energy.''' 
     ###
     import numpy as np
     from matplotlib import pyplot
