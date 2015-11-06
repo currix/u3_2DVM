@@ -65,7 +65,7 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avecmodh avecIImodh iprHmodh iprmodh iprIImodh
+all: avec_U3_mh avecIImodh iprHmodh iprmodh iprIImodh
 #
 .PHONY : all
 #
@@ -81,8 +81,8 @@ all: avecmodh avecIImodh iprHmodh iprmodh iprIImodh
 	$(FC) $(FOPT) $<
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain I)
-avecmodh: $(AVECMODOBJ)
-	$(FC) -o $(BINPATH)/avec_U3_mh $(AVECMODOBJ) $(LIBS)
+avec_U3_mh: $(AVECMODOBJ)
+	$(FC) $^ -o $(BINPATH)/$@ $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain II)
 avecIImodh: $(AVECMODIIOBJ)
