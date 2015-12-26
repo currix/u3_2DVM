@@ -250,6 +250,33 @@ PROGRAM ipr_modelH_2DVM
      !
   ENDIF
   !
+  !    
+  ! DEALLOCATE EIGENVALUES VECTOR
+  DEALLOCATE(Eigenval_vector, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Eigenval_vector deallocation request denied."
+     STOP
+  ENDIF
+  ! DEALLOCATE Hamiltonian Matrix and W^2 Casimir matrix
+  DEALLOCATE(Ham_matrix, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
+     STOP
+  ENDIF
+  DEALLOCATE(W2_matrix, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "W2_casimir deallocation request denied."
+     STOP
+  ENDIF
+  !
+  ! DEALLOCATE BASIS
+  DEALLOCATE(U2_Basis, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "U2_Basis deallocation request denied."
+     STOP
+  ENDIF
+  !  !    
+  !
 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2)
 10 FORMAT(1X, "Reading  N_val, L_val")
 15 FORMAT(1X, "N_val = ", I6, "; L_val = ", I6)
