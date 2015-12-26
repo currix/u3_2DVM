@@ -23,6 +23,10 @@ MODULE u3_2dvm_mod
   INTEGER(KIND = I4B), PARAMETER :: n_modham_param = 2
   REAL(KIND = DP), DIMENSION(1:n_modham_param) :: ModHam_parameter 
   !
+  ! General Hamiltonian Parameters
+  INTEGER(KIND = I4B), PARAMETER :: n_ham_param = 4
+  REAL(KIND = DP), DIMENSION(1:n_ham_param) :: Ham_parameter 
+  !
   INTEGER(KIND = I4B) :: Ierr, Iprint
   !
   LOGICAL :: Eigenvec_Log     ! If .T. compute eigenvalues and eigenvectors
@@ -249,6 +253,104 @@ CONTAINS
     !
     !
   END SUBROUTINE BUILD_MOD_HAM
+    !
+  SUBROUTINE Build_Ham(N_val, L_val, dim_block, U2_Basis, W2_casimir, Ham_U3_mat) 
+    !
+    !
+    ! Subroutine to build the U(3) 2DVM Two-Body Hamiltonian
+    ! Cylindrical Oscillator Basis U(2)
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    TYPE(u2_bas), DIMENSION(:), INTENT(IN) :: U2_Basis   ! U2 basis   { | [N] np L > }
+    !
+    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2_casimir ! SO(3) W^2 casimir matrix 
+    !
+    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: Ham_U3_mat ! Hamiltonian matrix
+    !
+    INTEGER(KIND = I4B) :: oper, U2_state
+    REAL(KIND = DP) :: npvalue, Nvalue, lvalue2
+    !
+    !
+    Nvalue = REAL(N_val, DP)
+    !
+    ! Build Hamiltonian
+    operator : DO oper = 1, n_ham_param
+       !
+       IF (Iprint > 1) WRITE(*,*) "Operator number ", oper
+       !
+       IF (ABS(Ham_parameter(oper)) < Zero_Parameter) CYCLE ! Skip not needed operators
+       !
+       SELECT CASE (oper)
+          !
+       CASE (1) ! n ---> DIAGONAL
+          !
+          DO U2_state = 1, dim_block
+             !
+             npvalue = REAL(U2_Basis(U2_state)%np_U2_val, DP)
+             !
+             Ham_U3_mat(U2_state, U2_state) = Ham_U3_mat(U2_state, U2_state) + &
+                  Ham_parameter(1)*npvalue
+             !
+          ENDDO
+          !
+          !
+       CASE (2) ! n(n+1) ---> DIAGONAL
+          !
+          DO U2_state = 1, dim_block
+             !
+             npvalue = REAL(U2_Basis(U2_state)%np_U2_val, DP)
+             !
+             Ham_U3_mat(U2_state, U2_state) = Ham_U3_mat(U2_state, U2_state) + &
+                  Ham_parameter(2)*npvalue*(npvalue + 1.0_DP)
+             !
+          ENDDO
+          !
+          !
+       CASE (3) ! l^2 ---> DIAGONAL
+          !
+          lvalue2 = REAL(U2_Basis(U2_state)%L_val, DP)**2
+          ! 
+          DO U2_state = 1, dim_block
+             !
+             Ham_U3_mat(U2_state, U2_state) = Ham_U3_mat(U2_state, U2_state) + &
+                  Ham_parameter(3)*lvalue2
+             !
+          ENDDO
+          !
+          !
+       CASE (4) ! Pairing Operator
+          !
+          CALL SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2_casimir)
+          !
+          Ham_U3_mat = Ham_U3_mat - Ham_parameter(4)*W2_casimir ! notice the minus sign for P = N(N+1)-W^2
+          !
+          ! Diagonal Pairing contribution
+          DO U2_state = 1, dim_block
+             !
+             Ham_U3_mat(U2_state, U2_state) = Ham_U3_mat(U2_state, U2_state) + &
+                  Ham_parameter(4)*Nvalue*(Nvalue + 1_I4B)
+             !
+          ENDDO
+          !
+       CASE DEFAULT
+          !
+          STOP 'You should not be here. Invalid nonzero parameter number. Sayonara baby.'
+          !
+       END SELECT
+       !
+    ENDDO operator
+    !
+    !
+  END SUBROUTINE BUILD_HAM
   !
   FUNCTION POCCHAMMER_S(a, b)
     !

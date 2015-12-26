@@ -62,16 +62,28 @@ IPRMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH
 #
 IPRMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm_II.f90 
 #
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain I
+#
+AVECSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm.f90 
+#
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain I
+#
+IPRSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm.f90 
+#
 ####################################################################
 ####################################################################
 #
 ######################################################################
 ######################################################################
 #
-all: avec_U3_mh avec_U3_mh_SO3 ipr_Husimi_U3_mh ipr_U3_mh  ipr_U3_mh_SO3
+all: avec_U3 avec_U3_mh avec_U3_mh_SO3 ipr_Husimi_U3_mh ipr_U3_mh  ipr_U3_mh_SO3  ipr_U3
 #
 .PHONY : all
 #
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain I)
+avec_U3:  $(AVECSRC) Makefile .PHONY 
+	$(FC) -o $(BINPATH)/$@ $(AVECSRC) $(OPTFLAGS) $(LIBS) 
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain I)
 avec_U3_mh:  $(AVECMODSRC) Makefile .PHONY 
@@ -89,9 +101,13 @@ ipr_Husimi_U3_mh: $(IPRHMODSRC) Makefile  .PHONY
 ipr_U3_mh: $(IPRMODSRC) Makefile  .PHONY 
 	$(FC) -o $(BINPATH)/$@ $(IPRMODSRC) $(OPTFLAGS) $(LIBS)
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain II)
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (MODEL HAMILTONIAN, Chain II)
 ipr_U3_mh_SO3: $(IPRMODIISRC) Makefile  .PHONY 
 	$(FC) -o $(BINPATH)/$@ $(IPRMODIISRC) $(OPTFLAGS) $(LIBS)
+#################################################################
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 2 BODY HAMILTONIAN, Chain I)
+ipr_U3: $(IPRSRC) Makefile  .PHONY 
+	$(FC) -o $(BINPATH)/$@ $(IPRSRC) $(OPTFLAGS) $(LIBS)
 #################################################################
 clean:
 	@echo "Cleaning object files"
