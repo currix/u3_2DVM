@@ -272,6 +272,7 @@ PROGRAM avalavec_modelH_2DVM
      WRITE(UNIT = *, FMT = *) "W2_casimir deallocation request denied."
      STOP
   ENDIF
+  !
   ! DEALLOCATE BASIS
   DEALLOCATE(U2_Basis, STAT = IERR)    
   IF (IERR /= 0) THEN
