@@ -13,7 +13,7 @@ use Getopt::Std;
 #
 # Switches:
 my %options;
-getopts("EIivhe:",\%options);
+getopts("a:EIivhe:",\%options);
 #
 #
 use File::Temp qw/ tempfile /;
@@ -25,7 +25,7 @@ my $binpath = "~/PR_Fortran/U3/PureBending/triat_U3_3.0/bin";
 #
 my $usemessage = <<"EOF";
 
-Usage: $prgname [-vh] [-E/I/i] [-e progpath] Nval lval scale u_states ximin ximax xistep
+Usage: $prgname [-vh] [-E/I/i] [-e progpath] [-a alpha_par] Nval lval scale u_states ximin ximax xistep
        
 
   Options:
@@ -35,11 +35,12 @@ Usage: $prgname [-vh] [-E/I/i] [-e progpath] Nval lval scale u_states ximin xima
     v : verbose output
     h : help message
     e : provide the path to executable fortran files
+    a : run the general Hamiltonian with given alpha parameter value.
 
 EOF
 ## 
 die "\n\tPerl script to calculate the observable dependence with the control parameter\n for the u first eigenvalues (g.s. -> u = 1) of 
-the algebraic U(3) model Hamiltonian in a given xi value interval.
+the algebraic U(3) model Hamiltonian (optional anharmonicity) whithin a given xi value interval.
  
 If  u = 0 all energies are included.
 
@@ -54,11 +55,13 @@ my @output;
 #
 my $program;
 if ($options{"e"}) {
-    $program = $options{"e"};
+  $program = $options{"e"};
 } elsif ($options{"i"}) {
-    $program = "$binpath/ipr_U3_mh";
+  $program = "$binpath/ipr_U3_mh";
+} elsif ($options{"a"}) {
+  $program = "$binpath/ipr_U3";
 } else {
-    $program = "$binpath/ipr_Husimi_U3_mh";
+  $program = "$binpath/ipr_Husimi_U3_mh";
 }
 #
 print "Executable program: $program \n" if ($options{"v"});
@@ -76,75 +79,82 @@ $xi = $ximin;
 #
 #
 while (&ltequal($xi,$ximax,4)) {
-    print "\tXI = $xi\n" if ($options{"v"});
-#
-    @output = &runprog($Nval,$lval,$scale,$xi);
-#
-    print "----------------\nProgram output:\n @output\n-------------\n" if ($options{"v"});
-#
-    print "$xi ";
-#
-#   Check how many states will be printed
-    my $nstates;
-    if ($u) {
-	$nstates = $u;
+  #
+  $xi = sprintf("%f",$xi); # Make it a float...
+  #
+  print "\tXI = $xi\n" if ($options{"v"});
+  #
+  @output = &runprog($Nval,$lval,$scale,$xi);
+  #
+  print "----------------\nProgram output:\n @output\n-------------\n" if ($options{"v"});
+  #
+  print "$xi ";
+  #
+  #   Check how many states will be printed
+  my $nstates;
+  if ($u) {
+    $nstates = $u;
+  } else {
+    $nstates = $#output+1;
+  }
+  # Print
+  foreach (1..$nstates) {
+    my @columns = split ' ', $output[$_-1];
+    if ($options{"I"} || $options{"i"}) {
+      print $columns[2]," ";
     } else {
-	$nstates = $#output+1;
+      print $columns[1]/$Nval," ";
     }
-# Print
-    foreach (1..$nstates) {
-	my @columns = split ' ', $output[$_-1];
-	if ($options{"I"} || $options{"i"}) {
-	    print $columns[2]," ";
-	} else {
-	    print $columns[1]/$Nval," ";
-	}
-    }
-#
-    print "\n";
-#
-    $xi+=$xistep;
+  }
+  #
+  print "\n";
+  #
+  $xi+=$xistep;
 }
 ###################################################################
 #    SUBROUTINES
 ###################################################################
 sub runprog {
-    my ($Nval,$lval,$scale,$xi) = @_;
-# Temporary input file
-    my ($fh, $name) = tempfile("currixXXXX", DIR => "");
-#
-# par_aux line
-    if ($options{"I"} || $options{"i"}) {
-	print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T.    /\n";
-    } else {
-	print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .F., Excitation_Log = .T.    /\n"; 
-    }
-#
-# par_0 line
-    print $fh "\&par_0   N_val = $Nval, L_val = $lval /\n"; 
-#
-# par_1 line
-    print $fh "\&par_1   epsilon = $scale, xi = $xi /\n"; 
-#
-    if ($options{"v"}) {
-	print "Input file : \n";
-	system "cat $name";
-    }
-#
-    my @output =  `$program < $name`;
-#
-    unlink($name) or die "Couldn't unlink $name : $!\n";
-#
-    @output;
+  my ($Nval,$lval,$scale,$xi) = @_;
+  # Temporary input file
+  my ($fh, $name) = tempfile("currixXXXX", DIR => "");
+  #
+  # par_aux line
+  if ($options{"I"} || $options{"i"}) {
+    print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T., Save_avec_Log = .F.    /\n";
+  } else {
+    print $fh "\&par_aux Iprint = 0, Eigenvec_Log = .F., Excitation_Log = .T., Save_avec_Log = .F.    /\n"; 
+  }
+  #
+  # par_0 line
+  print $fh "\&par_0   N_val = $Nval, L_val = $lval /\n"; 
+  #
+  # par_1 line
+  unless ($options{"a"}) {
+    print $fh "\&par_1   epsilon = $scale, xi = $xi /\n";
+  } else {
+    print $fh "\&par_1   epsilon_p = ", $scale*(1-$xi),", alpha_p = ", $scale*$options{"a"}/($Nval-1), ", beta_p = 0.0, A_p = ", $scale*$xi/($Nval-1)," /\n";
+  }
+  #
+  if ($options{"v"}) {
+    print "Input file : \n";
+    system "cat $name";
+  }
+  #
+  my @output =  `$program < $name`;
+  #
+  unlink($name) or die "Couldn't unlink $name : $!\n";
+  #
+  @output;
 }
 ######################### Perl Cookbook #########################            
 # equal(NUM1, NUM2, ACCURACY) : returns true if NUM1.le.NUM2
 # to ACCURACY number of decimal places
 
 sub ltequal {
-    my ($A, $B, $dp) = @_;
-#
-    return sprintf("%.${dp}g", $A) le sprintf("%.${dp}g", $B);
+  my ($A, $B, $dp) = @_;
+  #
+  return sprintf("%.${dp}g", $A) le sprintf("%.${dp}g", $B);
 }
 
 
