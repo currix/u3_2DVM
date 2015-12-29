@@ -69,6 +69,9 @@ print "Executable program: $program \n" if ($options{"v"});
 #
 die "$usemessage" if ($#ARGV!=6);
 ($Nval,$lval,$scale,$u,$ximin,$ximax,$xistep) = @ARGV;
+#
+$scale = sprintf("%f",$scale); # Make it a float...
+#
 # Check if $u >= 0
 die "\n\tError. The u argument is less than or equal to zero.\n\t For more info execute $prgname -h\n" if ($u < 0);
 #
@@ -100,11 +103,12 @@ while (&ltequal($xi,$ximax,4)) {
   # Print
   foreach (1..$nstates) {
     my @columns = split ' ', $output[$_-1];
-    if ($options{"I"} || $options{"i"}) {
-      print $columns[2]," ";
-    } else {
-      print $columns[1]/$Nval," ";
-    }
+    #    if ($options{"I"} || $options{"i"}) {
+    #      print $columns[2]," ";
+    #    } else {
+    #      print $columns[1]/$Nval," ";
+    #    }
+    print $columns[-1]/$Nval," "; # Print last column
   }
   #
   print "\n";
