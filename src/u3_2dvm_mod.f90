@@ -427,7 +427,7 @@ CONTAINS
           ENDDO
           !
           !
-          ! Non-Diagonal contribution (B_0)
+          ! Non-Diagonal contribution  w2 -> w1+2 (B_0)
           DO SO3_state = 1, dim_block - 1
              !
              omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
@@ -462,6 +462,148 @@ CONTAINS
     !
   END SUBROUTINE BUILD_MOD_HAM_SO3
   !
+  !
+  SUBROUTINE Build_Ham_SO3(N_val, L_val, dim_block, SO3_Basis, Ham_U3_mat) 
+    !
+    !
+    ! Subroutine to build the U(3) 2DVM Two Body Hamiltonian
+    ! Displaced Oscillator Basis SO(3)
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    TYPE(so3_bas), DIMENSION(:), INTENT(IN) :: SO3_Basis   ! SO3 basis   { | [N] w L > }
+    !
+    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: Ham_U3_mat ! Hamiltonian matrix
+    !
+    INTEGER(KIND = I4B) :: oper, SO3_state
+    REAL(KIND = DP) :: omegaval, Nvalue, lval
+    !
+    !
+    Nvalue = REAL(N_val, DP)
+    !
+    ! Build Hamiltonian
+    operator : DO oper = 1, n_ham_param
+       !
+       IF (Iprint > 1) WRITE(*,*) "Operator number ", oper
+       !
+       IF (ABS(Ham_parameter(oper)) < Zero_Parameter) CYCLE ! Skip not needed operators
+       !
+       SELECT CASE (oper)
+          !
+       CASE (1) ! Number Operator n ---> NON DIAGONAL Eq. (35) PRA (Check Typos)
+          !
+          ! Diagonal contribution 
+          DO SO3_state = 1, dim_block
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state) = Ham_U3_mat(SO3_state, SO3_state) + &
+                  Ham_parameter(1)*n_elem_diag(Nvalue,omegaval,L_val)
+             !
+          ENDDO
+          !
+          !
+          ! Non-Diagonal contribution w2 -> w1+2 (B_0)
+          DO SO3_state = 1, dim_block - 1
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state + 1) = Ham_U3_mat(SO3_state, SO3_state + 1) + &
+                  Ham_parameter(1)*B0(Nvalue,omegaval,L_val)
+             !
+          ENDDO
+          !
+          !
+       CASE (2) ! Anharmonicity Operator n(n+1) ---> NON DIAGONAL See notes
+          !
+          ! Diagonal contribution 
+          DO SO3_state = 1, dim_block
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state) = Ham_U3_mat(SO3_state, SO3_state) + &
+                  Ham_parameter(2)*( &
+                  (n_elem_diag(Nvalue,omegaval,L_val)**2 + &
+                  B0(Nvalue,omegaval,L_val)**2 + &
+                  B0(Nvalue,omegaval-2.0_DP,L_val)**2) +  &
+                  n_elem_diag(Nvalue,omegaval,L_val) & ! + n
+                  )
+             !
+          ENDDO
+          !
+          !
+          ! Non-Diagonal contribution w2 -> w1+2
+          DO SO3_state = 1, dim_block - 1
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state + 1) = Ham_U3_mat(SO3_state, SO3_state + 1) + &
+                  Ham_parameter(2)*( &
+                  (n_elem_diag(Nvalue,omegaval,L_val)*B0(Nvalue,omegaval,L_val) + &
+                  n_elem_diag(Nvalue,omegaval+2,L_val)*B0(Nvalue,omegaval,L_val)) + & 
+                  B0(Nvalue,omegaval,L_val) & ! + n
+                  )
+             !
+          ENDDO
+          !
+          !
+          ! Non-Diagonal contribution w2 -> w1+4
+          DO SO3_state = 1, dim_block - 2
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state + 2) = Ham_U3_mat(SO3_state, SO3_state + 2) + &
+                  Ham_parameter(2)*( &
+                  (B0(Nvalue,omegaval,L_val)*B0(Nvalue,omegaval+2.0_DP,L_val)) &
+             )
+             !
+          ENDDO
+          !
+          !
+       CASE (3) ! Angular Momentum Operator l^2 ---> DIAGONAL
+          !
+          ! Diagonal Pairing contribution
+          DO SO3_state = 1, dim_block
+             !
+             lval = REAL(SO3_Basis(SO3_state)%L_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state) = Ham_U3_mat(SO3_state, SO3_state) + &
+                  Ham_parameter(3)*(lval**2)
+             !
+          ENDDO
+          !
+       CASE (4) ! Pairing Operator P ---> DIAGONAL
+          !
+          ! Diagonal Pairing contribution
+          DO SO3_state = 1, dim_block
+             !
+             omegaval = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+             !
+             Ham_U3_mat(SO3_state, SO3_state) = Ham_U3_mat(SO3_state, SO3_state) + &
+                  Ham_parameter(4)*( &
+                  Nvalue*(Nvalue + 1.0_DP) - omegaval*(omegaval + 1.0_DP) )
+             !
+          ENDDO
+          !
+       CASE DEFAULT
+          !
+          STOP 'You should not be here. Invalid nonzero parameter number. Sayonara baby.'
+          !
+       END SELECT
+       !
+    ENDDO operator
+    !
+    !
+  END SUBROUTINE BUILD_HAM_SO3
+  !
   FUNCTION n_elem_diag(Nv, wv, L_val)
     !
     REAL(KIND = DP), INTENT(IN) :: Nv, wv ! REAL N and omega
@@ -475,17 +617,29 @@ CONTAINS
     !
     lv = REAL(L_val,DP)
     !
-    !
-    n_elem_diag = (Nv - wv) * &
-         ((wv-lv+2.0_DP)*(wv-lv+1.0_DP) + (wv+lv+2.0_DP)*(wv+lv+1.0_DP)) / &
-         (2.0_DP*(2.0_DP*wv+1.0_DP)*(2.0_DP*wv+3.0_DP)) + &
-         (Nv + wv + 1.0_DP) * &
-         ((wv+lv)*(wv+lv-1.0_DP) + (wv-lv)*(wv-lv-1.0_DP)) / &
-         (2.0_DP*(2.0_DP*wv-1.0_DP)*(2.0_DP*wv+1.0_DP))
-    !
+    IF (wv < 0.0_DP .OR. wv > Nv) THEN ! Test if wv is a valid value
+       !
+       n_elem_diag = 0.0_DP
+       !
+    ELSE
+       !
+       n_elem_diag = (Nv - wv) * &
+            ((wv-lv+2.0_DP)*(wv-lv+1.0_DP) + (wv+lv+2.0_DP)*(wv+lv+1.0_DP)) / &
+            (2.0_DP*(2.0_DP*wv+1.0_DP)*(2.0_DP*wv+3.0_DP)) + &
+            (Nv + wv + 1.0_DP) * &
+            ((wv+lv)*(wv+lv-1.0_DP) + (wv-lv)*(wv-lv-1.0_DP)) / &
+            (2.0_DP*(2.0_DP*wv-1.0_DP)*(2.0_DP*wv+1.0_DP))
+       !
+    ENDIF
   END FUNCTION n_elem_diag
   !
   FUNCTION B0(Nv, wv, L_val)
+    !
+    ! <N w2 l | n | N w1 l > = A(N,w1,l) delta_w2,w1 +
+    !                          B0(N,w1,l) delta_w2,w1+2 +
+    !                          B1(N,w1,l) delta_w2,w1-2
+    !
+    ! And B1(N,w1,l) = B0(N,w1-2,l)
     !
     REAL(KIND = DP), INTENT(IN) :: Nv, wv ! REAL N and omega
     !
@@ -498,12 +652,17 @@ CONTAINS
     !
     lv = REAL(L_val,DP)
     !
+    ! 
     !
-    B0 = SQRT( &
-         (Nv - wv)*(Nv + wv + 3.0_DP) * &
-         (wv-lv+2.0_DP)*(wv+lv+2.0_DP)*(wv+lv+1.0_DP)*(wv-lv+1.0_DP) / &
-         ((2.0_DP*wv+1.0_DP)*(2.0_DP*wv+3.0_DP)**2*(2.0_DP*wv+5.0_DP)) &
-         )
+    IF (wv < 0.0_DP .OR. wv > Nv) THEN ! Test if wv is a valid value
+       B0 = 0.0_DP
+    ELSE
+       B0 = SQRT( &
+            (Nv - wv)*(Nv + wv + 3.0_DP) * &
+            (wv-lv+2.0_DP)*(wv+lv+2.0_DP)*(wv+lv+1.0_DP)*(wv-lv+1.0_DP) / &
+            ((2.0_DP*wv+1.0_DP)*(2.0_DP*wv+3.0_DP)**2*(2.0_DP*wv+5.0_DP)) &
+            )
+    ENDIF
     !
   END FUNCTION B0
   !
