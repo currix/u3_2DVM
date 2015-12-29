@@ -2,15 +2,15 @@ To Do
  
 (0) Model Hamiltonian Eigenvalues and Eigenvectors      [Done]
 
-(1) Model Hamiltonian Eigenvectors IPR
+(1) Model Hamiltonian Eigenvectors IPR                  [Done]
 
-(2) General Hamiltonian Eigenvalues and Eigenvectors
+(2) General Hamiltonian Eigenvalues and Eigenvectors    [Done for H up to 2-Body interactions].
 
 (3) IR Intensity
 
 (4) Fit with minuit and General Hamiltonian
 
-(5) Translate Perl scripts:
+(5) Translate Perl scripts:                            [New script observables_U3_mh]
 
     alg_U3_dos*     
     alg_U3_energy_tri*     
