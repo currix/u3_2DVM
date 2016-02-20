@@ -79,20 +79,3 @@ def plot_surv_prob(surv_prob_output, t_max = 3, dim_t = 100, nxplot = 1, nyplot 
         pyplot.plot(time_grid, surv_prob_output[index,:])
 #########################################################################
 #########################################################################
-def energy_basis_I(N_value, n_value, l_value, xi_value):
-    #
-    '''Computes the diagonal matrix element <[N]n^l|H(xi)|[N]n^l> '''
-    #
-    return  (1-xi_value)*n_value + xi_value*(N_value*(N_value + 1) - (N_value - n_value)*(n_value + 2.0) - (N_value - n_value + 1.0)*n_value - l_value*l_value)/(N_value - 1.0)
-#########################################################################
-#########################################################################
-def energy_basis_II(N_value, omega_value, l_value, xi_value):
-    #
-    '''Computes the diagonal matrix element <[N]n^l|H(xi)|[N]n^l> '''
-    #
-    ndiagmatel = (N_value - omega_value) * ((omega_value-l_value+2.0)*(omega_value-l_value+1.0) + (omega_value+l_value+2.0)*(omega_value+l_value+1.0)) / (2.0*(2.0*omega_value+1.0)*(2.0*omega_value+3.0)) + (N_value + omega_value + 1.0) * ((omega_value+l_value)*(omega_value+l_value-1.0) + (omega_value-l_value)*(omega_value-l_value-1.0)) / (2.0*(2.0*omega_value-1.0)*(2.0*omega_value+1.0))
-    pairdiagmatel = (N_value + 1.0)*N_value - (omega_value + 1.0)*omega_value
-    #
-    return (1-xi_value)*ndiagmatel + xi_value*pairdiagmatel/(N_value - 1.0)
-#########################################################################
-#########################################################################
