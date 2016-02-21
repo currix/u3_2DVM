@@ -786,11 +786,11 @@ CONTAINS
     ! Build filename
     IF ( N_val < 10) THEN !to avoid spaces
        WRITE(output_filename, '("eigvec_",A,"_N",I1,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
-    ELSE IF ( dim_block < 100) THEN 
+    ELSE IF ( N_val < 100) THEN 
        WRITE(output_filename, '("eigvec_",A,"_N",I2,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
-    ELSE IF ( dim_block < 1000) THEN 
+    ELSE IF ( N_val < 1000) THEN 
        WRITE(output_filename, '("eigvec_",A,"_N",I3,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
-    ELSE IF ( dim_block < 10000) THEN 
+    ELSE IF ( N_val < 10000) THEN 
        WRITE(output_filename, '("eigvec_",A,"_N",I4,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
     ELSE
        WRITE(output_filename, '("eigvec_",A,"_N",I6,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
