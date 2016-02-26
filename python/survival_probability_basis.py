@@ -24,17 +24,22 @@ def read_eigenstates(filename):
     return fortran_output
 #########################################################################
 #########################################################################
-def survival_probability_basis_states(Eigenvalues, Eigenstates, min_index_basis, max_index_basis, t_max = 3, dim_t = 100):
+def survival_probability_basis_states(Eigenvalues, Eigenstates, min_index_basis, max_index_basis, t_max = 3, dim_t = 100, time_grid = None):
     #
-    '''Compute the survival probability for a given basis. See notes... (TODO complete docstring)'''
+    '''Compute the survival probability for a given basis. See notes... (TODO complete docstring)      
+    Note that min_index_basis and max_index_basis are indeces and not n values.
+
+       Thus in the U(2) case n = 0 --> min_index_basis = max_index_basis = 1'''
     #
     import numpy as np
     #
-    time_grid = np.linspace( 0.0, t_max, dim_t)
+    if time_grid is None:
+        # Linear time_grid
+        time_grid = np.linspace( 0.0, t_max, dim_t)
     #
     num_curves = max_index_basis - min_index_basis + 1
     #
-    result = np.zeros([num_curves,dim_t])
+    result = np.zeros([num_curves,time_grid.shape[0]])
     #
     for curve in range(1,num_curves+1):
         #
