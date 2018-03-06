@@ -1,17 +1,84 @@
 ####################################################################
 #
-#	Makefile to compile, print or check 2DVM programs 
+#	Makefile to compile, print or check 2DVM programs
+#
 #       2DVM stands for 2 Dimensional limit of the Vibron Model.
 #
 #       by Currix TM.
 #
 #
 BINPATH = ../bin
+####################################################################
+####################################################################
+#
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain (i) U(3) -> U(2)
+#
+AVEC_modH_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_u2.f90 
+AVEC_modH_u2_OBJ = $(AVEC_modH_u2_SRC:.f90=.o)
+#AVEC_modH_u2_OPENMP_OBJ = $(AVEC_modH_u2_SRC:.f90=.oOMP)
+#
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain (ii) U(3) -> SO(3)
+#
+AVEC_modH_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_so3.f90 
+AVEC_modH_so3_OBJ = $(AVEC_modH_so3_SRC:.f90=.o)
+#AVEC_modH_so3_OPENMP_OBJ = $(AVEC_modH_so3_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
+#
+IPR_modH_Hus_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_Husimi_modelH_2dvm_u2.f90 
+IPR_modH_Hus_u2_OBJ = $(IPR_modH_Hus_u2_SRC:.f90=.o)
+#IPR_modH_Hus_u2_OPENMP_OBJ = $(IPR_modH_Hus_u2_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain  (i) U(3) -> U(2)
+#
+IPR_modH_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm_u2.f90 
+IPR_modH_u2_OBJ = $(IPR_modH_u2_SRC:.f90=.o)
+#IPR_modH_u2_OPENMP_OBJ = $(IPR_modH_u2_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain  (ii) U(3) -> SO(3)
+#
+IPR_modH_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm_so3.f90 
+IPR_modH_so3_OBJ = $(IPR_modH_so3_SRC:.f90=.o)
+#IPR_modH_so3_OPENMP_OBJ = $(IPR_modH_so3_SRC:.f90=.oOMP)
+#
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (GENERAL HAMILTONIAN) Chain  (i) U(3) -> U(2)
+#
+AVEC_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm_u2.f90 
+AVEC_u2_OBJ = $(AVEC_u2_SRC:.f90=.o)
+#AVEC_u2_OPENMP_OBJ = $(AVEC_u2_SRC:.f90=.oOMP)
+#
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (GENERAL HAMILTONIAN) Chain  (ii) U(3) -> SO(3)
+#
+AVEC_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm_so3.f90 
+AVEC_so3_OBJ = $(AVEC_so3_SRC:.f90=.o)
+#AVEC_so3_OPENMP_OBJ = $(AVEC_so3_SRC:.f90=.oOMP)
+#
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain  (i) U(3) -> U(2)
+#
+IPR_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_u2.f90 
+IPR_u2_OBJ = $(IPR_u2_SRC:.f90=.o)
+#IPR_u2_OPENMP_OBJ = $(IPR_u2_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain  (ii) U(3) -> SO(3)
+#
+IPR_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_so3.f90 
+IPR_so3_OBJ = $(IPR_so3_SRC:.f90=.o)
+#IPR_so3_OPENMP_OBJ = $(IPR_so3_SRC:.f90=.oOMP)
+#
+####################################################################
+####################################################################
+#
+.SUFFIXES: .o .f90 .oOMP 
 #
 FC = gfortran
 #
-##OPT = -O3 -ftree-vectorize -funroll-loops
-OPT=-O3
+FOPT=-O3 #-Wall
+#
+PREP = -cpp
 #
 ARCH = -march=native
 #
@@ -19,13 +86,9 @@ ARCH = -march=native
 # Module directories
 MODLIB   = -I/usr/local/lib/lapack95/lapack95_modules -I/usr/local/include/lapack95_modules
 #
-OPTFLAGS = $(OPT)
+OPTFLAGS = $(FOPT)
 OPTFLAGS += $(ARCH)
 OPTFLAGS += $(MODLIB)
-#
-FOPT	= -c 
-##FOPT   += -Wall
-FOPT   += $(OPTFLAGS)
 #
 # Libraries
 LAPACK95 = -L/usr/local/lib/lapack95 -llapack95 -L/usr/local/lib -llapack95
@@ -34,97 +97,115 @@ LAPACK77 = -llapack
 BLAS     = -lblas
 #
 LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
-####################################################################
-####################################################################
-#
-# To Do : Check how to reduce the number of invocations of loggamma.f90 to the Husimi case.
-#
-# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain I
-#
-AVECMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm.f90 
-#
-# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain II
-#
-AVECMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_II.f90 
-#
-#
-# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
-#
-IPRHMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_Husimi_modelH_2dvm.f90 
-#
-#
-# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain I
-#
-IPRMODSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm.f90 
-#
-#
-# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain II
-#
-IPRMODIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm_II.f90 
-#
-# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (GENERAL HAMILTONIAN) Chain I
-#
-AVECSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm.f90 
-#
-# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (GENERAL HAMILTONIAN) Chain II
-#
-AVECIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm_II.f90 
-#
-# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain I
-#
-IPRSRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm.f90 
-#
-#
-# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain II
-#
-IPRIISRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_II.f90 
-#
-####################################################################
-####################################################################
 #
 ######################################################################
 ######################################################################
 #
-all: avec_U3 avec_U3_mh avec_U3_SO3  avec_U3_mh_SO3 ipr_Husimi_U3_mh ipr_U3_mh  ipr_U3_mh_SO3  ipr_U3  ipr_U3_SO3
+all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh  ipr_U3_U2  ipr_U3_SO3
 #
 .PHONY : all
+#################################################################
+.f90.o:
+	$(info )
+	$(info Compiling single thread object file:)
+	$(FC) -c $(PREP) $(OPTFLAGS) -o "$@" "$<"
+#################################################################
+.f90.oOMP:
+	$(info )
+	$(info Compiling multi thread object file:)
+	$(FC) -c -fopenmp $(PREP) $(OPTFLAGS) -o "$@" "$<"
+#################################################################
 #
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain I)
-avec_U3:  $(AVECSRC) Makefile .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(AVECSRC) $(OPTFLAGS) $(LIBS) 
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain (i)
+avec_U3_U2:  $(AVEC_u2_OBJ) Makefile .PHONY 
+	$(info )
+	$(info Linking single thread avec_U3_U2 executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OBJ) $(OPTFLAGS) $(LIBS) 
+# avec_U3_U2_openmp:  $(AVEC_u2_OPENMP_OBJ) Makefile .PHONY 
+# 	$(info )
+# 	$(info Linking multithread avec_U3_U2 executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain I)
-avec_U3_mh:  $(AVECMODSRC) Makefile .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(AVECMODSRC) $(OPTFLAGS) $(LIBS) 
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain II)
+avec_U3_SO3: $(AVEC_so3_OBJ) Makefile .PHONY 
+	$(info )
+	$(info Linking single thread avec_U3_SO3 executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OBJ) $(OPTFLAGS) $(LIBS)
+# avec_U3_SO3_openmp: $(AVEC_so3_OPENMP_OBJ) Makefile .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread avec_U3_SO3 executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain II)
-avec_U3_SO3: $(AVECIISRC) Makefile .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(AVECIISRC) $(OPTFLAGS) $(LIBS)
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (i)
+avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile .PHONY 
+	$(info )
+	$(info Linking single thread avec_U3_U2_mh executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OBJ) $(OPTFLAGS) $(LIBS) 
+# avec_U3_U2_mh_openmp:  $(AVEC_modH_u2_OPENMP_OBJ) Makefile .PHONY 
+# 	$(info )
+# 	$(info Linking multithread avec_U3_U2_mh executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain II)
-avec_U3_mh_SO3: $(AVECMODIISRC) Makefile .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(AVECMODIISRC) $(OPTFLAGS) $(LIBS)
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (i)
+avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile .PHONY 
+	$(info )
+	$(info Linking single thread avec_U3_SO3_mh executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
+# avec_U3_SO3_mh_openmp: $(AVEC_modH_so3_OPENMP_OBJ) Makefile .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread avec_U3_SO3_mh executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN)
-ipr_Husimi_U3_mh: $(IPRHMODSRC) Makefile  .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(IPRHMODSRC) $(OPTFLAGS) $(LIBS)
+# MODEL HAMILTONIAN HUSIMI IBR Chain (i)
+ipr_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile  .PHONY
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_Hus_u2_OBJ) $(OPTFLAGS) $(LIBS)
+# ipr_Husimi_U3_U2_mh_openmp: $(IPR_modH_Hus_u2_OPENMP_OBJ) Makefile  .PHONY
+# 	$(info )
+# 	$(info Linking multi thread $@ executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_modH_Hus_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain I)
-ipr_U3_mh: $(IPRMODSRC) Makefile  .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(IPRMODSRC) $(OPTFLAGS) $(LIBS)
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS. MODEL HAMILTONIAN, Chain (i)
+ipr_U3_U2_mh: $(IPR_modH_u2_OBJ) Makefile  .PHONY 
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_u2_OBJ) $(OPTFLAGS) $(LIBS)
+# ipr_U3_U2_mh_openmp: $(IPR_modH_u2_OPENMP_OBJ) Makefile  .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread $@ executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
-# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (MODEL HAMILTONIAN, Chain II)
-ipr_U3_mh_SO3: $(IPRMODIISRC) Makefile  .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(IPRMODIISRC) $(OPTFLAGS) $(LIBS)
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR. MODEL HAMILTONIAN, Chain (ii)
+ipr_U3_SO3_mh: $(IPR_modH_so3_OBJ) Makefile  .PHONY 
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
+# ipr_U3_SO3_mh_openmp: $(IPR_modH_so3_OPENMP_OBJ) Makefile  .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread $@ executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_modH_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 2 BODY HAMILTONIAN, Chain I)
-ipr_U3: $(IPRSRC) Makefile  .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(IPRSRC) $(OPTFLAGS) $(LIBS)
+ipr_U3_U2: $(IPR_u2_OBJ) Makefile  .PHONY 
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_u2_OBJ) $(OPTFLAGS) $(LIBS)
+# ipr_U3_U2_openmp: $(IPR_u2_OPENMP_OBJ) Makefile  .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread $@ executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 2 BODY HAMILTONIAN, Chain I)
-ipr_U3_SO3: $(IPRIISRC) Makefile  .PHONY 
-	$(FC) -o $(BINPATH)/$@ $(IPRIISRC) $(OPTFLAGS) $(LIBS)
+ipr_U3_SO3: $(IPR_so3_OBJ) Makefile  .PHONY 
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_so3_OBJ) $(OPTFLAGS) $(LIBS)
+# ipr_U3_SO3_openmp: $(IPR_so3_OPENMP_OBJ) Makefile  .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread $@ executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 clean:
 	@echo "Cleaning object files"

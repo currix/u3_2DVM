@@ -1,4 +1,4 @@
-PROGRAM avalavec_2DVM
+PROGRAM avalavec_2DVM_u2
   !
   ! Program to compute eigenvalues and eigenvectors of the U(3) 2DVM 
   ! Two Body Hamiltonian
@@ -292,4 +292,4 @@ PROGRAM avalavec_2DVM
 25 FORMAT(1X, "epsilon = ", ES14.7, "; alpha = ", ES14.7, " ; beta = ", ES14.7, "; A = ", ES14.7)
   !
   !
-END PROGRAM avalavec_2DVM
+END PROGRAM avalavec_2DVM_u2

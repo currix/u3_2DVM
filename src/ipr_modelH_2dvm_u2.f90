@@ -1,4 +1,4 @@
-PROGRAM ipr_modelH_2DVM
+PROGRAM ipr_modelH_2DVM_u2
   !
   ! Program to compute Energy or Inverse Participation Ratio 
   ! of the U(3) 2DVM Model Hamiltonian
@@ -284,4 +284,4 @@ PROGRAM ipr_modelH_2DVM
 25 FORMAT(1X, "epsilon = ", ES14.7, "; xi = ", ES14.7)
   !
   !
-END PROGRAM ipr_modelH_2DVM
+END PROGRAM ipr_modelH_2DVM_u2

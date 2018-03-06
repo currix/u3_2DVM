@@ -1,4 +1,4 @@
-PROGRAM ipr_2DVM
+PROGRAM ipr_2DVM_u2
   !
   ! Program to compute Energy and Participation Ratio (PR)
   ! of the U(3) 2DVM 2 Body Hamiltonian
@@ -292,4 +292,4 @@ PROGRAM ipr_2DVM
 25 FORMAT(1X, "epsilon = ", ES14.7, "; alpha = ", ES14.7, " ; beta = ", ES14.7, "; A = ", ES14.7)
   !
   !
-END PROGRAM ipr_2DVM
+END PROGRAM ipr_2DVM_u2

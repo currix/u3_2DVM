@@ -1,4 +1,4 @@
-PROGRAM ipr_2DVM_II
+PROGRAM ipr_2DVM_so3
   !
   ! Program to compute Energy or Inverse Participation Ratio 
   ! of the U(3) 2DVM 2 Body Hamiltonian using displaced oscillator basis
@@ -272,4 +272,4 @@ PROGRAM ipr_2DVM_II
   !
   !
   !
-END PROGRAM ipr_2DVM_II
+END PROGRAM ipr_2DVM_so3
