@@ -69,14 +69,22 @@ IPR_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm
 IPR_so3_OBJ = $(IPR_so3_SRC:.f90=.o)
 #IPR_so3_OPENMP_OBJ = $(IPR_so3_SRC:.f90=.oOMP)
 #
+#
+# ALGEBRAIC MODEL FIT TO EXPERIMENT (GENERAL 4BODY HAMILTONIAN) Chain  (i) U(3) -> U(2)
+#
+CHI2_u2_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f90 chi_sqre_prg.f90 
+CHI2_u2_OBJ = $(CHI2_u2_SRC:.f90=.o)
+#CHI2_u2_OPENMP_OBJ = $(CHI2_u2_SRC:.f90=.oOMP)
+#
 ####################################################################
 ####################################################################
 #
+.SUFFIXES: 
 .SUFFIXES: .o .f90 .oOMP 
 #
 FC = gfortran
 #
-FOPT=-O3 #-Wall
+FOPT=-O3 -Wall
 #
 PREP = -cpp
 #
@@ -101,14 +109,14 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh  ipr_U3_U2  ipr_U3_SO3
+all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh  ipr_U3_U2  ipr_U3_SO3 chi2_U3_U2
 #
 .PHONY : all
 #################################################################
 .f90.o:
 	$(info )
 	$(info Compiling single thread object file:)
-	$(FC) -c $(PREP) $(OPTFLAGS) -o "$@" "$<"
+	$(FC) -c $(PREP) $(OPTFLAGS)  "$<"
 #################################################################
 .f90.oOMP:
 	$(info )
@@ -118,7 +126,7 @@ all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ip
 #
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain (i)
-avec_U3_U2:  $(AVEC_u2_OBJ) Makefile .PHONY 
+avec_U3_U2:  $(AVEC_u2_OBJ) Makefile 
 	$(info )
 	$(info Linking single thread avec_U3_U2 executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OBJ) $(OPTFLAGS) $(LIBS) 
@@ -128,7 +136,7 @@ avec_U3_U2:  $(AVEC_u2_OBJ) Makefile .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain II)
-avec_U3_SO3: $(AVEC_so3_OBJ) Makefile .PHONY 
+avec_U3_SO3: $(AVEC_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_SO3 executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OBJ) $(OPTFLAGS) $(LIBS)
@@ -138,7 +146,7 @@ avec_U3_SO3: $(AVEC_so3_OBJ) Makefile .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (i)
-avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile .PHONY 
+avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_U2_mh executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OBJ) $(OPTFLAGS) $(LIBS) 
@@ -148,7 +156,7 @@ avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (i)
-avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile .PHONY 
+avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_SO3_mh executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
@@ -158,7 +166,7 @@ avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # MODEL HAMILTONIAN HUSIMI IBR Chain (i)
-ipr_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile  .PHONY
+ipr_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile 
 	$(info )
 	$(info Linking single thread $@ executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_Hus_u2_OBJ) $(OPTFLAGS) $(LIBS)
@@ -168,7 +176,7 @@ ipr_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile  .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_modH_Hus_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS. MODEL HAMILTONIAN, Chain (i)
-ipr_U3_U2_mh: $(IPR_modH_u2_OBJ) Makefile  .PHONY 
+ipr_U3_U2_mh: $(IPR_modH_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_u2_OBJ) $(OPTFLAGS) $(LIBS)
@@ -178,7 +186,7 @@ ipr_U3_U2_mh: $(IPR_modH_u2_OBJ) Makefile  .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR. MODEL HAMILTONIAN, Chain (ii)
-ipr_U3_SO3_mh: $(IPR_modH_so3_OBJ) Makefile  .PHONY 
+ipr_U3_SO3_mh: $(IPR_modH_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
@@ -188,7 +196,7 @@ ipr_U3_SO3_mh: $(IPR_modH_so3_OBJ) Makefile  .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_modH_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 2 BODY HAMILTONIAN, Chain I)
-ipr_U3_U2: $(IPR_u2_OBJ) Makefile  .PHONY 
+ipr_U3_U2: $(IPR_u2_OBJ) Makefile 
 	$(info )
 	$(info Linking single thread $@ executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_u2_OBJ) $(OPTFLAGS) $(LIBS)
@@ -198,7 +206,7 @@ ipr_U3_U2: $(IPR_u2_OBJ) Makefile  .PHONY
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 2 BODY HAMILTONIAN, Chain I)
-ipr_U3_SO3: $(IPR_so3_OBJ) Makefile  .PHONY 
+ipr_U3_SO3: $(IPR_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
 	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_so3_OBJ) $(OPTFLAGS) $(LIBS)
@@ -207,6 +215,16 @@ ipr_U3_SO3: $(IPR_so3_OBJ) Makefile  .PHONY
 # 	$(info Linking multi thread $@ executable:)
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
+#################################################################
+# SQUARE CHI VALUE (GENERAL 4 BODY HAMILTONIAN, Chain I)
+chi2_U3_U2: $(CHI2_u2_OBJ) Makefile
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) -Wall -o $(BINPATH)/$@_$(FC) $(CHI2_u2_OBJ) $(OPTFLAGS) $(LIBS)
+# chi2_U3_U2_openmp: $(CHI2_u2_OPENMP_OBJ) Makefile  .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread $@ executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(CHI2_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 clean:
 	@echo "Cleaning object files"
 	@rm -f *.o *.mod

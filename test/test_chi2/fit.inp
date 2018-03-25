@@ -1,0 +1,22 @@
+#
+## CHI_2 INPUT
+#
+ &INP0 BENT=.F., exp_data_file='exp_HNC_Danielle.dat' / 
+ &INP1 N_val=60, LMAX=7, VMAX=7, EMINL=.F. /
+#
+# PARAMETERS THAT TUNE THE OUTPUT
+#
+ &INP2 IPRINT=0, DIS_RES = .T. /
+ &INP1b P11=2378.0D0 /
+ &INP2b P21=-37.597D0, P22=19.312D0, P23=-9.6422D0 /
+ &INP3b P31=0.0D0, P32=0.0D0, P33=0.0D0 /
+ &INP4b P41=0.0D0, P42=0.0D0, P43=0.0D0, P44=0.0D0, P45=0.0D0, P46=0.0D0, P47=0.0D0 /
+
+
+
+
+
+
+
+
+
