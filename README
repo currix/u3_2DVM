@@ -6,21 +6,36 @@ by Currix TM
 
 Programs
 
-avec_U3_mh        :: Eigenvalues and eigenvectors of the model Hamiltonian using the cylindrical oscillator basis.
+avec_U3_U2_mh_XXXX    :: Eigenvalues and eigenvectors of the model Hamiltonian using the cylindrical oscillator basis.
 
-ipr_U3_mh         :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian  using the cylindrical oscillator basis.
+avec_U3_SO3_mh_XXXX   :: Eigenvalues and eigenvectors of the model Hamiltonian using the displaced oscillator basis.
 
-avec_U3_mh_SO3    :: Eigenvalues and eigenvectors of the model Hamiltonian using the displaced oscillator basis.
+avec_U3_U2_XXXX       :: Eigenvalues and eigenvectors of the general 2body Hamiltonian using the cylindrical oscillator basis.
 
-ipr_U3_mh_SO3     :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian  using the displaced oscillator basis.
+avec_U3_SO3_XXXX      :: Eigenvalues and eigenvectors of the general 2body Hamiltonian using the displaced oscillator basis.
 
-observables_U3_mh :: Perl script to launch the Fortran programs and compute the different observables in a range of control parameter values.
+ipr_U3_U2_mh_XXXX     :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian using the cylindrical oscillator basis.
 
-ipr_Husimi_U3_mh  :: Inverse Participation Ratio as the second momento of the Husimi distribution of the model Hamiltonian.
+ipr_U3_SO3_mh_XXXX    :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian using the displaced oscillator basis.
+
+ipr_U3_U2_XXXX        :: Inverse Participation Ratio for eigenvectors of the general 2body Hamiltonian using the cylindrical oscillator basis.
+
+ipr_U3_SO3_XXXX       :: Inverse Participation Ratio for eigenvectors of the general 2body Hamiltonian using the displaced oscillator basis.
+
+ipr_Husimi_U3_U2_mh_XXXX   :: Inverse Participation Ratio as the second moment of the Husimi distribution of the model Hamiltonian.
+
+chi2_U3_U2_XXXX      :: CHI2 or Residuals for function optimization with Python.
+
+select_eigstate_components :: Perl script to select a particular eigenstate components from an array of eigenstate components saved in a file.
+
+observables_U3_mh     :: Perl script to launch the Fortran programs and compute the different observables in a range of control parameter values.
+
+residuals_U3.py       :: Perl function definition to provide residuals for the optimization of the 4body general Hamiltonian to experimental data with Python.
+
+minimize_script_ipython.py :: Script example of function optimization.
 
 
-
-select_eigstate_components  :: Perl script to select a particular eigenstate components from an array of eigenstate components saved in a file.
+Note that XXXX stands for "gfortran" or "ifort", depending on the compiler used.
 
 
 The program user's guide will be found in the doc directory in pdf,
