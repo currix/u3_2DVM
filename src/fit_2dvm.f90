@@ -370,7 +370,7 @@ CONTAINS
     REAL(KIND = DP), DIMENSION(:), ALLOCATABLE, INTENT(OUT)  :: EXPEN, EXPERR
     !
     !     TEMPORAL VARIABLES 
-    INTEGER(KIND = I4B) ::  I, J, K, M, INDX, JT, N_total, COUNT, LTEMP, Ierr
+    INTEGER(KIND = I4B) ::  I, J, M, INDX, JT, N_total, COUNT, LTEMP, Ierr
     REAL(KIND = DP) :: TMP1, TMP2
     INTEGER(KIND = I4B), DIMENSION(1:2) :: TMP
     !
@@ -958,7 +958,7 @@ CONTAINS
           !     LOOK FOR MAXIMUM COMPONENT
           !     
           !     (II) MATRIX PRODUCT
-          W2 = MATMUL(TBRACK, HAM)
+          W2 = MATMUL(TRANSPOSE(TBRACK), HAM)
           !
           IF (ASSIGNALL) THEN
              CALL MAXCU3(BENT, N2, L, W2, DIM, BLAS, FLAG, IPRINT)
@@ -1006,7 +1006,7 @@ CONTAINS
           CALL LA_SYEVR(A=HAM2, W=EIGEN, JOBZ='V', UPLO='U')
           !
           !     (II) MATRIX PRODUCT
-          W2 = MATMUL(TBRACK, HAM2)
+          W2 = MATMUL(TRANSPOSE(TBRACK), HAM2)
           !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
           !   
           !   PROJECTING ONTO FORMER EIGENVECTORS
