@@ -8,6 +8,7 @@ cd ../test/test_chi2
 # Parameters
 #
 input_filename = "HNC_input_file"
+bin_path = "~/PR_Fortran/U3/PureBending/triat_U3_3.0/bin"
 BENT = ".F."
 exp_data_file="exp_HNC_Danielle.dat"
 N_val=60

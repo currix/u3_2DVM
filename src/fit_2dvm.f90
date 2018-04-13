@@ -10,12 +10,6 @@ MODULE FIT_2DVM
   USE F95_LAPACK, ONLY: LA_SYEVR
   !
   IMPLICIT NONE
-  !
-  !     NUMBER OF PARAMETERS IN THE 4-BODY HAMILTONIAN
-  INTEGER(KIND = I4B) :: NPMAX = 14
-  !
-  ! Hamiltonian Parameters
-  REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: H_pars
   !     
   !     IF .T. BENT ELSE LINEAR CASE
   LOGICAL :: BENT
@@ -76,8 +70,6 @@ CONTAINS
     REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
     !
     REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: Ham_matrix 
-    !
-    !!!!!!!!!REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: Ham2 
     !
     !     COMPUTED W2 AND SQUARED W2 (SO(3) CASIMIR) MATRICES
     REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2MAT, W4MAT
@@ -179,10 +171,6 @@ CONTAINS
        ALLOCATE(Ham_matrix(1:dim_block,1:dim_block), STAT = IERR)
        IF (IERR /= 0) STOP 'ERROR ALLOCATING HAM MATRIX'
        Ham_matrix = 0.0_DP
-       !  
-       ! ALLOCATE(Ham2(1:dim_block,1:dim_block), STAT = IERR)
-       ! IF (IERR /= 0) STOP 'ERROR ALLOCATING HAM2 MATRIX'
-       ! Ham2 = 0.0_DP
        !  
        ALLOCATE(W2MAT(1:dim_block,1:dim_block), STAT = IERR)
        IF (IERR /= 0) STOP 'ERROR ALLOCATING W2MAT MATRIX'
@@ -608,198 +596,6 @@ CONTAINS
     !     
     RETURN 
   END SUBROUTINE SLCTLU3
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE HBLDU3GEN(N_val, L, HAM, W2MAT, W4MAT, W2W2BARMAT, IPRINT)
-    !     
-    !     SUBROUTINE THAT BUILDS THE GENERAL 1-,2-,3-, AND 4-BODY 
-    !     HAMILTONIAN MATRIX IN THE U(3) MODEL FOR BENDING VIBRATIONS
-    !
-    !     INPUT
-    !     N_val : U(3) IRREP LABEL (BENDING)
-    !     L     : VIBRATIONAL ANGULAR MOMENTUM LABEL
-    !     H_pars: HAMILTONIAN PARAMETERS
-    !
-    !     OUTPUT
-    !     HAM     : HAMILTONIAN MATRIX
-    !     W2MAT   : ARRAY WITH THE SO(3) CASIMIR (W^2) BLOCK)
-    !     W4MAT   : ARRAY WITH THE SQUARED SO(3) CASIMIR (W^4 BLOCK) 
-    !     W2W2BARMAT : ARRAY WITH THE OPERATOR W^2·WBAR^2+WBAR^2·W^2 
-    !     
-    !     BENDING HAMILTONIAN
-    !
-    !     H = P11 n + 
-    !         P21 n^2 + P22 l^2 + P23 W^2 +  
-    !         P31 n^3 + P32 n·l^2 + P33 (n·W^2 + W^2·n) +
-    !         P41 n^4 + P42 n^2·l^2 + P43 l^4 + P44 l^2·W^2 + 
-    !         P45 (n^2·W^2 + W^2·n^2) + P46 W^4 + P47 (W^2·Wbar^2 + Wbar^2·W^2)/2
-    !
-    !     HPAR(1)   P11
-    !     HPAR(2)   P21
-    !     HPAR(3)   P22
-    !     HPAR(4)   P23
-    !     HPAR(5)   P31
-    !     HPAR(6)   P32
-    !     HPAR(7)   P33
-    !     HPAR(8)   P41
-    !     HPAR(9)   P42
-    !     HPAR(10)  P43
-    !     HPAR(11)  P44
-    !     HPAR(12)  P45
-    !     HPAR(13)  P46
-    !     HPAR(14)  P47
-    !
-    !     
-    !     by Currix TM
-    !     
-    IMPLICIT NONE
-    !
-    !     
-    !     DEFINITION OF VARIABLES
-    INTEGER(KIND = I4B), INTENT(IN) :: N_val, L
-    !
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: HAM
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2MAT, W4MAT, W2W2BARMAT
-    !
-    INTEGER(KIND = I4B), INTENT(IN) :: IPRINT
-    !
-    !     LOCAL VARIABLES
-    INTEGER(KIND = I4B) :: I, I1
-    !     TEMPORAL VALUES TO STORE INTEGERS AS DOUBLE PREC. REALS
-    REAL(KIND = DP) :: V2, VL
-    !     
-    !     
-    IF (IPRINT.GT.2) WRITE(*,*) 'HAMILTONIAN BUILDING SUBROUTINE STARTS HERE'
-    !
-    !     MATRIX DIMENSIONS
-    dim_block = (N_val-MOD(N_val-L,2)-L)/2+1
-    !
-    !     
-    VL = REAL(L,DP)
-    !
-    !     NON-DIAGONAL INTERACTIONS
-    !
-    !     BUILDING W2 BLOCK
-    !
-    CALL SO3CASBUILD(W2MAT, N_val, L, Iprint)
-    !
-    !     HAM MULTIPLYING W2 TIMES P23 PARAMETER
-    HAM = H_PARS(4)*W2MAT
-    !
-    !     BUILDING W^2·n + n·W^2 BLOCK
-    !
-    IF (H_pars(7) /= 0) THEN
-       !
-       !     HAM MULTIPLYING (W^2·n + n·W^2) TIMES P33 PARAMETER
-       DO I1 = 1, dim_block
-          V2 = REAL(N_val - (2*I1 - 2 + MOD(N_val - L, 2)), DP)
-          HAM(I1,I1) = HAM(I1,I1) + H_pars(7)*2.0D0*V2*W2MAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block - 1
-          V2 = REAL(N_val - (2*I1 - 2 + MOD(N_val - L, 2)), DP)
-          HAM(I1+1,I1) = HAM(I1+1,I1) + &
-               H_pars(7)*2.0_DP*(V2-1.0_DP)*W2MAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + &
-               H_pars(7)*2.0_DP*(V2-1.0_DP)*W2MAT(I1,I1+1)
-       ENDDO
-    ENDIF
-    !
-    !   HAM MULTIPLYING W^2·l^2 TIMES P44 PARAMETER
-    IF (H_pars(11) /= 0 .AND. VL > 0) THEN
-       DO I1 = 1, dim_block
-          HAM(I1,I1) = HAM(I1,I1) + H_pars(11)*VL*VL*W2MAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block-1
-          HAM(I1+1,I1)=HAM(I1+1,I1) + H_pars(11)*VL*VL*W2MAT(I1+1,I1)
-          HAM(I1,I1+1)=HAM(I1,I1+1) + H_pars(11)*VL*VL*W2MAT(I1,I1+1)
-       ENDDO
-    ENDIF
-    !
-    !     BUILDING W^2·n^2 + n^2·W^2 BLOCK
-    !
-    IF (H_pars(12) /= 0) THEN
-       !
-       !     HAM MULTIPLYING (W^2·n^2 + n^2·W^2) TIMES P45 PARAMETER
-       DO I1 = 1, dim_block
-          V2 = REAL(N_val - (2*I1-2+MOD(N_val-L,2)), DP)
-          HAM(I1,I1) = HAM(I1,I1) + H_PARS(12)*2.0_DP*V2*V2*W2MAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block - 1
-          V2 = REAL(N_val - (2*I1-2+MOD(N_val-L,2)), DP)
-          HAM(I1+1,I1) = HAM(I1+1,I1) + &
-               H_pars(12)*2.0_DP*(V2*V2-2.0_DP*V2+2.0_DP)*W2MAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + &
-               H_pars(12)*2.0_DP*(V2*V2-2.0_DP*V2+2.0_DP)*W2MAT(I1,I1+1)
-       ENDDO
-    ENDIF
-    !
-    !     BUILDING W2·WBAR2 + WBAR2·W2 BLOCK (HAS TO BE EVALUATED BEFORE W4 BLOCK)
-    !
-    IF (H_pars(14) /= 0) THEN
-       !
-       CALL SO3SO3BARBUILD(W2MAT, W4MAT, W2W2BARMAT, N_val, L, Iprint)
-       !
-       !     HAM MULTIPLYING W2·WBAR2 + WBAR2·W2 TIMES P47 PARAMETER
-       DO I1 = 1, dim_block
-          HAM(I1,I1) = HAM(I1,I1) + H_PARS(14)*W2W2BARMAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block - 1
-          HAM(I1+1,I1) = HAM(I1+1,I1) + H_PARS(14)*W2W2BARMAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + H_PARS(14)*W2W2BARMAT(I1,I1+1)
-       ENDDO
-       DO I1 = 1, dim_block - 2
-          HAM(I1+2,I1) = HAM(I1+2,I1) + H_PARS(14)*W2W2BARMAT(I1+2,I1)
-          HAM(I1,I1+2) = HAM(I1,I1+2) + H_PARS(14)*W2W2BARMAT(I1,I1+2)
-       ENDDO
-    ENDIF
-    !
-    !     BUILDING W4 BLOCK
-    !
-    IF (H_pars(13) /= 0) THEN
-       CALL SO32CASBUILD(W2MAT,W4MAT,N_val,L, Iprint)
-       !
-       !     HAM MULTIPLYING P^2 TIMES P46 PARAMETER
-       DO I1 = 1, dim_block
-          HAM(I1,I1) = HAM(I1,I1) + H_pars(13)*W4MAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block-1
-          HAM(I1+1,I1) = HAM(I1+1,I1) + H_pars(13)*W4MAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + H_pars(13)*W4MAT(I1,I1+1)
-       ENDDO
-       DO I1 = 1, dim_block-2
-          HAM(I1+2,I1) = HAM(I1+2,I1) + H_pars(13)*W4MAT(I1+2,I1)
-          HAM(I1,I1+2) = HAM(I1,I1+2) + H_pars(13)*W4MAT(I1,I1+2)
-       ENDDO
-    ENDIF
-    !
-    !     DIAGONAL INTERACTIONS
-    DO I = 1, dim_block
-       !
-       V2 = REAL(N_val - (2*I-2+MOD(N_val-L,2)), DP)
-       !     
-       HAM(I,I) = HAM(I,I) +  H_pars(1)*V2 + &
-                                !     
-            H_pars(2)*V2*V2 + &
-                                !     
-            H_pars(3)*VL*VL + &
-                                !     
-            H_pars(5)*V2*V2*V2 + &
-                                !     
-            H_pars(6)*V2*VL*VL + &
-                                !     
-            H_pars(8)*V2*V2*V2*V2 + &
-                                !     
-            H_pars(9)*V2*V2*VL*VL + &
-                                !     
-            H_pars(10)*VL*VL*VL*VL 
-       !     
-    ENDDO
-    !
-    !
-    IF (IPRINT > 2) WRITE(*,*)'HAMILTONIAN BUILDING SUBROUTINE ENDS HERE'
-    !
-    RETURN
-  END SUBROUTINE HBLDU3GEN
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ASSGNU3(BENT, ASSIGNALL, N2, L, DIM, W2, W4, W2W2B, HAM, EIGEN, &
        VEXPAS, NDAT, BLAS, IPRINT)
@@ -923,7 +719,7 @@ CONTAINS
        ENDIF
        !
        !     SAVE COPY OF INITIAL PARAMETERS
-       HPART = H_PARS
+       HPART = H_4b_pars
        !     
        !     MIX: NUMBER OF ITERATIONS UP AND DOWN
        !     
@@ -941,7 +737,7 @@ CONTAINS
           MIX = MIX + 1
           !     
           !     RECOVER COPY OF INITIAL PARAMETERS
-          H_PARS = HPART
+          H_4b_pars = HPART
           !     
           IF (IPRINT >= 2) WRITE(*,*)'SCALING DOWN MIXING BY ', FAC
           !
@@ -987,7 +783,7 @@ CONTAINS
        scaleup_so3: DO
           !
           !     RECOVER COPY OF INITIAL PARAMETERS
-          H_PARS = HPART
+          H_4b_pars = HPART
           !     
           MIXSTEP = 1.5_DP*MIXSTEP
           FAC = FAC + MIXSTEP
@@ -1133,7 +929,7 @@ CONTAINS
        ENDIF
        !      
        !  SAVE COPY OF INITIAL PARAMETERS
-       HPART = H_PARS
+       HPART = H_4b_pars
        !     
        !     MIX: NUMBER OF ITERATIONS UP AND DOWN
        MIX = 0
@@ -1150,7 +946,7 @@ CONTAINS
           MIX = MIX + 1
           !     
           !     RECOVER COPY OF INITIAL PARAMETERS
-          H_PARS = HPART
+          H_4b_pars = HPART
           !
           IF (IPRINT >= 2) WRITE(*,*)'SCALING DOWN MIXING BY ', FAC
           !     
@@ -1196,7 +992,7 @@ CONTAINS
        !
        scaleup_u2: DO
           !     RECOVER COPY OF INITIAL PARAMETERS
-          H_PARS = HPART
+          H_4b_pars = HPART
           !     
           MIXSTEP = 1.5_DP*MIXSTEP
           FAC = FAC + MIXSTEP
@@ -1562,185 +1358,6 @@ CONTAINS
 1120 FORMAT(7X,D15.8,7X,'|',I3,I3,' >')
     !
   END SUBROUTINE DSDTU3
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SO3CASBUILD(W2BLOCK, N_val, L, Iprint)
-    !
-    !     BUILDING THE SO(3) CASIMIR W^2 MATRIX IN
-    !     THE CYLINDRICAL OSCILLATOR BASIS. 
-    !     SO(3) = {L,D+,D-}
-    !
-    !     PROGRAM OF THE U(3) ALGEBRAIC MODEL FOR BENDING DYNAMICS
-    !     
-    !     INPUT 
-    !     N_val        : U(3) REPRESENTATION (TOTAL NUMBER OF U(3) BOSONS)
-    !     L            : VIBRATIONAL ANGULAR MOMENTUM
-    !
-    !     OUTPUT
-    !     W2BLOCK : LOCAL BASIS MATRIX
-    !     
-    !
-    !     
-    !     by Currix TM
-    !
-    IMPLICIT NONE
-    !     
-    !    DEFINITION OF VARIABLES
-    INTEGER(KIND = I4B), INTENT(IN)  ::  N_val, L
-    INTEGER(KIND = I4B), INTENT(IN)  ::  Iprint
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2BLOCK
-    !
-    !
-    !     LOCAL VARIABLES                                     
-    INTEGER(KIND = I4B) :: I1, DIMB
-    REAL(KIND = DP) :: VN2, VNN, VL, VTMP
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3CASBUILD STARTS HERE'
-    !
-    DIMB = (N_val - MOD(N_val - L, 2) - L)/2 + 1
-    !
-    VNN = REAL(N_val, DP)
-    VL = REAL(L, DP)
-    !
-    !     NON-DIAGONAL PART
-    DO I1 = 1, DIMB-1
-       VN2 = REAL(N_val - MOD(N_val - L,2) - 2*(I1-1), DP)
-       VTMP = DSQRT((VNN-VN2+2.0D0)*(VNN-VN2+1.0D0)*(VN2+VL)*(VN2-VL))
-       W2BLOCK(I1+1,I1) = -VTMP
-       W2BLOCK(I1,I1+1) = -VTMP
-    ENDDO
-    !
-    !     DIAGONAL PART
-    DO I1 = 1, DIMB                     
-       VN2 = REAL(N_val - MOD(N_val - L,2) - 2*(I1-1), DP)
-       W2BLOCK(I1,I1)=(VNN-VN2)*(VN2+2.0D0)+(VNN-VN2+1.0D0)*VN2+VL*VL
-    ENDDO
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3CASBUILD ENDS HERE'
-    !
-    RETURN
-    !
-  END SUBROUTINE SO3CASBUILD
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SO3SO3BARBUILD(W2BLOCK,WB2BLOCK,W2WB2BLOCK,NN,L, Iprint)
-    !
-    !     SUBROUTINE THAT BUILD THE SO(3) CASIMIR (W^2·Wbar^2 + Wbar^2·W2)/2 MATRIX IN
-    !     THE CYLINDRICAL OSCILLATOR BASIS. 
-    !     SO(3) = {L,D+,D-}
-    !     SObar(3) = {L,R+,R-}
-    !
-    !     PROGRAM OF THE U(3) ALGEBRAIC MODEL FOR BENDING DYNAMICS
-    !     
-    !     INPUT 
-    !     W2BLOCK   ; LOCAL BASIS MATRIX OF W2
-    !     WB2BLOCK  : ARRAY WHERE TO BUILD THE SObar(3) CASIMIR
-    !     NN        : U(3) REPRESENTATION (TOTAL NUMBER OF U(3) BOSONS)
-    !     L         : VIBRATIONAL ANGULAR MOMENTUM
-    !
-    !     OUTPUT
-    !     W2WB2BLOCK : LOCAL BASIS MATRIX OF (W^2·Wbar^2 + Wbar^2·W2)/2
-    !     
-    !
-    !     
-    !     by Currix TM
-    !
-    !     
-    IMPLICIT NONE
-    !     
-    !  DEFINITION OF VARIABLES     
-    INTEGER(KIND = I4B), INTENT(IN)  :: NN, L
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2BLOCK, WB2BLOCK
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2WB2BLOCK
-    INTEGER(KIND = I4B), INTENT(IN)  :: Iprint
-    !
-    !     TEMPORAL VARIABLES                                     
-    INTEGER(KIND = I4B) :: I1, DIMB 
-    REAL(KIND = DP) :: VN2, VNN, VL, VTMP
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3SO3BARBUILD STARTS HERE'
-    !
-    DIMB = (NN - MOD(NN-L,2) - L)/2 + 1
-    !
-    !     INITIALIZING
-    W2BLOCK = 0.0_DP
-    WB2BLOCK = 0.0_DP
-    W2WB2BLOCK = 0.0_DP
-    !
-    VNN = REAL(NN, DP)
-    VL = REAL(L, DP)
-    !
-    !    NON-DIAGONAL PART
-    DO I1 = 1, DIMB-1
-       VN2 = DFLOAT(NN - MOD(NN-L,2) - 2*(I1-1))
-       VTMP = DSQRT((VNN-VN2+2.0_DP)*(VNN-VN2+1.0_DP)*(VN2+VL)*(VN2-VL))
-       W2BLOCK(I1+1,I1) = -VTMP
-       W2BLOCK(I1,I1+1) = -VTMP
-       WB2BLOCK(I1+1,I1) = VTMP
-       WB2BLOCK(I1,I1+1) = VTMP
-    ENDDO
-    !
-    !     DIAGONAL PART
-    DO I1 = 1, DIMB                     
-       VN2 = DFLOAT(NN - MOD(NN-L,2) - 2*(I1-1))
-       W2BLOCK(I1,I1)=(VNN-VN2)*(VN2+2.0_DP)+(VNN-VN2+1.0_DP)*VN2+VL*VL
-       WB2BLOCK(I1,I1) = W2BLOCK(I1,I1)
-    ENDDO
-    !
-    !
-    W2WB2BLOCK = 0.5_DP*(MATMUL(W2BLOCK, WB2BLOCK) + MATMUL(WB2BLOCK, W2BLOCK))
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3SO3BARBUILD ENDS HERE'
-    !
-    RETURN
-    !
-  END SUBROUTINE SO3SO3BARBUILD
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SO32CASBUILD(W2BLOCK, W4BLOCK, NN, L, Iprint)
-    !
-    !     SUBROUTINE THAT BUILD THE SO(3) CASIMIR (W^2)^2 MATRIX IN
-    !     THE CYLINDRICAL OSCILLATOR BASIS. 
-    !     SO(3) = {L,D+,D-}
-    !
-    !
-    !     PROGRAM OF THE U(3) ALGEBRAIC MODEL FOR BENDING DYNAMICS
-    !     
-    !     INPUT 
-    !     W2BLOCK   : LOCAL BASIS MATRIX OF THE PAIRING OPERATOR
-    !     NN        : U(3) REPRESENTATION (TOTAL NUMBER OF U(3) BOSONS)
-    !     L         : VIBRATIONAL ANGULAR MOMENTUM
-    !     Iprint    : Control level of output
-    !
-    !     OUTPUT
-    !     W4BLOCK   : LOCAL BASIS MATRIX OF W^4
-    !     
-    !
-    !     
-    !     by Currix TM
-    !
-    !     
-    IMPLICIT NONE
-    !     
-    !     DEFINITION OF VARIABLES     
-    INTEGER(KIND = I4B), INTENT(IN)  :: NN, L, Iprint
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: W2BLOCK
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W4BLOCK
-    !
-    !     TEMPORAL VARIABLES                                     
-    INTEGER(KIND = I4B) ::  DIMB
-    !
-    IF (Iprint > 2) WRITE(*,*) 'SUBROUTINE SO32CASBUILD STARTS HERE'
-    !
-    DIMB = (NN - MOD(NN-L,2) - L)/2 + 1
-    !
-    !     INITIALIZING
-    W4BLOCK = 0.0_DP
-    !
-    !     MATRIX PRODUCT
-    W4BLOCK = MATMUL(W2BLOCK, W2BLOCK)
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO32CASBUILD ENDS HERE'
-    !
-    RETURN
-  END SUBROUTINE SO32CASBUILD
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE MAXCU3(BENT, N2, L, EVEC, DIM, LMC, FLAG, IPRINT)
     !
@@ -1938,20 +1555,20 @@ CONTAINS
     !     RESCALE PARAMETERS
     !
     IF (.NOT.BENT) THEN
-       H_PARS(4) = H_PARS(4)*FAC         
-       H_PARS(11) = H_PARS(11)*FAC
-       H_PARS(13) = H_PARS(13)*FAC
+       H_4b_pars(4) = H_4b_pars(4)*FAC         
+       H_4b_pars(11) = H_4b_pars(11)*FAC
+       H_4b_pars(13) = H_4b_pars(13)*FAC
     ELSE
-       H_PARS(1) = H_PARS(1)*FAC
-       H_PARS(2) = H_PARS(2)*FAC
-       H_PARS(5) = H_PARS(5)*FAC
-       H_PARS(6) = H_PARS(6)*FAC
-       H_PARS(8) = H_PARS(8)*FAC
-       H_PARS(9) = H_PARS(9)*FAC
+       H_4b_pars(1) = H_4b_pars(1)*FAC
+       H_4b_pars(2) = H_4b_pars(2)*FAC
+       H_4b_pars(5) = H_4b_pars(5)*FAC
+       H_4b_pars(6) = H_4b_pars(6)*FAC
+       H_4b_pars(8) = H_4b_pars(8)*FAC
+       H_4b_pars(9) = H_4b_pars(9)*FAC
     ENDIF
-    H_PARS(7) = H_PARS(7)*FAC ! Both cases
-    H_PARS(12) = H_PARS(12)*FAC ! Both cases
-    H_PARS(14) = H_PARS(14)*FAC ! Both cases
+    H_4b_pars(7) = H_4b_pars(7)*FAC ! Both cases
+    H_4b_pars(12) = H_4b_pars(12)*FAC ! Both cases
+    H_4b_pars(14) = H_4b_pars(14)*FAC ! Both cases
     CALL HBLDU3GEN(N2, L, HAM, W2MAT, W4MAT, W2W2BARMAT, IPRINT)  
     !
     RETURN

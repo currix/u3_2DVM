@@ -32,8 +32,8 @@ PROGRAM CHI2_U3_BENDING
   ! NAMELIST FILE NAME FROM STDIN
   READ(5,*) input_file_name
   !
-  !!
-  
+  !
+  !
   !     OPEN INPUT FILE
   OPEN(UNIT=10,FILE=TRIM(input_file_name),STATUS='OLD')
   !
@@ -50,27 +50,27 @@ PROGRAM CHI2_U3_BENDING
   CLOSE(10)
   !
   ! HAMILTONIAN PARAMETER VECTOR ALLOCATION AND INITIALIZATION
-  ALLOCATE(H_pars(1:NPMAX), STAT = IERR)
-  IF (IERR /= 0) STOP 'ERROR ALLOCATING H_pars MATRIX'
-  H_pars = 0.0_DP
+  ALLOCATE(H_4b_pars(1:NPMAX), STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR ALLOCATING H_4b_pars MATRIX'
+  H_4b_pars = 0.0_DP
   !
-  H_pars(1) = P11
-  H_pars(2) = P21
-  H_pars(3) = P22
-  H_pars(4) = P23
-  H_pars(5) = P31
-  H_pars(6) = P32
-  H_pars(7) = P33
-  H_pars(8) = P41
-  H_pars(9) = P42
-  H_pars(10) = P43
-  H_pars(11) = P44
-  H_pars(12) = P45
-  H_pars(13) = P46
-  H_pars(14) = P47
+  H_4b_pars(1) = P11
+  H_4b_pars(2) = P21
+  H_4b_pars(3) = P22
+  H_4b_pars(4) = P23
+  H_4b_pars(5) = P31
+  H_4b_pars(6) = P32
+  H_4b_pars(7) = P33
+  H_4b_pars(8) = P41
+  H_4b_pars(9) = P42
+  H_4b_pars(10) = P43
+  H_4b_pars(11) = P44
+  H_4b_pars(12) = P45
+  H_4b_pars(13) = P46
+  H_4b_pars(14) = P47
   !
   ! 
-  CHI2 = CHI_SQRE(H_pars)
+  CHI2 = CHI_SQRE(H_4b_pars)
   !
   IF (.NOT. DIS_RES .OR. IPRINT > 0) WRITE(*,*) CHI2
   !
