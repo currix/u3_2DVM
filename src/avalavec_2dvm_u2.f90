@@ -267,8 +267,15 @@ PROGRAM avalavec_2DVM_u2
   !
   ! Save eigenvector components
   IF (Save_avec_Log) THEN
-     CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
-          Eigenval_vector, Diagonal_vector, "u2", Ham_matrix) 
+     !
+     IF (Excitation_Log) THEN
+        !
+        CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
+             Eigenval_vector, Diagonal_vector - GS_energy, "u2", Ham_matrix)
+     ELSE
+        CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
+             Eigenval_vector, Diagonal_vector, "u2", Ham_matrix)
+     ENDIF
      !
      DEALLOCATE(Diagonal_vector, STAT = IERR)    
      IF (IERR /= 0) STOP 'Diagonal_vector deallocation request denied.'

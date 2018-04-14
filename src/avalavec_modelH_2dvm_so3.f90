@@ -249,8 +249,15 @@ PROGRAM avalavec_modelH_2DVM_so3
   !
   ! Save eigenvector components
   IF (Save_avec_Log) THEN
-     CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
-          Eigenval_vector, Diagonal_vector, "so3", Ham_matrix) 
+     !
+     IF (Excitation_Log) THEN
+        !
+        CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
+             Eigenval_vector, Diagonal_vector - GS_energy, "so3", Ham_matrix)
+     ELSE
+        CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
+             Eigenval_vector, Diagonal_vector, "so3", Ham_matrix)
+     ENDIF
      !
      DEALLOCATE(Diagonal_vector, STAT = IERR)    
      IF (IERR /= 0) STOP 'Diagonal_vector deallocation request denied.'
