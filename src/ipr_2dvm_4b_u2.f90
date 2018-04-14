@@ -1,7 +1,7 @@
-PROGRAM avalavec_2DVM_u2
+PROGRAM ipr_4b_2DVM_u2
   !
-  ! Program to compute eigenvalues and eigenvectors of the U(3) 2DVM 
-  ! Two Body Hamiltonian
+  ! Program to compute Energy and Participation Ratio (PR)
+  ! of the U(3) 2DVM 2 Body Hamiltonian
   !
   ! by Currix TM.
   !
@@ -19,51 +19,79 @@ PROGRAM avalavec_2DVM_u2
   !
   IMPLICIT NONE
   !
-  REAL(KIND = DP) :: epsilon_p, alpha_p, beta_p, A_p ! Model Hamiltonian Parameters
   !
-  INTEGER(KIND = I4B) :: state_index, state_index_2, np 
+  INTEGER(KIND = I4B) :: state_index, state_index_2
+  !
+  ! Hamiltonian Parameters
+  REAL(KIND = DP) :: P11
+  REAL(KIND = DP) :: P21, P22, P23
+  REAL(KIND = DP) :: P31, P32, P33
+  REAL(KIND = DP) :: P41, P42, P43, P44, P45, P46, P47
+  !
+  CHARACTER(LEN = 64) :: input_file_name
+  !
+  !     COMPUTED W2 AND SQUARED W2 (SO(3) CASIMIR) MATRICES
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2MAT, W4MAT
+  !
+  !     COMPUTED W2·WBAR2+WBAR2·W2 (SO(3) CASIMIR x barSO(3) CASIMIR) MATRIX
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2W2BARMAT
+  !
+  !     NAMELIST DEFINITIONS
+  !
+  NAMELIST/INP1/ N_VAL, L_VAL, IPRINT, Eigenvec_Log, Excitation_Log, Save_avec_Log
+  NAMELIST/INP1b/ P11
+  NAMELIST/INP2b/ P21, P22, P23
+  NAMELIST/INP3b/ P31, P32, P33
+  NAMELIST/INP4b/ P41, P42, P43, P44, P45, P46, P47
+  !
+  ! NAMELIST FILE NAME FROM STDIN
+  READ(5,*) input_file_name
   !
   !
-  ! NAMELISTS
-  NAMELIST/par_aux/ Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
-  NAMELIST/par_0/ N_val, L_val
-  NAMELIST/par_1/ epsilon_p, alpha_p, beta_p, A_p
   !
-  ! 
+  !     OPEN INPUT FILE
+  OPEN(UNIT=10,FILE=TRIM(input_file_name),STATUS='OLD')
   !
-  ! Read parameters
+  !     READING INPUT
   !
-  READ(UNIT = *, NML = par_aux)
+  READ(10,INP1)
+  READ(10,INP1b)
+  READ(10,INP2b)
+  READ(10,INP3b)
+  READ(10,INP4b)
   !
-  IF (Iprint > 1) PRINT 10
-  READ(UNIT = *, NML = par_0)
+  CLOSE(10)
   !
-  IF (Iprint > 1) PRINT 20
-  READ(UNIT = *, NML = par_1)
+  ! HAMILTONIAN PARAMETER VECTOR ALLOCATION AND INITIALIZATION
+  ALLOCATE(H_4b_pars(1:NPMAX), STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR ALLOCATING H_4b_pars MATRIX'
+  H_4b_pars = 0.0_DP
+  !
+  H_4b_pars(1) = P11
+  H_4b_pars(2) = P21
+  H_4b_pars(3) = P22
+  H_4b_pars(4) = P23
+  H_4b_pars(5) = P31
+  H_4b_pars(6) = P32
+  H_4b_pars(7) = P33
+  H_4b_pars(8) = P41
+  H_4b_pars(9) = P42
+  H_4b_pars(10) = P43
+  H_4b_pars(11) = P44
+  H_4b_pars(12) = P45
+  H_4b_pars(13) = P46
+  H_4b_pars(14) = P47
   !
   !
-  IF (Iprint > 1) THEN
-     WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
-     WRITE(UNIT = *, FMT = 15) N_val, L_val
-     WRITE(UNIT = *, FMT = 25) epsilon_p, alpha_p, beta_p, A_p
-  ENDIF
   !
   ! TESTS
   IF (N_val < L_val) STOP 'ERROR :: N_VAL < L_VAL. SAYONARA BABY'
   !
   !
-  ! HAMILTONIAN PARAMETERS
-  !ham_param(1) => n
-  Ham_parameter(1) = epsilon_p
-  !ham_param(2) => n(n+1)
-  Ham_parameter(2) = alpha_p
-  !ham_param(3) => l^2
-  Ham_parameter(3) = beta_p
-  !ham_param(4) =>       => P = N(N+1) - W^2
-  Ham_parameter(4) = A_p
-  !
-  IF (Excitation_Log .AND. L_val /= 0) THEN
+  IF (Excitation_Log .AND. l_val /= 0) THEN
+     !
      ! Compute L = 0 Ground state
+     !
      !
      ! Initialize time
      CALL CPU_TIME(time_check_ref)
@@ -88,15 +116,22 @@ PROGRAM avalavec_2DVM_u2
         WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
         STOP
      ENDIF
-     ALLOCATE(W2_matrix(1:dim_block,1:dim_block), STAT = IERR)    
-     IF (IERR /= 0) THEN
-        WRITE(UNIT = *, FMT = *) "W2_casimir allocation request denied."
-        STOP
-     ENDIF
-     !
-     !
      Ham_matrix = 0.0_DP
-     CALL Build_Ham(N_val, 0, dim_block, U2_Basis, W2_matrix, Ham_matrix) 
+     !
+     ALLOCATE(W2MAT(1:dim_block,1:dim_block), STAT = IERR)
+     IF (IERR /= 0) STOP 'ERROR ALLOCATING W2MAT MATRIX'
+     W2MAT = 0.0D0
+     !     
+     ALLOCATE(W4MAT(1:dim_block,1:dim_block), STAT = IERR)
+     IF (IERR /= 0) STOP 'ERROR ALLOCATING W4MAT MATRIX'
+     W4MAT = 0.0D0
+     !     
+     ALLOCATE(W2W2BARMAT(1:dim_block,1:dim_block), STAT = IERR)
+     IF (IERR /= 0) STOP 'ERROR ALLOCATING W2W2BARMAT MATRIX'
+     W2W2BARMAT = 0.0D0
+     !
+     CALL HBLDU3GEN(N_val, 0, HAM_matrix, W2MAT, W4MAT, W2W2BARMAT, IPRINT)
+     !Build_Ham(N_val, 0, dim_block, U2_Basis, W2_matrix, Ham_matrix) 
      !
      ! Hamiltonian Diagonalization
      !
@@ -138,11 +173,14 @@ PROGRAM avalavec_2DVM_u2
         WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
         STOP
      ENDIF
-     DEALLOCATE(W2_matrix, STAT = IERR)    
-     IF (IERR /= 0) THEN
-        WRITE(UNIT = *, FMT = *) "W2_casimir deallocation request denied."
-        STOP
-     ENDIF
+     DEALLOCATE(W2MAT, STAT = IERR)
+     IF (IERR /= 0) STOP 'ERROR DEALLOCATING W2MAT MATRIX'
+     !     
+     DEALLOCATE(W4MAT, STAT = IERR)
+     IF (IERR /= 0) STOP 'ERROR DEALLOCATING W4MAT MATRIX'
+     !     
+     DEALLOCATE(W2W2BARMAT, STAT = IERR)
+     IF (IERR /= 0) STOP 'ERROR DEALLOCATING W2W2BARMAT MATRIX'
      ! DEALLOCATE BASIS
      DEALLOCATE(U2_Basis, STAT = IERR)    
      IF (IERR /= 0) THEN
@@ -171,16 +209,25 @@ PROGRAM avalavec_2DVM_u2
      WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
      STOP
   ENDIF
-  ALLOCATE(W2_matrix(1:dim_block,1:dim_block), STAT = IERR)    
-  IF (IERR /= 0) THEN
-     WRITE(UNIT = *, FMT = *) "W2_casimir allocation request denied."
-     STOP
-  ENDIF
   !
   !
   Ham_matrix = 0.0_DP
-  CALL Build_Ham(N_val, L_val, dim_block, U2_Basis, W2_matrix, Ham_matrix) 
   !
+  ALLOCATE(W2MAT(1:dim_block,1:dim_block), STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR ALLOCATING W2MAT MATRIX'
+  W2MAT = 0.0D0
+  !     
+  ALLOCATE(W4MAT(1:dim_block,1:dim_block), STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR ALLOCATING W4MAT MATRIX'
+  W4MAT = 0.0D0
+  !     
+  ALLOCATE(W2W2BARMAT(1:dim_block,1:dim_block), STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR ALLOCATING W2W2BARMAT MATRIX'
+  W2W2BARMAT = 0.0D0
+  !
+  !
+  CALL HBLDU3GEN(N_val, L_val, HAM_matrix, W2MAT, W4MAT, W2W2BARMAT, IPRINT)
+  !  CALL Build_Ham(N_val, L_val, dim_block, U2_Basis, W2_matrix, Ham_matrix) 
   !
   IF (Save_avec_Log) THEN
      !
@@ -201,8 +248,7 @@ PROGRAM avalavec_2DVM_u2
   !
   ! Hamiltonian Diagonalization
   !
-  !
-  ! ALLOCATE EIGENVALUES VECTOR
+  ! Allocate Eigenvalues vector
   ALLOCATE(Eigenval_vector(1:dim_block), STAT = IERR)    
   IF (IERR /= 0) THEN
      WRITE(UNIT = *, FMT = *) "Eigenval_vector allocation request denied."
@@ -241,39 +287,39 @@ PROGRAM avalavec_2DVM_u2
   time_check_ref = time_check
   !
   !
+  ! CALCULATE IPR
+  !
   IF (Iprint > 0) WRITE(UNIT = *, FMT = *) "L_val = ", L_val
   !
-  DO state_index = 1, dim_block
+  IF (Eigenvec_Log) THEN 
      !
-     np = U2_Basis(state_index)%np_U2_val
-     !
-     WRITE(UNIT = *, FMT = *) np, Eigenval_vector(state_index)
-     !
-     !
-     IF (Eigenvec_Log .AND. Iprint > 0) THEN
+     DO state_index = 1, dim_block
         !
-        ! Display eigenvectors
-        DO state_index_2 = 1, dim_block
-           !
-           np = U2_Basis(state_index_2)%np_U2_val
-           !
-           WRITE(UNIT = *, FMT = *) Ham_matrix(state_index_2, state_index), "|",np,">"
-           !
-        ENDDO
+        WRITE(UNIT = *, FMT = *) state_index, Eigenval_vector(state_index), &
+             Inv_Part_Ratio(Ham_matrix(1:dim_block, state_index))
         !
-     ENDIF
+     ENDDO
+     ! 
+  ELSE
      !
-  ENDDO
+     DO state_index = 1, dim_block
+        !
+        WRITE(UNIT = *, FMT = *) state_index, Eigenval_vector(state_index)
+        !
+     ENDDO
+     !
+  ENDIF
   !
   ! Save eigenvector components
   IF (Save_avec_Log) THEN
      CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
-          Eigenval_vector, Diagonal_vector, "u2", Ham_matrix) 
+          Eigenval_vector, Diagonal_vector, "u2", Ham_matrix)
      !
      DEALLOCATE(Diagonal_vector, STAT = IERR)    
      IF (IERR /= 0) STOP 'Diagonal_vector deallocation request denied.'
      !
   ENDIF
+  !
   !    
   ! DEALLOCATE EIGENVALUES VECTOR
   DEALLOCATE(Eigenval_vector, STAT = IERR)    
@@ -287,11 +333,14 @@ PROGRAM avalavec_2DVM_u2
      WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
      STOP
   ENDIF
-  DEALLOCATE(W2_matrix, STAT = IERR)    
-  IF (IERR /= 0) THEN
-     WRITE(UNIT = *, FMT = *) "W2_casimir deallocation request denied."
-     STOP
-  ENDIF
+  DEALLOCATE(W2MAT, STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR DEALLOCATING W2MAT MATRIX'
+  !     
+  DEALLOCATE(W4MAT, STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR DEALLOCATING W4MAT MATRIX'
+  !     
+  DEALLOCATE(W2W2BARMAT, STAT = IERR)
+  IF (IERR /= 0) STOP 'ERROR DEALLOCATING W2W2BARMAT MATRIX'
   !
   ! DEALLOCATE BASIS
   DEALLOCATE(U2_Basis, STAT = IERR)    
@@ -300,11 +349,12 @@ PROGRAM avalavec_2DVM_u2
      STOP
   ENDIF
   !
-5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2, "; Save_Avec_Log = ", L2)
-10 FORMAT(1X, "Reading  N_val, L_val")
-15 FORMAT(1X, "N_val = ", I6, "; L_val = ", I6)
-20 FORMAT(1X, "Reading  Hamiltonian Paramenters")
-25 FORMAT(1X, "epsilon = ", ES14.7, "; alpha = ", ES14.7, " ; beta = ", ES14.7, "; A = ", ES14.7)
+  !
+! 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2, "; Save_Avec_Log = ", L2)
+! 10 FORMAT(1X, "Reading  N_val, L_val")
+! 15 FORMAT(1X, "N_val = ", I6, "; L_val = ", I6)
+! 20 FORMAT(1X, "Reading  Hamiltonian Paramenters")
+! 25 FORMAT(1X, "epsilon = ", ES14.7, "; alpha = ", ES14.7, " ; beta = ", ES14.7, "; A = ", ES14.7)
   !
   !
-END PROGRAM avalavec_2DVM_u2
+END PROGRAM ipr_4b_2DVM_u2

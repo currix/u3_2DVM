@@ -181,6 +181,14 @@ PROGRAM ipr_2DVM_u2
   Ham_matrix = 0.0_DP
   CALL Build_Ham(N_val, L_val, dim_block, U2_Basis, W2_matrix, Ham_matrix) 
   !
+  IF (Save_avec_Log) THEN
+     !
+     ALLOCATE(Diagonal_vector(1:dim_block), STAT = IERR)    
+     IF (IERR /= 0) STOP 'Diagonal_vector allocation request denied.'
+     !
+     forall (state_index=1:dim_block) Diagonal_vector(state_index) = Ham_matrix(state_index, state_index)
+     !
+  ENDIF
   !
   IF (Iprint > 2) THEN
      WRITE(*,*) ' '
@@ -256,7 +264,14 @@ PROGRAM ipr_2DVM_u2
   ENDIF
   !
   ! Save eigenvector components
-  IF (Save_avec_Log) CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, 999.0_DP, dim_block, "u2", Ham_matrix) ! 999.0 instead of xi. Needs to be fixed.
+  IF (Save_avec_Log) THEN
+     CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
+          Eigenval_vector, Diagonal_vector, "u2", Ham_matrix) 
+     !
+     DEALLOCATE(Diagonal_vector, STAT = IERR)    
+     IF (IERR /= 0) STOP 'Diagonal_vector deallocation request denied.'
+     !
+  ENDIF
   !
   !    
   ! DEALLOCATE EIGENVALUES VECTOR

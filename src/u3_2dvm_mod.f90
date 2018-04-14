@@ -12,7 +12,9 @@ MODULE u3_2dvm_mod
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: Ham_matrix 
   ! W^2 Casimir Matrix
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2_matrix
-  ! Eigenvalue Matrix
+  ! Eigenvalue Vector
+  REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Diagonal_vector ! Hamiltonian Eigenvalues
+  ! Hamiltonian Diagonal Vector
   REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
   ! Cylindrical Oscillator Basis
   TYPE(u2_bas), DIMENSION(:), ALLOCATABLE :: U2_Basis !  U(3) > U(2) > SO(2) basis
@@ -762,11 +764,12 @@ CONTAINS
   END FUNCTION Inv_Part_Ratio
   !
   !
-  SUBROUTINE SAVE_EIGENV_COMPONENTS(N_val, L_val, xi, dim_block, Basis, Ham_U3_mat)
+  SUBROUTINE SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, Eigvals, Diagonal, Basis, Ham_U3_mat)
     !
-    ! Subroutine to save the components of the eigenvectors 
-    ! of the U(3) 2DVM Model Hamiltonian
+    ! Subroutine to save the energies, the diagonal of the Hamiltonian and the
+    ! components of the eigenvectors of the U(3) 2DVM Model Hamiltonian.
     !
+    ! Eigenvectors are saved column-wise.
     !  by Currix TM.
     !
     IMPLICIT NONE
@@ -775,7 +778,9 @@ CONTAINS
     !
     INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum    
     !
-    REAL(KIND = DP),  INTENT(IN) :: xi ! Control Parameter
+    REAL(KIND = DP), DIMENSION(:), INTENT(IN) :: Eigvals ! Eigenvalues
+    !
+    REAL(KIND = DP), DIMENSION(:), INTENT(IN) :: Diagonal ! Hamiltonian Diagonal 
     !
     INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
     !
@@ -803,7 +808,13 @@ CONTAINS
     !
     OPEN(UNIT = 76, FILE = output_filename, STATUS = "UNKNOWN", ACTION = "WRITE")
     !
-    WRITE(UNIT=76, FMT=*) "# N = ", N_val, "; L = ", L_val, ";  xi = ", xi, " ; ", Basis,  " basis"
+    WRITE(UNIT=76, FMT=*) "# N = ", N_val, "; L = ", L_val, " ; ", Basis,  " basis"
+    !
+    WRITE(UNIT=76, FMT=*) "# Eigenvalues "
+    WRITE(UNIT=76, FMT=*) Eigvals(1:dim_block)
+    !
+    WRITE(UNIT=76, FMT=*) "# Hamiltonian Diagonal "
+    WRITE(UNIT=76, FMT=*) Diagonal(1:dim_block)
     !
     DO basis_index = 1, dim_block
        WRITE(UNIT=76, FMT=*) Ham_U3_mat(basis_index, 1:dim_block)
