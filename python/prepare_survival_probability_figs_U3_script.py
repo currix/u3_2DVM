@@ -9,22 +9,22 @@ from survival_probability_basis import read_energy_data, read_eigenstates, survi
 #########################################
 
 # Define Sytem Size, Angular Momentum, Control Parameter, and Basis
-Nval = 1000
+Nval = 2500
 Lval = 0
 xi = 0.6
 basis = "u2" # Options: "u2" or "so3"
 
 ## Linear time grid data
-t_max = 10;dim_t = 10000
+t_max = 0.05;dim_t = 5000
 time_grid = np.linspace( 0.0, t_max, dim_t)
 ## Variable length grids
-# t_max = 10000.;dim_t = 10000
-# time_grid = np.zeros(dim_t+1)
-# for index in np.arange(0,dim_t+1):
-#     time_grid[index] = (t_max/dim_t**3)*index**3
+#t_max = 5.;dim_t = 5000
+#time_grid = np.zeros(dim_t+1)
+#for index in np.arange(0,dim_t+1):
+#    time_grid[index] = (t_max*index**3/dim_t**3)
 
 # Basis states indexes (start in 1)  -1 --> Closest to separatrix 
-basis_states_indexes = [1,2,-1]
+basis_states_indexes = [-1]
 ###########################################
 #  End of Defs  ## Edit only this section #
 ###########################################
@@ -40,8 +40,8 @@ print "Computing survival probability ... "
 #
 sp=np.zeros((time_grid.shape[0],len(basis_states_indexes)+1),order="F") # +1 for the abscyssa values
 #
-for index in basis_states_indexes:
-    if (index == -1):
+for index, index_state in enumerate(basis_states_indexes):
+    if (index_state == -1):
         # Find basis state close to separatrix
         if basis is "u2":
             basisen = energy_basis_u2(Nval,np.arange(Lval,Nval+1,2), Lval, xi)
@@ -56,9 +56,9 @@ for index in basis_states_indexes:
         if (crit_index <=1):
             crit_index = np.abs(diffen[2:]).argmin()+3
         print "crit_index = ", crit_index 
-        sp[:,index] = survival_probability_basis_states(Eigenvalues,Eigenstates,crit_index,crit_index,time_grid=time_grid)[0]
+        sp[:,index_state] = survival_probability_basis_states(Eigenvalues,Eigenstates,crit_index,crit_index,time_grid=time_grid)[0] # Last column
     else:
-        sp[:,index] = survival_probability_basis_states(Eigenvalues,Eigenstates,index,index,time_grid=time_grid)[0]
+        sp[:,index+1] = survival_probability_basis_states(Eigenvalues,Eigenstates,index_state,index_state,time_grid=time_grid)[0] # index + 1 to leave space for time abscyssa
 ##
 # Add time grid
 sp[:,0] = time_grid
