@@ -11,9 +11,12 @@ MODULE u3_2dvm_mod
   ! Hamiltonian Matrix
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: Ham_matrix 
   ! W^2 Casimir Matrix
-  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2_matrix
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2_matrix ! Atomic M23 in 4 body Hamiltonian with U(2) basis
+  !  ! W^2 Casimir Matrix
+  !  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: n_matrix ! Atomic M11 in 4 body Hamiltonian with SO(3) basis
+  !
   ! Eigenvalue Vector
-  REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Diagonal_vector ! Hamiltonian Eigenvalues
+  REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Diagonal_vector ! Hamiltonian Diagonal Elements
   ! Hamiltonian Diagonal Vector
   REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
   ! Cylindrical Oscillator Basis
@@ -33,6 +36,20 @@ MODULE u3_2dvm_mod
   INTEGER(KIND = I4B) :: NPMAX = 14
   ! Hamiltonian 4-Body Hamiltonian Parameters
   REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: H_4b_pars
+  !
+  ! 4 Body Hamiltonian case U(2) Basis
+  ! Wbar^2 Casimir Matrix
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2bar_matrix ! Atomic M23bar in 4 body Hamiltonian
+  ! n x W^2 + W^2 x n  P33 in 4 body Hamiltonian 
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M33_P7_matrix
+  ! W^2 l^2 P44 in 4 body Hamiltonian
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M44_P11_matrix
+  ! n^2 x W^2 + W^2 x n^2  P45 in 4 body Hamiltonian 
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M45_P12_matrix
+  ! W^4  P46 in 4 body Hamiltonian 
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M46_P13_matrix
+  ! W^2 x Wbar^2 + Wbar^2 x W^2  P47 in 4 body Hamiltonian 
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M47_P14_matrix
   !
   INTEGER(KIND = I4B) :: Ierr, Iprint
   !
@@ -141,7 +158,7 @@ CONTAINS
     !
   END SUBROUTINE SO3_BASIS_VIBRON
   !
-  SUBROUTINE SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2_matrix)
+  SUBROUTINE SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2_matrix, W2bar_flag)
     !
     ! Subroutine to build the SO(3) W^2 Casimir operator in the 2DVM Chain I
     !
@@ -159,22 +176,28 @@ CONTAINS
     !
     REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2_matrix
     !
+    ! Optional argument :: when equal to 1 compute Wbar2 Casimir
+    INTEGER(KIND = I4B), OPTIONAL, INTENT(IN) :: W2bar_flag
+    !
     ! Local variables
     INTEGER(KIND = I4B) :: index
     REAL(KIND = DP) :: Nvalue, Lvalue
-    REAL(KIND = DP) :: npvalue, tempval
+    REAL(KIND = DP) :: npvalue, tempval, non_diag_phase
     !
     ! Initialize
     W2_matrix = 0.0_DP
     Nvalue = REAL(N_val,DP)
     Lvalue =  REAL(L_val,DP)
     !
+    non_diag_phase = -1.0_DP
+    IF (PRESENT(W2bar_flag) .AND. W2bar_flag == 1_I4B) non_diag_phase = 1.0_DP
+    !
     ! NON-DIAGONAL PART
     DO index = 2, dim_block  
        npvalue = REAL(U2_Basis(index)%np_U2_val, DP)
        tempval = SQRT((Nvalue - npvalue + 2.0_DP)*(Nvalue - npvalue + 1.0_DP)*(npvalue + Lvalue)*(npvalue - Lvalue))
-       W2_matrix(index-1,index) = -tempval
-       W2_matrix(index,index-1) = -tempval
+       W2_matrix(index-1,index) = non_diag_phase*tempval
+       W2_matrix(index,index-1) =  W2_matrix(index-1,index)
     ENDDO
     !
     ! DIAGONAL PART
@@ -186,7 +209,7 @@ CONTAINS
     RETURN
     !
   END SUBROUTINE SO3_Cas_Build
-    !
+  !
   SUBROUTINE Build_Mod_Ham(N_val, L_val, dim_block, U2_Basis, W2_casimir, Ham_U3_mat) 
     !
     !
@@ -260,7 +283,7 @@ CONTAINS
     !
     !
   END SUBROUTINE BUILD_MOD_HAM
-    !
+  !
   SUBROUTINE Build_Ham(N_val, L_val, dim_block, U2_Basis, W2_casimir, Ham_U3_mat) 
     !
     !
@@ -570,7 +593,7 @@ CONTAINS
              Ham_U3_mat(SO3_state, SO3_state + 2) = Ham_U3_mat(SO3_state, SO3_state + 2) + &
                   Ham_parameter(2)*( &
                   (B0(Nvalue,omegaval,L_val)*B0(Nvalue,omegaval+2.0_DP,L_val)) &
-             )
+                  )
              !
           ENDDO
           !
@@ -822,23 +845,11 @@ CONTAINS
     !
   END SUBROUTINE SAVE_EIGENV_COMPONENTS
   !
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE HBLDU3GEN(N_val, L, HAM, W2MAT, W4MAT, W2W2BARMAT, IPRINT)
-    !     
-    !     SUBROUTINE THAT BUILDS THE GENERAL 1-,2-,3-, AND 4-BODY 
-    !     HAMILTONIAN MATRIX IN THE U(3) MODEL FOR BENDING VIBRATIONS
+  SUBROUTINE Build_U2DS_Operator_Matrices(N_val, L_val, dim_block, U2_Basis)
     !
-    !     INPUT
-    !     N_val : U(3) IRREP LABEL (BENDING)
-    !     L     : VIBRATIONAL ANGULAR MOMENTUM LABEL
+    ! Subroutine to allocate and build the Operator Matrices for the U(3) 2DVM Four-Body Hamiltonian
     !
-    !     OUTPUT
-    !     HAM     : HAMILTONIAN MATRIX
-    !     W2MAT   : ARRAY WITH THE SO(3) CASIMIR (W^2) BLOCK)
-    !     W4MAT   : ARRAY WITH THE SQUARED SO(3) CASIMIR (W^4 BLOCK) 
-    !     W2W2BARMAT : ARRAY WITH THE OPERATOR W^2·WBAR^2+WBAR^2·W^2 
-    !     
-    !     BENDING HAMILTONIAN
+    ! Cylindrical Oscillator Basis U(2)
     !
     !     H = P11 n + 
     !         P21 n^2 + P22 l^2 + P23 W^2 +  
@@ -861,335 +872,316 @@ CONTAINS
     !     HPAR(13)  P46
     !     HPAR(14)  P47
     !
-    !     
-    !     by Currix TM
-    !     
+    !  by Currix TM.
+    !
     IMPLICIT NONE
     !
-    !     
-    !     DEFINITION OF VARIABLES
-    INTEGER(KIND = I4B), INTENT(IN) :: N_val, L
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
     !
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: HAM
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2MAT, W4MAT, W2W2BARMAT
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
     !
-    INTEGER(KIND = I4B), INTENT(IN) :: IPRINT
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
     !
-    !     LOCAL VARIABLES
-    INTEGER(KIND = I4B) :: I, I1
-    !     TEMPORAL VALUES TO STORE INTEGERS AS DOUBLE PREC. REALS
-    REAL(KIND = DP) :: V2, VL
-    !     
-    !     
-    IF (IPRINT.GT.2) WRITE(*,*) 'HAMILTONIAN BUILDING SUBROUTINE STARTS HERE'
+    TYPE(u2_bas), DIMENSION(:), INTENT(IN) :: U2_Basis   ! U2 basis   { | [N] np L > }
     !
-    !     MATRIX DIMENSIONS
-    dim_block = (N_val-MOD(N_val-L,2)-L)/2+1
     !
-    !     
-    VL = REAL(L,DP)
+    INTEGER(KIND = I4B) :: U2_state
+    REAL(KIND = DP), DIMENSION(1:dim_block) :: np_values ! n values
+    REAL(KIND = DP) :: npvalue, npvaluep1, sqnpvalue, sqnpvaluep1, Nvalue, lvalue2
     !
-    !     NON-DIAGONAL INTERACTIONS
     !
-    !     BUILDING W2 BLOCK
+    Nvalue = REAL(N_val, DP)
     !
-    CALL SO3CASBUILD(W2MAT, N_val, L, Iprint)
+    lvalue2 = REAL(L_val**2, DP)
     !
-    !     HAM MULTIPLYING W2 TIMES P23 PARAMETER
-    HAM = H_4b_pars(4)*W2MAT
     !
-    !     BUILDING W^2·n + n·W^2 BLOCK
+    DO U2_state = 1, dim_block
+       !
+       np_values(U2_state) = REAL(U2_Basis(U2_state)%np_U2_val, DP)
+       !
+    ENDDO
+    ! Allocate Hamiltonian Matrix
+    IF (ALLOCATED(Ham_matrix)) THEN
+       DEALLOCATE(Ham_matrix, STAT = Ierr)
+       IF (Ierr /= 0) STOP 'Ham_matrix  DEALLOCATION ERROR'
+    ENDIF
+    ALLOCATE(Ham_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+    IF (IERR /= 0) THEN
+       WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
+       STOP
+    ENDIF
     !
+    ! Allocate Eigenvalues Matrix
+    IF (ALLOCATED(Eigenval_vector)) THEN
+       DEALLOCATE(Eigenval_vector, STAT = Ierr)
+       IF (Ierr /= 0) STOP 'Eigenval_vector DEALLOCATION ERROR'
+    ENDIF
+    ALLOCATE(Eigenval_vector(1:dim_block), STAT = Ierr)
+    IF (Ierr /= 0) STOP 'Eigenval_vector ALLOCATION ERROR'
+    !
+    ! W^2 Casimir matrix
+    IF (ALLOCATED(W2_matrix)) THEN
+       DEALLOCATE(W2_matrix, STAT = Ierr)
+       IF (Ierr /= 0) STOP 'W2_matrix  DEALLOCATION ERROR'
+    ENDIF
+    ALLOCATE(W2_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+    IF (IERR /= 0) THEN
+       WRITE(UNIT = *, FMT = *) "W2_casimir allocation request denied."
+       STOP
+    ENDIF
+    !
+    ! Build W^2 Casimir matrix Parameter 4 and atomic operator 
+    CALL SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2_matrix)
+    !
+    ! n x W^2 + W^2 x n matrix Parameter 7
     IF (H_4b_pars(7) /= 0) THEN
        !
-       !     HAM MULTIPLYING (W^2·n + n·W^2) TIMES P33 PARAMETER
-       DO I1 = 1, dim_block
-          V2 = REAL(N_val - (2*I1 - 2 + MOD(N_val - L, 2)), DP)
-          HAM(I1,I1) = HAM(I1,I1) + H_4b_pars(7)*2.0D0*V2*W2MAT(I1,I1)
+       IF (ALLOCATED(M33_P7_matrix)) THEN
+          DEALLOCATE(M33_P7_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'Ham_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M33_P7_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M33_P7_matrix allocation request denied."
+          STOP
+       ENDIF
+       !
+       DO U2_state = 1, dim_block-1
+          !
+          npvalue = np_values(U2_state)
+          npvaluep1 = np_values(U2_state+1)
+          !
+          M33_P7_matrix(U2_state, U2_state) = 2.0_DP*npvalue*W2_matrix(U2_state, U2_state)
+          M33_P7_matrix(U2_state, U2_state+1) = (npvaluep1+npvalue)*W2_matrix(U2_state, U2_state+1)
+          M33_P7_matrix(U2_state+1, U2_state) = M33_P7_matrix(U2_state, U2_state+1)
+          !
        ENDDO
-       DO I1 = 1, dim_block - 1
-          V2 = REAL(N_val - (2*I1 - 2 + MOD(N_val - L, 2)), DP)
-          HAM(I1+1,I1) = HAM(I1+1,I1) + &
-               H_4b_pars(7)*2.0_DP*(V2-1.0_DP)*W2MAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + &
-               H_4b_pars(7)*2.0_DP*(V2-1.0_DP)*W2MAT(I1,I1+1)
-       ENDDO
+       !
+       ! U2_state = dim_block case
+       npvalue = np_values(dim_block)
+       M33_P7_matrix(dim_block, dim_block) = 2.0_DP*npvalue*W2_matrix(dim_block, dim_block)
+       !
     ENDIF
     !
-    !   HAM MULTIPLYING W^2·l^2 TIMES P44 PARAMETER
-    IF (H_4b_pars(11) /= 0 .AND. VL > 0) THEN
-       DO I1 = 1, dim_block
-          HAM(I1,I1) = HAM(I1,I1) + H_4b_pars(11)*VL*VL*W2MAT(I1,I1)
+    !
+    ! n^2 x W^2 + W^2 x n^2 matrix Parameter 12
+    IF (H_4b_pars(12) /= 0) THEN
+       IF (ALLOCATED(M45_P12_matrix)) THEN
+          DEALLOCATE(M45_P12_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M45_P12_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M45_P12_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M45_P12_matrix allocation request denied."
+          STOP
+       ENDIF
+       !
+       DO U2_state = 1, dim_block-1
+          !
+          sqnpvalue = np_values(U2_state)**2
+          sqnpvaluep1 = np_values(U2_state+1)**2
+          !
+          M45_P12_matrix(U2_state, U2_state) = 2.0_DP*sqnpvalue*W2_matrix(U2_state, U2_state)
+          M45_P12_matrix(U2_state, U2_state+1) = (sqnpvaluep1+sqnpvalue)*W2_matrix(U2_state, U2_state+1)
+          M45_P12_matrix(U2_state+1, U2_state) = M45_P12_matrix(U2_state, U2_state+1)
+          !
        ENDDO
-       DO I1 = 1, dim_block-1
-          HAM(I1+1,I1)=HAM(I1+1,I1) + H_4b_pars(11)*VL*VL*W2MAT(I1+1,I1)
-          HAM(I1,I1+1)=HAM(I1,I1+1) + H_4b_pars(11)*VL*VL*W2MAT(I1,I1+1)
-       ENDDO
+       !
+       ! U2_state = dim_block case
+       sqnpvalue = np_values(dim_block)**2
+       M33_P7_matrix(dim_block, dim_block) = 2.0_DP*sqnpvalue*W2_matrix(dim_block, dim_block)
+       !
     ENDIF
     !
-    !     BUILDING W^2·n^2 + n^2·W^2 BLOCK
+    ! W^4 matrix Parameter 13
+    IF (H_4b_pars(13) /= 0) THEN
+       !
+       IF (ALLOCATED(M46_P13_matrix)) THEN
+          DEALLOCATE(M46_P13_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M46_P13_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M46_P13_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M46_P13_matrix allocation request denied."
+          STOP
+       ENDIF
+       !
+       M46_P13_matrix = MATMUL(W2_matrix,W2_matrix)
+       !
+    ENDIF
     !
+    ! Wbar^2 and W^2 x Wbar^2 + Wbar^2 x W^2 matrix Parameter 14
+    IF (H_4b_pars(14) /= 0) THEN
+       IF (ALLOCATED(W2bar_matrix)) THEN
+          DEALLOCATE(W2bar_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'W2bar_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(W2bar_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "W2bar_matrix allocation request denied."
+          STOP
+       ENDIF
+       !
+       ! Build Wbar^2 Casimir matrix
+       CALL SO3_Cas_Build(N_val, L_val, dim_block, U2_basis, W2bar_matrix, 1_I4b)
+       !
+       IF (ALLOCATED(M47_P14_matrix)) THEN
+          DEALLOCATE(M47_P14_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M47_P14_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M47_P14_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M47_P14_matrix allocation request denied."
+          STOP
+       ENDIF
+       !
+       M47_P14_matrix = 0.5_DP*&
+            (MATMUL(W2bar_matrix, W2_matrix) + MATMUL(W2_matrix, W2bar_matrix) )
+       !
+    ENDIF
+    !
+    RETURN
+    !
+  END SUBROUTINE Build_U2DS_Operator_Matrices
+  !
+  SUBROUTINE Build_Ham_4Body_U2(N_val, L_val, dim_block, U2_Basis) 
+    !
+    !
+    ! Subroutine to build the U(3) 2DVM Four-Body Hamiltonian
+    !
+    ! Cylindrical Oscillator Basis U(2)
+    !
+    !     H = P11 n + 
+    !         P21 n^2 + P22 l^2 + P23 W^2 +  
+    !         P31 n^3 + P32 n·l^2 + P33 (n·W^2 + W^2·n) +
+    !         P41 n^4 + P42 n^2·l^2 + P43 l^4 + P44 l^2·W^2 + 
+    !         P45 (n^2·W^2 + W^2·n^2) + P46 W^4 + P47 (W^2·Wbar^2 + Wbar^2·W^2)/2
+    !
+    !     HPAR(1)   P11
+    !     HPAR(2)   P21
+    !     HPAR(3)   P22
+    !     HPAR(4)   P23
+    !     HPAR(5)   P31
+    !     HPAR(6)   P32
+    !     HPAR(7)   P33
+    !     HPAR(8)   P41
+    !     HPAR(9)   P42
+    !     HPAR(10)  P43
+    !     HPAR(11)  P44
+    !     HPAR(12)  P45
+    !     HPAR(13)  P46
+    !     HPAR(14)  P47
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    TYPE(u2_bas), DIMENSION(:), INTENT(IN) :: U2_Basis   ! U2 basis   { | [N] np L > }
+    !
+    !
+    INTEGER(KIND = I4B) :: U2_state
+    REAL(KIND = DP), DIMENSION(1:dim_block) :: np_values ! n values
+    REAL(KIND = DP) :: npvalue, Nvalue, lvalue2
+    !
+    !
+    Nvalue = REAL(N_val, DP)
+    !
+    lvalue2 = REAL(L_val**2, DP)
+    !
+    !
+    DO U2_state = 1, dim_block
+       !
+       np_values(U2_state) = REAL(U2_Basis(U2_state)%np_U2_val, DP)
+       !
+    ENDDO
+    !
+    ! Build Hamiltonian
+    !
+    ! Diagonal contributions in the U(2) dynamical symmetry
+    !
+    DO U2_state = 1, dim_block
+       !
+       npvalue = np_values(U2_state)
+       !
+       Ham_matrix(U2_state, U2_state) = Ham_matrix(U2_state, U2_state) + &
+            ! npvalue polynomial term
+            npvalue * ( &
+            H_4b_pars(1) + & ! n -- P11 -- 1
+            npvalue * ( &
+            H_4b_pars(2) + & ! n^2 -- P21 -- 2
+            npvalue * ( &
+            H_4b_pars(5) + & ! n^3 -- P31 -- 5            !
+            npvalue * &
+            H_4b_pars(8) & ! n^4 -- P41 -- 8
+            ) &
+            ) &
+            ) + &
+                                !
+                                ! lvalue2 polynomial term
+            lvalue2 * ( &
+            H_4b_pars(3) + &  ! l^2 -- P22 -- 3
+            lvalue2 *  &
+            H_4b_pars(10) &   ! l^4 -- P43 -- 10
+            ) + &
+                                !
+            H_4b_pars(6)*npvalue*lvalue2 + & ! n l^2 -- P32 -- 6
+                                !
+            H_4b_pars(9)*npvalue*npvalue*lvalue2  ! n^2 l^2 -- P42 -- 9
+       !
+    ENDDO
+    !
+    ! Non-diagonal in U(2) Dynamical Symmetry contributions
+    !
+    ! W^2 matrix Parameter 4
+    IF (H_4b_pars(4) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(4)*W2_matrix
+       !
+    ENDIF
+    !
+    ! n x W^2 + W^2 x n matrix Parameter 7
+    IF (H_4b_pars(7) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(7)*M33_P7_matrix
+       !
+    ENDIF
+    !
+    ! l^2 x W^2 matrix Parameter 11
+    IF (H_4b_pars(11) /= 0 .AND. L_val > 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(11)*lvalue2*W2_matrix
+       !       
+    ENDIF
+    !
+    ! n^2 x W^2 + W^2 x n^2 matrix Parameter 12
     IF (H_4b_pars(12) /= 0) THEN
        !
-       !     HAM MULTIPLYING (W^2·n^2 + n^2·W^2) TIMES P45 PARAMETER
-       DO I1 = 1, dim_block
-          V2 = REAL(N_val - (2*I1-2+MOD(N_val-L,2)), DP)
-          HAM(I1,I1) = HAM(I1,I1) + H_4b_pars(12)*2.0_DP*V2*V2*W2MAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block - 1
-          V2 = REAL(N_val - (2*I1-2+MOD(N_val-L,2)), DP)
-          HAM(I1+1,I1) = HAM(I1+1,I1) + &
-               H_4b_pars(12)*2.0_DP*(V2*V2-2.0_DP*V2+2.0_DP)*W2MAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + &
-               H_4b_pars(12)*2.0_DP*(V2*V2-2.0_DP*V2+2.0_DP)*W2MAT(I1,I1+1)
-       ENDDO
+       Ham_matrix = Ham_matrix + H_4b_pars(12)*M45_P12_matrix
+       !
     ENDIF
     !
-    !     BUILDING W2·WBAR2 + WBAR2·W2 BLOCK (HAS TO BE EVALUATED BEFORE W4 BLOCK)
+    ! W^4 matrix Parameter 13
+    IF (H_4b_pars(13) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(13)*M46_P13_matrix
+       !
+    ENDIF
     !
+    ! Wbar^2 and W^2 x Wbar^2 + Wbar^2 x W^2 matrix Parameter 14
     IF (H_4b_pars(14) /= 0) THEN
        !
-       CALL SO3SO3BARBUILD(W2MAT, W4MAT, W2W2BARMAT, N_val, L, Iprint)
+       Ham_matrix = Ham_matrix + H_4b_pars(14)*M47_P14_matrix
        !
-       !     HAM MULTIPLYING W2·WBAR2 + WBAR2·W2 TIMES P47 PARAMETER
-       DO I1 = 1, dim_block
-          HAM(I1,I1) = HAM(I1,I1) + H_4b_pars(14)*W2W2BARMAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block - 1
-          HAM(I1+1,I1) = HAM(I1+1,I1) + H_4b_pars(14)*W2W2BARMAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + H_4b_pars(14)*W2W2BARMAT(I1,I1+1)
-       ENDDO
-       DO I1 = 1, dim_block - 2
-          HAM(I1+2,I1) = HAM(I1+2,I1) + H_4b_pars(14)*W2W2BARMAT(I1+2,I1)
-          HAM(I1,I1+2) = HAM(I1,I1+2) + H_4b_pars(14)*W2W2BARMAT(I1,I1+2)
-       ENDDO
     ENDIF
     !
-    !     BUILDING W4 BLOCK
-    !
-    IF (H_4b_pars(13) /= 0) THEN
-       CALL SO32CASBUILD(W2MAT,W4MAT,N_val,L, Iprint)
-       !
-       !     HAM MULTIPLYING P^2 TIMES P46 PARAMETER
-       DO I1 = 1, dim_block
-          HAM(I1,I1) = HAM(I1,I1) + H_4b_pars(13)*W4MAT(I1,I1)
-       ENDDO
-       DO I1 = 1, dim_block-1
-          HAM(I1+1,I1) = HAM(I1+1,I1) + H_4b_pars(13)*W4MAT(I1+1,I1)
-          HAM(I1,I1+1) = HAM(I1,I1+1) + H_4b_pars(13)*W4MAT(I1,I1+1)
-       ENDDO
-       DO I1 = 1, dim_block-2
-          HAM(I1+2,I1) = HAM(I1+2,I1) + H_4b_pars(13)*W4MAT(I1+2,I1)
-          HAM(I1,I1+2) = HAM(I1,I1+2) + H_4b_pars(13)*W4MAT(I1,I1+2)
-       ENDDO
-    ENDIF
-    !
-    !     DIAGONAL INTERACTIONS
-    DO I = 1, dim_block
-       !
-       V2 = REAL(N_val - (2*I-2+MOD(N_val-L,2)), DP)
-       !     
-       HAM(I,I) = HAM(I,I) +  H_4b_pars(1)*V2 + &
-                                !     
-            H_4b_pars(2)*V2*V2 + &
-                                !     
-            H_4b_pars(3)*VL*VL + &
-                                !     
-            H_4b_pars(5)*V2*V2*V2 + &
-                                !     
-            H_4b_pars(6)*V2*VL*VL + &
-                                !     
-            H_4b_pars(8)*V2*V2*V2*V2 + &
-                                !     
-            H_4b_pars(9)*V2*V2*VL*VL + &
-                                !     
-            H_4b_pars(10)*VL*VL*VL*VL 
-       !     
-    ENDDO
-    !
-    !
-    IF (IPRINT > 2) WRITE(*,*)'HAMILTONIAN BUILDING SUBROUTINE ENDS HERE'
-    !
-    RETURN
-  END SUBROUTINE HBLDU3GEN
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-  SUBROUTINE SO3CASBUILD(W2BLOCK, N_val, L, Iprint)
-    !
-    !     BUILDING THE SO(3) CASIMIR W^2 MATRIX IN
-    !     THE CYLINDRICAL OSCILLATOR BASIS. 
-    !     SO(3) = {L,D+,D-}
-    !
-    !     PROGRAM OF THE U(3) ALGEBRAIC MODEL FOR BENDING DYNAMICS
-    !     
-    !     INPUT 
-    !     N_val        : U(3) REPRESENTATION (TOTAL NUMBER OF U(3) BOSONS)
-    !     L            : VIBRATIONAL ANGULAR MOMENTUM
-    !
-    !     OUTPUT
-    !     W2BLOCK : LOCAL BASIS MATRIX
-    !     
-    !
-    !     
-    !     by Currix TM
-    !
-    IMPLICIT NONE
-    !     
-    !    DEFINITION OF VARIABLES
-    INTEGER(KIND = I4B), INTENT(IN)  ::  N_val, L
-    INTEGER(KIND = I4B), INTENT(IN)  ::  Iprint
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2BLOCK
-    !
-    !
-    !     LOCAL VARIABLES                                     
-    INTEGER(KIND = I4B) :: I1, DIMB
-    REAL(KIND = DP) :: VN2, VNN, VL, VTMP
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3CASBUILD STARTS HERE'
-    !
-    DIMB = (N_val - MOD(N_val - L, 2) - L)/2 + 1
-    !
-    VNN = REAL(N_val, DP)
-    VL = REAL(L, DP)
-    !
-    !     NON-DIAGONAL PART
-    DO I1 = 1, DIMB-1
-       VN2 = REAL(N_val - MOD(N_val - L,2) - 2*(I1-1), DP)
-       VTMP = DSQRT((VNN-VN2+2.0D0)*(VNN-VN2+1.0D0)*(VN2+VL)*(VN2-VL))
-       W2BLOCK(I1+1,I1) = -VTMP
-       W2BLOCK(I1,I1+1) = -VTMP
-    ENDDO
-    !
-    !     DIAGONAL PART
-    DO I1 = 1, DIMB                     
-       VN2 = REAL(N_val - MOD(N_val - L,2) - 2*(I1-1), DP)
-       W2BLOCK(I1,I1)=(VNN-VN2)*(VN2+2.0D0)+(VNN-VN2+1.0D0)*VN2+VL*VL
-    ENDDO
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3CASBUILD ENDS HERE'
-    !
     RETURN
     !
-  END SUBROUTINE SO3CASBUILD
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SO3SO3BARBUILD(W2BLOCK,WB2BLOCK,W2WB2BLOCK,NN,L, Iprint)
-    !
-    !     SUBROUTINE THAT BUILD THE SO(3) CASIMIR (W^2·Wbar^2 + Wbar^2·W2)/2 MATRIX IN
-    !     THE CYLINDRICAL OSCILLATOR BASIS. 
-    !     SO(3) = {L,D+,D-}
-    !     SObar(3) = {L,R+,R-}
-    !
-    !     PROGRAM OF THE U(3) ALGEBRAIC MODEL FOR BENDING DYNAMICS
-    !     
-    !     INPUT 
-    !     W2BLOCK   ; LOCAL BASIS MATRIX OF W2
-    !     WB2BLOCK  : ARRAY WHERE TO BUILD THE SObar(3) CASIMIR
-    !     NN        : U(3) REPRESENTATION (TOTAL NUMBER OF U(3) BOSONS)
-    !     L         : VIBRATIONAL ANGULAR MOMENTUM
-    !
-    !     OUTPUT
-    !     W2WB2BLOCK : LOCAL BASIS MATRIX OF (W^2·Wbar^2 + Wbar^2·W2)/2
-    !     
-    !
-    !     
-    !     by Currix TM
-    !
-    !     
-    IMPLICIT NONE
-    !     
-    !  DEFINITION OF VARIABLES     
-    INTEGER(KIND = I4B), INTENT(IN)  :: NN, L
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2BLOCK, WB2BLOCK
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2WB2BLOCK
-    INTEGER(KIND = I4B), INTENT(IN)  :: Iprint
-    !
-    !     TEMPORAL VARIABLES                                     
-    INTEGER(KIND = I4B) :: I1, DIMB 
-    REAL(KIND = DP) :: VN2, VNN, VL, VTMP
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3SO3BARBUILD STARTS HERE'
-    !
-    DIMB = (NN - MOD(NN-L,2) - L)/2 + 1
-    !
-    !     INITIALIZING
-    W2BLOCK = 0.0_DP
-    WB2BLOCK = 0.0_DP
-    W2WB2BLOCK = 0.0_DP
-    !
-    VNN = REAL(NN, DP)
-    VL = REAL(L, DP)
-    !
-    !    NON-DIAGONAL PART
-    DO I1 = 1, DIMB-1
-       VN2 = DFLOAT(NN - MOD(NN-L,2) - 2*(I1-1))
-       VTMP = DSQRT((VNN-VN2+2.0_DP)*(VNN-VN2+1.0_DP)*(VN2+VL)*(VN2-VL))
-       W2BLOCK(I1+1,I1) = -VTMP
-       W2BLOCK(I1,I1+1) = -VTMP
-       WB2BLOCK(I1+1,I1) = VTMP
-       WB2BLOCK(I1,I1+1) = VTMP
-    ENDDO
-    !
-    !     DIAGONAL PART
-    DO I1 = 1, DIMB                     
-       VN2 = DFLOAT(NN - MOD(NN-L,2) - 2*(I1-1))
-       W2BLOCK(I1,I1)=(VNN-VN2)*(VN2+2.0_DP)+(VNN-VN2+1.0_DP)*VN2+VL*VL
-       WB2BLOCK(I1,I1) = W2BLOCK(I1,I1)
-    ENDDO
-    !
-    !
-    W2WB2BLOCK = 0.5_DP*(MATMUL(W2BLOCK, WB2BLOCK) + MATMUL(WB2BLOCK, W2BLOCK))
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3SO3BARBUILD ENDS HERE'
-    !
-    RETURN
-    !
-  END SUBROUTINE SO3SO3BARBUILD
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SO32CASBUILD(W2BLOCK, W4BLOCK, NN, L, Iprint)
-    !
-    !     SUBROUTINE THAT BUILD THE SO(3) CASIMIR (W^2)^2 MATRIX IN
-    !     THE CYLINDRICAL OSCILLATOR BASIS. 
-    !     SO(3) = {L,D+,D-}
-    !
-    !
-    !     PROGRAM OF THE U(3) ALGEBRAIC MODEL FOR BENDING DYNAMICS
-    !     
-    !     INPUT 
-    !     W2BLOCK   : LOCAL BASIS MATRIX OF THE PAIRING OPERATOR
-    !     NN        : U(3) REPRESENTATION (TOTAL NUMBER OF U(3) BOSONS)
-    !     L         : VIBRATIONAL ANGULAR MOMENTUM
-    !     Iprint    : Control level of output
-    !
-    !     OUTPUT
-    !     W4BLOCK   : LOCAL BASIS MATRIX OF W^4
-    !     
-    !
-    !     
-    !     by Currix TM
-    !
-    !     
-    IMPLICIT NONE
-    !     
-    !     DEFINITION OF VARIABLES     
-    INTEGER(KIND = I4B), INTENT(IN)  :: NN, L, Iprint
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: W2BLOCK
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W4BLOCK
-    !
-    !     TEMPORAL VARIABLES                                     
-    INTEGER(KIND = I4B) ::  DIMB
-    !
-    IF (Iprint > 2) WRITE(*,*) 'SUBROUTINE SO32CASBUILD STARTS HERE'
-    !
-    DIMB = (NN - MOD(NN-L,2) - L)/2 + 1
-    !
-    !     INITIALIZING
-    W4BLOCK = 0.0_DP
-    !
-    !     MATRIX PRODUCT
-    W4BLOCK = MATMUL(W2BLOCK, W2BLOCK)
-    !
-    IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO32CASBUILD ENDS HERE'
-    !
-    RETURN
-  END SUBROUTINE SO32CASBUILD
-
+  END SUBROUTINE BUILD_HAM_4BODY_U2
+  !
 END MODULE u3_2dvm_mod
