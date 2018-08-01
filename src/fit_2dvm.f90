@@ -43,7 +43,7 @@ MODULE FIT_2DVM
   REAL(KIND = DP) ::  CHSQP, CHSQT
   !
   ! Minimum value of a squared component to set a state as correctly assigned
-  REAL(KIND = DP) :: Min_Sq_Comp = 0.85
+  REAL(KIND = DP) :: Min_Sq_Comp = 0.5_DP
   !
   !     TOTAL NUMBER OF EXPERIMENTAL DATA
   INTEGER(KIND = I4B) :: TOTDAT
@@ -165,6 +165,14 @@ CONTAINS
        ELSE
           !
           ! Build U(3) > U(2) > SO(2) Basis
+          IF (ALLOCATED(U2_Basis)) THEN    
+             DEALLOCATE(U2_Basis, STAT = IERR)    
+             IF (IERR /= 0) THEN
+                WRITE(UNIT = *, FMT = *) "U2_Basis deallocation request denied."
+                STOP
+             ENDIF
+          ENDIF
+          !
           ALLOCATE(U2_Basis(1:dim_block), STAT = IERR)    
           IF (IERR /= 0) THEN
              WRITE(UNIT = *, FMT = *) "U2_Basis allocation request denied."
@@ -177,7 +185,7 @@ CONTAINS
           !
           ! Allocate and Build Hamiltonian and Hamiltonian Operator Matrices
           !
-          CALL Build_U2DS_Operator_Matrices(N_val, L_val, dim_block, U2_Basis)
+          CALL Build_U2DS_Operator_Matrices(N_val, L, dim_block, U2_Basis)
           !
           CALL Build_Ham_4Body_U2(N_val, L, dim_block, U2_Basis)  
           !
@@ -186,6 +194,7 @@ CONTAINS
        !     DIAGONALIZE HAMILTONIAN MATRIX
        print*, size(Ham_matrix)
        print*, size(Eigenval_vector)
+       Eigenval_vector = 0.0_DP
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !
        print*, eigenval_vector
@@ -854,7 +863,7 @@ CONTAINS
     !
     print*, Max_values
     print*, Max_indexes
-    print*,  N2 - 2*MAX_INDEXES+2-MOD(N2-L,2)
+    print*,  L + 2*(MAX_INDEXES - 1_I4B)
     ! Look for ambiguities
     IF (MINVAL(MAX_VALUES) < Min_Sq_Comp) THEN
        FLAG = .TRUE.
@@ -874,7 +883,7 @@ CONTAINS
     IF (BENT) THEN
        LMC = MAX_INDEXES - 1
     ELSE
-       LMC =  N2 - 2*MAX_INDEXES+2-MOD(N2-L,2)
+       LMC = L + 2*(MAX_INDEXES - 1_I4B)
     ENDIF
     !
     print*, "flag = ", flag
@@ -947,7 +956,7 @@ CONTAINS
        MAX_INDEXES = MAX_INDEXES - 1
        STOP 'UNFINISHED...'
     ELSE
-       MAX_INDEXES =  N2 - 2_I4B*MAX_INDEXES + 2_I4B - MOD(N2-L,2)
+       MAX_INDEXES = L + 2_I4B*(MAX_INDEXES - 1_I4B)
        !
        ! Include G.S.
        Mask_vector = (MAX_INDEXES == L)
@@ -1160,7 +1169,7 @@ CONTAINS
        !      IF FLAG = .T. : PROBLEMS WITH ASSIGNMENT
        DO WHILE (FLAG)
           !     
-          FAC = FAC/2.0_DP
+          FAC = FAC*0.5_DP
           !
           MIX = MIX + 1
           !     
@@ -1246,18 +1255,19 @@ CONTAINS
              DO I = 1, DIM 
                 VMAX = 0.0D0
                 PTEMP(I) = 0
+                !
                 DO J = 1, DIM
                    !
-                   VT = DOT_PRODUCT(HAM(:,J), HAM2(:,I))
+                   VT = DOT_PRODUCT(HAM(:,J), HAM2(:,I))**2
                    !
                    !     MAXIMAL COMPONENT
-                   VT = VT * VT
                    IF (VT > VMAX) THEN
                       VMAX = VT
                       JMAX = BLAS(J)
                    ENDIF
                 ENDDO
                 PTEMP(I) = JMAX
+                !
                 !"!"!"!"!"!"!"!"!"!"print*, i, vmax, jmax, ptemp(i)
                 !     
                 !     CHECK FOR AMBIGUITIES
@@ -1267,7 +1277,7 @@ CONTAINS
                    CYCLE scaleup_u2 
                 ELSE
                    DO J2 = 1, I - 1
-                      IF (PTEMP(J2).EQ.JMAX) THEN
+                      IF (PTEMP(J2) == JMAX) THEN
                          FAC = FAC - MIXSTEP
                          MIXSTEP = MIXSTEP/3.0_DP
                          CYCLE scaleup_u2
@@ -1280,8 +1290,8 @@ CONTAINS
              !
           ELSE
              !
-             !     COMPARING ONLY TO STATES WITH BLAS(I).NE.-1
-             !     SCALAR PRODUCT WHICH ARE THE EXPERIMENTAL ONES
+             !     COMPARING ONLY STATES WITH BLAS(I).NE.-1
+             !     WHICH ARE THE EXPERIMENTAL ONES
              PTEMP = -1
              !
              DO I = 1, DIM
@@ -1337,6 +1347,8 @@ CONTAINS
              CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
              !     
              IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
+             !
+             IF (IPRINT > 2) WRITE(*,*) 'BLAS', BLAS
              !
              RETURN
              !    

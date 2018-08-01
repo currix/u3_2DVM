@@ -193,7 +193,7 @@ CONTAINS
     IF (PRESENT(W2bar_flag) .AND. W2bar_flag == 1_I4B) non_diag_phase = 1.0_DP
     !
     ! NON-DIAGONAL PART
-    DO index = 2, dim_block  
+    DO index = 2, dim_block   
        npvalue = REAL(U2_Basis(index)%np_U2_val, DP)
        tempval = SQRT((Nvalue - npvalue + 2.0_DP)*(Nvalue - npvalue + 1.0_DP)*(npvalue + Lvalue)*(npvalue - Lvalue))
        W2_matrix(index-1,index) = non_diag_phase*tempval
@@ -347,7 +347,7 @@ CONTAINS
           !
        CASE (3) ! l^2 ---> DIAGONAL
           !
-          lvalue2 = REAL(U2_Basis(U2_state)%L_val, DP)**2
+          lvalue2 = REAL(U2_Basis(1)%L_val, DP)**2
           ! 
           DO U2_state = 1, dim_block
              !
@@ -946,6 +946,7 @@ CONTAINS
           WRITE(UNIT = *, FMT = *) "M33_P7_matrix allocation request denied."
           STOP
        ENDIF
+       M33_P7_matrix = 0.0_DP
        !
        DO U2_state = 1, dim_block-1
           !
@@ -976,6 +977,7 @@ CONTAINS
           WRITE(UNIT = *, FMT = *) "M45_P12_matrix allocation request denied."
           STOP
        ENDIF
+       M45_P12_matrix = 0.0_DP
        !
        DO U2_state = 1, dim_block-1
           !
@@ -990,7 +992,7 @@ CONTAINS
        !
        ! U2_state = dim_block case
        sqnpvalue = np_values(dim_block)**2
-       M33_P7_matrix(dim_block, dim_block) = 2.0_DP*sqnpvalue*W2_matrix(dim_block, dim_block)
+       M45_P12_matrix(dim_block, dim_block) = 2.0_DP*sqnpvalue*W2_matrix(dim_block, dim_block)
        !
     ENDIF
     !
@@ -1006,6 +1008,7 @@ CONTAINS
           WRITE(UNIT = *, FMT = *) "M46_P13_matrix allocation request denied."
           STOP
        ENDIF
+       M46_P13_matrix = 0.0_DP
        !
        M46_P13_matrix = MATMUL(W2_matrix,W2_matrix)
        !
@@ -1035,6 +1038,7 @@ CONTAINS
           WRITE(UNIT = *, FMT = *) "M47_P14_matrix allocation request denied."
           STOP
        ENDIF
+       M47_P14_matrix = 0.0_DP
        !
        M47_P14_matrix = 0.5_DP*&
             (MATMUL(W2bar_matrix, W2_matrix) + MATMUL(W2_matrix, W2bar_matrix) )
@@ -1106,6 +1110,8 @@ CONTAINS
     !
     ! Build Hamiltonian
     !
+    Ham_matrix = 0.0_DP
+    !
     ! Diagonal contributions in the U(2) dynamical symmetry
     !
     DO U2_state = 1, dim_block
@@ -1124,17 +1130,20 @@ CONTAINS
             H_4b_pars(8) & ! n^4 -- P41 -- 8
             ) &
             ) &
-            ) + &
-                                !
-                                ! lvalue2 polynomial term
+            ) 
+       !
+       ! lvalue2 polynomial term
+       Ham_matrix(U2_state, U2_state) = Ham_matrix(U2_state, U2_state) + &
             lvalue2 * ( &
             H_4b_pars(3) + &  ! l^2 -- P22 -- 3
             lvalue2 *  &
             H_4b_pars(10) &   ! l^4 -- P43 -- 10
-            ) + &
-                                !
-            H_4b_pars(6)*npvalue*lvalue2 + & ! n l^2 -- P32 -- 6
-                                !
+            ) 
+       !
+       Ham_matrix(U2_state, U2_state) = Ham_matrix(U2_state, U2_state) + &
+            H_4b_pars(6)*npvalue*lvalue2  ! n l^2 -- P32 -- 6
+       !                    
+       Ham_matrix(U2_state, U2_state) = Ham_matrix(U2_state, U2_state) + &
             H_4b_pars(9)*npvalue*npvalue*lvalue2  ! n^2 l^2 -- P42 -- 9
        !
     ENDDO
