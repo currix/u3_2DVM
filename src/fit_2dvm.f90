@@ -1035,7 +1035,7 @@ CONTAINS
                    ENDIF
                 ENDDO
                 PTEMP(I) = JMAX
-                !"!"!"!"!"!"!"!"!"!"print*, i, vmax, jmax, ptemp(i)
+                print*, i, vmax, jmax, ptemp(i)
                 !     
                 !     CHECK FOR AMBIGUITIES
                 IF (VMAX < 0.5_DP) THEN
@@ -1105,7 +1105,7 @@ CONTAINS
           !
           BLAS = PTEMP
           !
-          print*, "FAC = ", FAC, BLAS
+          print*, "FAC = ", FAC
           print*, "BLAS = ", BLAS
           !
           IF (FAC == 1.0_DP) THEN
