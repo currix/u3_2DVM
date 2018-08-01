@@ -889,6 +889,7 @@ CONTAINS
     REAL(KIND = DP), DIMENSION(1:dim_block) :: np_values ! n values
     REAL(KIND = DP) :: npvalue, npvaluep1, sqnpvalue, sqnpvaluep1, Nvalue, lvalue2
     !
+    IF (IPRINT >= 2) WRITE(*,*) 'Subroutine Build_U2DS_Operator_Matrices'
     !
     Nvalue = REAL(N_val, DP)
     !
@@ -1089,6 +1090,8 @@ CONTAINS
     REAL(KIND = DP), DIMENSION(1:dim_block) :: np_values ! n values
     REAL(KIND = DP) :: npvalue, Nvalue, lvalue2
     !
+    !
+    IF (IPRINT >= 2) WRITE(*,*) 'Subroutine Build_Ham_4Body_U2'
     !
     Nvalue = REAL(N_val, DP)
     !
