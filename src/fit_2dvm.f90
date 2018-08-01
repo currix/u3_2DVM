@@ -69,10 +69,6 @@ CONTAINS
     !
     INTEGER(KIND = I4B) :: I, JMIN, L, NDAT
     !
-    REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
-    !
-    !REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: AVEZERO ! Ground state eigenvector
-    !
     REAL(KIND = DP) :: EMIN
     !
     INTEGER(KIND = I4B), DIMENSION(:,:), ALLOCATABLE :: VEXPAS
@@ -188,8 +184,11 @@ CONTAINS
        ENDIF
        !
        !     DIAGONALIZE HAMILTONIAN MATRIX
+       print*, size(Ham_matrix)
+       print*, size(Eigenval_vector)
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !
+       print*, eigenval_vector
        !    ASSIGN  COMPUTED DATA TO LOCAL BASIS STATES
        IF (IPRINT > 0) THEN 
           ASSIGNALL = .TRUE.
@@ -201,7 +200,7 @@ CONTAINS
        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !
        CALL Assign_U3_DSymmetry(BENT, ASSIGNALL, N_val, L, dim_block, &
-            HAM_matrix, Eigenval_vector, VEXPAS, NDAT, BLAS, Iprint)
+            HAM_matrix, Eigenval_vector, VEXPAS, NDAT, BLAS)
        !
        !     REFER ENERGIES TO GROUND L=0 STATE
        !
@@ -807,7 +806,7 @@ CONTAINS
     !
   END SUBROUTINE DSDTU3
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE Maximum_Components_U3(BENT, N2, L, EVEC, DIM, Min_Sq_Comp, LMC, FLAG, IPRINT)
+  SUBROUTINE Maximum_Components_U3(BENT, N2, L, EVEC, DIM, Min_Sq_Comp, LMC, FLAG)
     !
     !     SUBROUTINE THAT LOOKS FOR MAXIMAL SQUARED
     !     COMPONENTS IN THE EIGENVECTORS OF THE BENDING U(3)
@@ -832,7 +831,7 @@ CONTAINS
     !     
     !     DEFINITION OF VARIABLES
     LOGICAL, INTENT(IN) :: BENT
-    INTEGER(KIND = I4B), INTENT(IN) :: N2, L, DIM, IPRINT
+    INTEGER(KIND = I4B), INTENT(IN) :: N2, L, DIM
     REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: EVEC
     REAL(KIND = DP), INTENT(IN) :: Min_Sq_Comp
     !     
@@ -853,8 +852,14 @@ CONTAINS
     !
     MAX_INDEXES = MAXLOC(EVEC**2,1)
     !
+    print*, Max_values
+    print*, Max_indexes
+    print*,  N2 - 2*MAX_INDEXES+2-MOD(N2-L,2)
     ! Look for ambiguities
-    IF (MINVAL(MAX_VALUES) < Min_Sq_Comp) FLAG = .TRUE.
+    IF (MINVAL(MAX_VALUES) < Min_Sq_Comp) THEN
+       FLAG = .TRUE.
+       RETURN
+    ENDIF
     !
     fst_loop: DO I = 1, DIM
        snd_loop : DO I2 = I + 1, DIM
@@ -869,15 +874,17 @@ CONTAINS
     IF (BENT) THEN
        LMC = MAX_INDEXES - 1
     ELSE
-       LMC =  N2 - 2*LMC+2-MOD(N2-L,2)
+       LMC =  N2 - 2*MAX_INDEXES+2-MOD(N2-L,2)
     ENDIF
-    !     
+    !
+    print*, "flag = ", flag
+    print*, "lmc = ", lmc
     RETURN
     !   
   END SUBROUTINE Maximum_Components_U3
   !
   SUBROUTINE Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, &
-       EVEC, DIM, Min_Sq_Comp, LMC, FLAG, Iprint)
+       EVEC, DIM, Min_Sq_Comp, LMC, FLAG)
     !
     !     SUBROUTINE THAT LOOKS FOR MAXIMAL COMPONENTS IN THE
     !     EIGENVECTORS OF THE BENDING U(3) MODEL HAMILTONIAN HAVING
@@ -906,7 +913,7 @@ CONTAINS
     !     DEFINITION OF VARIABLES
     LOGICAL, INTENT(IN) :: BENT
     INTEGER(KIND = I4B), DIMENSION(:,:), INTENT(IN) :: VEXPAS
-    INTEGER(KIND = I4B), INTENT(IN) :: NDAT, N2, L, DIM, IPRINT
+    INTEGER(KIND = I4B), INTENT(IN) :: NDAT, N2, L, DIM
     REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: EVEC
     REAL(KIND = DP), INTENT(IN) :: Min_Sq_Comp
     !     
@@ -985,7 +992,7 @@ CONTAINS
     !   
   END SUBROUTINE Maximum_Components_EXP_U3
   !
-  SUBROUTINE Scale_Hamiltonian(FAC, BENT, N2, L, Dim, Iprint)
+  SUBROUTINE Scale_Hamiltonian(FAC, BENT, N2, L, Dim)
     !
     !     SUBROUTINE THAT SCALES DOWN (xFAC) THE MIXING PARAMETERS AND
     !     RECOMPUTES HAMILTONIAN IN THE U(3) MODEL.
@@ -1006,7 +1013,7 @@ CONTAINS
     !     DEFINITION OF VARIABLES     
     REAL(KIND = DP), INTENT(IN) :: FAC
     LOGICAL, INTENT(IN) :: BENT
-    INTEGER(KIND = I4B), INTENT(IN) :: N2, L, Dim, Iprint
+    INTEGER(KIND = I4B), INTENT(IN) :: N2, L, Dim
     !
     !
     IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SCALE MIXING STARTS HERE'
@@ -1040,7 +1047,7 @@ CONTAINS
   END SUBROUTINE Scale_Hamiltonian
   !
   SUBROUTINE Assign_U3_DSymmetry(BENT, ASSIGNALL, N2, L, DIM, HAM, EIGEN, &
-       VEXPAS, NDAT, BLAS, Iprint)
+       VEXPAS, NDAT, BLAS)
     !
     !     SUBROUTINE THAT LOOKS FOR THE BEST QUANTUM NUMBER ASSIGNMENTS  
     !     FOR HAMILTONIAN EIGENSTATES TO U(2) OR SO(3) BASIS STATES IN THE U(3) MODEL.
@@ -1076,7 +1083,7 @@ CONTAINS
     !
     LOGICAL, INTENT(IN) :: BENT, ASSIGNALL
     INTEGER(KIND = I4B), INTENT(IN) :: N2
-    INTEGER(KIND = I4B), INTENT(IN) :: L, DIM, NDAT, IPRINT
+    INTEGER(KIND = I4B), INTENT(IN) :: L, DIM, NDAT
     REAL(KIND = DP), DIMENSION(:,:), INTENT(INOUT)  :: HAM
     REAL(KIND = DP), DIMENSION(:), INTENT(INOUT)  :: EIGEN
     INTEGER(KIND = I4B), DIMENSION(:,:), INTENT(IN) :: VEXPAS
@@ -1108,7 +1115,8 @@ CONTAINS
     !
     ALLOCATE(BLAS(1:DIM), STAT = IERR)
     IF (IERR /= 0) STOP 'ERROR ALLOCATING BLAS - ASSGNU3 MATRIX'
-    PTEMP = 0      
+    BLAS = 0_I4B
+    PTEMP = 0_I4B      
     !
     IF (BENT) THEN
        !
@@ -1129,9 +1137,9 @@ CONTAINS
        !     
        !     LOOK FOR MAXIMUM COMPONENT
        IF (ASSIGNALL) THEN
-          CALL Maximum_Components_U3(BENT, N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG, IPRINT)
+          CALL Maximum_Components_U3(BENT, N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG)
        ELSE
-          CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG, Iprint)
+          CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG)
        ENDIF
        !     
        IF (IPRINT >= 3) THEN
@@ -1163,7 +1171,7 @@ CONTAINS
           !     
           ICOUNT = ICOUNT + 1
           !     
-          CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM, Iprint)
+          CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
           !
           !     DIAGONALIZE HAMILTONIAN
           !
@@ -1181,10 +1189,10 @@ CONTAINS
           !
           IF (ASSIGNALL) THEN
              CALL Maximum_Components_U3(BENT, N2, L, HAM, DIM, &
-                  Min_Sq_Comp, BLAS, FLAG, IPRINT)
+                  Min_Sq_Comp, BLAS, FLAG)
           ELSE
              CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, &
-                  N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG, Iprint)
+                  N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG)
           ENDIF
           !
           IF (IPRINT >= 3) THEN
@@ -1218,7 +1226,7 @@ CONTAINS
           !
           HAM2 = HAM
           !
-          CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM, iprint)
+          CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
           !     
           !     DIAGONALIZE HAMILTONIAN
           !
@@ -1322,7 +1330,7 @@ CONTAINS
           !
           IF (FAC == 1.0_DP) THEN
              !
-             CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM, iprint)
+             CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
              !
              EIGEN = 0.0_DP
              !
