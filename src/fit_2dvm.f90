@@ -43,7 +43,7 @@ MODULE FIT_2DVM
   REAL(KIND = DP) ::  CHSQP, CHSQT
   !
   ! Minimum value of a squared component to set a state as correctly assigned
-  REAL(KIND = DP) :: Min_Sq_Comp = 0.5_DP
+  REAL(KIND = DP) :: Min_Sq_Comp = 0.75_DP
   !
   !     TOTAL NUMBER OF EXPERIMENTAL DATA
   INTEGER(KIND = I4B) :: TOTDAT
@@ -192,12 +192,12 @@ CONTAINS
        ENDIF
        !
        !     DIAGONALIZE HAMILTONIAN MATRIX
-       print*, size(Ham_matrix)
-       print*, size(Eigenval_vector)
+       !print*, size(Ham_matrix)
+       !print*, size(Eigenval_vector)
        Eigenval_vector = 0.0_DP
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !
-       print*, eigenval_vector
+       !print*, eigenval_vector
        !    ASSIGN  COMPUTED DATA TO LOCAL BASIS STATES
        IF (IPRINT > 0) THEN 
           ASSIGNALL = .TRUE.
@@ -208,8 +208,7 @@ CONTAINS
 !!!!!!!!!!!!!!!!!!!!!       ASSIGNALL = .TRUE.
        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !
-       CALL Assign_U3_DSymmetry(BENT, ASSIGNALL, N_val, L, dim_block, &
-            HAM_matrix, Eigenval_vector, VEXPAS, NDAT, BLAS)
+       CALL Assign_U3_DSymmetry(BENT, ASSIGNALL, N_val, L, dim_block, VEXPAS, NDAT, BLAS)
        !
        !     REFER ENERGIES TO GROUND L=0 STATE
        !
@@ -755,7 +754,7 @@ CONTAINS
              WRITE(*,1110) EIGEN(I), BLAS(I), L
              WRITE(*,*)
              DO J = 1, DIM
-                WRITE(*,1120) AVEC(J,I), N2-(2*J-2+MOD(N2-L,2)), L
+                WRITE(*,1120) AVEC(J,I),  L + 2*(J - 1_I4B), L
              ENDDO
              WRITE(*,*)
           ENDDO
@@ -788,7 +787,7 @@ CONTAINS
              WRITE(*,1110) EIGEN(I), BLAS(I), L
              WRITE(*,*)
              DO J = 1, DIM
-                WRITE(*,1120) AVEC(J,I), N2-(2*J-2+MOD(N2-L,2)), L
+                WRITE(*,1120) AVEC(J,I), L + 2*(J - 1_I4B), L
              ENDDO
              WRITE(*,*)
           ENDDO
@@ -861,9 +860,9 @@ CONTAINS
     !
     MAX_INDEXES = MAXLOC(EVEC**2,1)
     !
-    print*, Max_values
-    print*, Max_indexes
-    print*,  L + 2*(MAX_INDEXES - 1_I4B)
+    !print*, Max_values
+    !print*, Max_indexes
+    !print*,  L + 2*(MAX_INDEXES - 1_I4B)
     ! Look for ambiguities
     IF (MINVAL(MAX_VALUES) < Min_Sq_Comp) THEN
        FLAG = .TRUE.
@@ -886,8 +885,8 @@ CONTAINS
        LMC = L + 2*(MAX_INDEXES - 1_I4B)
     ENDIF
     !
-    print*, "flag = ", flag
-    print*, "lmc = ", lmc
+    !print*, "flag = ", flag
+    !print*, "lmc = ", lmc
     RETURN
     !   
   END SUBROUTINE Maximum_Components_U3
@@ -1055,8 +1054,7 @@ CONTAINS
     !
   END SUBROUTINE Scale_Hamiltonian
   !
-  SUBROUTINE Assign_U3_DSymmetry(BENT, ASSIGNALL, N2, L, DIM, HAM, EIGEN, &
-       VEXPAS, NDAT, BLAS)
+  SUBROUTINE Assign_U3_DSymmetry(BENT, ASSIGNALL, N2, L, DIM, VEXPAS, NDAT, BLAS)
     !
     !     SUBROUTINE THAT LOOKS FOR THE BEST QUANTUM NUMBER ASSIGNMENTS  
     !     FOR HAMILTONIAN EIGENSTATES TO U(2) OR SO(3) BASIS STATES IN THE U(3) MODEL.
@@ -1076,8 +1074,6 @@ CONTAINS
     !     N2       : U(3) IRREP LABEL (BENDING)
     !     L        : VIBRATIONAL ANGULAR MOMENTUM LABEL
     !     DIM      : BLOCK DIMENSION
-    !     HAM      : HAMILTONIAN MATRIX (EIGENVECTOR MATRIX IN INPUT)
-    !     EIGEN    : EIGENVALUES VECTOR
     !     VEXPAS   : EXPERIMENTAL ASSIGNMENTS FOR POLYAD (L) FORMAT:(V l) OR (n l)
     !     NDAT     : NUMBER OF EXPERIMENTAL DATA FOR POLYAD (L)
     !
@@ -1093,8 +1089,6 @@ CONTAINS
     LOGICAL, INTENT(IN) :: BENT, ASSIGNALL
     INTEGER(KIND = I4B), INTENT(IN) :: N2
     INTEGER(KIND = I4B), INTENT(IN) :: L, DIM, NDAT
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(INOUT)  :: HAM
-    REAL(KIND = DP), DIMENSION(:), INTENT(INOUT)  :: EIGEN
     INTEGER(KIND = I4B), DIMENSION(:,:), INTENT(IN) :: VEXPAS
     !
     INTEGER(KIND = I4B), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: BLAS
@@ -1146,9 +1140,9 @@ CONTAINS
        !     
        !     LOOK FOR MAXIMUM COMPONENT
        IF (ASSIGNALL) THEN
-          CALL Maximum_Components_U3(BENT, N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG)
+          CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
        ELSE
-          CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG)
+          CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
        ENDIF
        !     
        IF (IPRINT >= 3) THEN
@@ -1184,9 +1178,9 @@ CONTAINS
           !
           !     DIAGONALIZE HAMILTONIAN
           !
-          EIGEN = 0.0_DP
+          Eigenval_vector = 0.0_DP
           !
-          CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
+          CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
           !     
           !     LOOK FOR MAXIMUM COMPONENT
           !
@@ -1197,11 +1191,11 @@ CONTAINS
           ! print*, "E3", HAM(:,3)**2
           !
           IF (ASSIGNALL) THEN
-             CALL Maximum_Components_U3(BENT, N2, L, HAM, DIM, &
+             CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, &
                   Min_Sq_Comp, BLAS, FLAG)
           ELSE
              CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, &
-                  N2, L, HAM, DIM, Min_Sq_Comp, BLAS, FLAG)
+                  N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
           ENDIF
           !
           IF (IPRINT >= 3) THEN
@@ -1233,15 +1227,15 @@ CONTAINS
           !     
           ICOUNT = ICOUNT + 1
           !
-          HAM2 = HAM
+          HAM2 = Ham_matrix
           !
           CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
           !     
           !     DIAGONALIZE HAMILTONIAN
           !
-          EIGEN = 0.0_DP
+          Eigenval_vector = 0.0_DP
           !
-          CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
+          CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
           !
           !
           !     PROJECTING ONTO FORMER EIGENVECTORS SAVED IN HAM2
@@ -1258,7 +1252,7 @@ CONTAINS
                 !
                 DO J = 1, DIM
                    !
-                   VT = DOT_PRODUCT(HAM(:,J), HAM2(:,I))**2
+                   VT = DOT_PRODUCT(Ham_matrix(:,I), HAM2(:,J))**2
                    !
                    !     MAXIMAL COMPONENT
                    IF (VT > VMAX) THEN
@@ -1268,7 +1262,7 @@ CONTAINS
                 ENDDO
                 PTEMP(I) = JMAX
                 !
-                !"!"!"!"!"!"!"!"!"!"print*, i, vmax, jmax, ptemp(i)
+                print*, i, vmax, jmax, ptemp(i)
                 !     
                 !     CHECK FOR AMBIGUITIES
                 IF (VMAX < Min_Sq_Comp) THEN
@@ -1300,7 +1294,7 @@ CONTAINS
                    !
                    DO J = 1, DIM
                       !
-                      VT = DOT_PRODUCT(HAM(:,I),HAM2(:,J))
+                      VT = DOT_PRODUCT(Ham_matrix(:,J),HAM2(:,I))
                       !
                       !     MAXIMAL COMPONENT
                       VT = VT * VT
@@ -1334,21 +1328,24 @@ CONTAINS
              !
           ENDIF
           !
-          HAM2 = HAM
+          HAM2 = Ham_matrix
           !
           BLAS = PTEMP
+          !
+          WRITE(*,*) 'FAC', FAC
+          WRITE(*,*) 'BLAS', BLAS
           !
           IF (FAC == 1.0_DP) THEN
              !
              CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
              !
-             EIGEN = 0.0_DP
+             Eigenval_vector = 0.0_DP
              !
-             CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
+             CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
              !     
              IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
              !
-             IF (IPRINT > 2) WRITE(*,*) 'BLAS', BLAS
+             IF (IPRINT > 2) WRITE(*,*) 'FINAL BLAS', BLAS
              !
              RETURN
              !    
