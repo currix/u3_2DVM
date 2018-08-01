@@ -1105,6 +1105,9 @@ CONTAINS
           !
           BLAS = PTEMP
           !
+          print*, "FAC = ", FAC, BLAS
+          print*, "BLAS = ", BLAS
+          !
           IF (FAC == 1.0_DP) THEN
              !
              CALL SCLHAM(FAC,BENT,N2,L,HAM,W2,W4,W2W2B, iprint)
@@ -1114,6 +1117,8 @@ CONTAINS
              CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
              !     
              IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
+             !
+             IF (IPRINT > 2) WRITE(*,*) 'FINAL BLAS ', BLAS
              !
              RETURN
              !    
