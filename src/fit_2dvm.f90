@@ -219,7 +219,8 @@ CONTAINS
        Eigenval_vector = 0.0_DP
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !
-       !print*, eigenval_vector
+       print*, eigenval_vector - eigenval_vector(1)
+       stop
        !    ASSIGN  COMPUTED DATA TO LOCAL BASIS STATES
        IF (IPRINT > 0) THEN 
           ASSIGNALL = .TRUE.
@@ -836,7 +837,7 @@ CONTAINS
     !
   END SUBROUTINE DSDTU3
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE Maximum_Components_U3(BENT, N2, L, EVEC, DIM, Min_Sq_Comp, LMC, FLAG)
+  SUBROUTINE Maximum_Components_U3(BENT, L, EVEC, DIM, Min_Sq_Comp, LMC, FLAG)
     !
     !     SUBROUTINE THAT LOOKS FOR MAXIMAL SQUARED
     !     COMPONENTS IN THE EIGENVECTORS OF THE BENDING U(3)
@@ -845,7 +846,6 @@ CONTAINS
     !
     !     INPUT
     !     BENT        : .T. BENT MOLECULE, .F. LINEAR MOLECULE
-    !     N2          : U(3) IRREP LABEL (BENDING)
     !     L           : VIBRATIONAL ANGULAR MOMENTUM
     !     EVEC        : EIGENVECTORS MATRIX                   
     !     DIM         : BLOCK DIMENSION               
@@ -861,7 +861,7 @@ CONTAINS
     !     
     !     DEFINITION OF VARIABLES
     LOGICAL, INTENT(IN) :: BENT
-    INTEGER(KIND = I4B), INTENT(IN) :: N2, L, DIM
+    INTEGER(KIND = I4B), INTENT(IN) :: L, DIM
     REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: EVEC
     REAL(KIND = DP), INTENT(IN) :: Min_Sq_Comp
     !     
@@ -913,7 +913,7 @@ CONTAINS
     !   
   END SUBROUTINE Maximum_Components_U3
   !
-  SUBROUTINE Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, &
+  SUBROUTINE Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, L, &
        EVEC, DIM, Min_Sq_Comp, LMC, FLAG)
     !
     !     SUBROUTINE THAT LOOKS FOR MAXIMAL COMPONENTS IN THE
@@ -943,7 +943,7 @@ CONTAINS
     !     DEFINITION OF VARIABLES
     LOGICAL, INTENT(IN) :: BENT
     INTEGER(KIND = I4B), DIMENSION(:,:), INTENT(IN) :: VEXPAS
-    INTEGER(KIND = I4B), INTENT(IN) :: NDAT, N2, L, DIM
+    INTEGER(KIND = I4B), INTENT(IN) :: NDAT, L, DIM
     REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: EVEC
     REAL(KIND = DP), INTENT(IN) :: Min_Sq_Comp
     !     
@@ -975,7 +975,18 @@ CONTAINS
     ! Replace indexes with quantum numbers and locate ground state
     IF (BENT) THEN
        MAX_INDEXES = DIM - MAX_INDEXES ! v index v = (N - w)/2
-       STOP 'UNFINISHED...'
+       !
+       ! Include G.S.
+       Mask_vector = (MAX_INDEXES == 0)
+       count_index(0) = COUNT(Mask_vector)
+       IF (count_index(0) /= 1) THEN
+          ! Ground State repeated or missing
+          FLAG = .TRUE.
+          RETURN
+       ELSE
+          Index_Exp_Pointer(0:0) = PACK(Index_vector, Mask_vector)
+       ENDIF
+       !
     ELSE
        MAX_INDEXES = L + 2_I4B*(MAX_INDEXES - 1_I4B)
        !
@@ -989,7 +1000,7 @@ CONTAINS
        ELSE
           Index_Exp_Pointer(0:0) = PACK(Index_vector, Mask_vector)
        ENDIF
- 
+       !
     ENDIF
     !
     !
@@ -1067,7 +1078,7 @@ CONTAINS
     H_4b_pars(14) = H_4b_pars(14)*FAC ! Both cases
     !
     IF (BENT) THEN
-       STOP 'NOT READY YET'
+       CALL Build_Ham_4Body_SO3(N2, L, Dim, SO3_Basis)  
     ELSE
        CALL Build_Ham_4Body_U2(N2, L, Dim, U2_Basis)
     ENDIF
@@ -1146,9 +1157,9 @@ CONTAINS
     !     
     !     LOOK FOR MAXIMUM COMPONENT
     IF (ASSIGNALL) THEN
-       CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
+       CALL Maximum_Components_U3(BENT, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
     ELSE
-       CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
+       CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
     ENDIF
     !     
     !
@@ -1199,11 +1210,11 @@ CONTAINS
        ! print*, "E3", HAM(:,3)**2
        !
        IF (ASSIGNALL) THEN
-          CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, &
+          CALL Maximum_Components_U3(BENT, L, Ham_matrix, DIM, &
                Min_Sq_Comp, BLAS, FLAG)
        ELSE
           CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, &
-               N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
+               L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
        ENDIF
        !
        IF (IPRINT >= 3) THEN
