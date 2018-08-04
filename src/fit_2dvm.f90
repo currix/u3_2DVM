@@ -258,7 +258,6 @@ CONTAINS
              IF (BLAS(I) == 0) JMIN = I
           ENDDO
           EMIN = Eigenval_vector(JMIN)
-          !AVEZERO = Ham_matrix(:,JMIN)
           !    
           IF (IPRINT >= 2) WRITE(*,*) 'J(E_MIN) = ', JMIN
           !     
@@ -266,6 +265,7 @@ CONTAINS
        !
        Eigenval_vector = Eigenval_vector - EMIN
        !
+       print*, Eigenval_vector
        !     
        !     COMPARE WITH EXPERIMENT AND COMPUTE STATISTICAL PARAMETERS
        CALL CPXPDTU3(N_val,L,VEXPAS,Eigenval_vector,BLAS,VEXPEN,VEXPERR,NDAT,SPNTEX,CHSQP,IPRINT)
