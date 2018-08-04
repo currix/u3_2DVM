@@ -196,6 +196,9 @@ CONTAINS
        !     DIAGONALIZE HAMILTONIAN MATRIX
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !
+       print*, Eigenval_vector - Eigenval_vector(1)
+       stop
+       !
        !    ASSIGN  COMPUTED DATA TO LOCAL BASIS STATES
        IF (IPRINT > 0) THEN 
           ASSIGNALL = .TRUE.
