@@ -10,10 +10,10 @@ MODULE u3_2dvm_mod
   !
   ! Hamiltonian Matrix
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: Ham_matrix 
-  ! W^2 Casimir Matrix
+  ! W^2 Casimir Matrix in U(2) DS
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2_matrix ! Atomic M23 in 4 body Hamiltonian with U(2) basis
-  !  ! W^2 Casimir Matrix
-  !  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: n_matrix ! Atomic M11 in 4 body Hamiltonian with SO(3) basis
+  ! n Casimir Matrix in SO(3) DS
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: n_matrix ! Atomic M11 in 4 body Hamiltonian with SO(3) basis
   !
   ! Eigenvalue Vector
   REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Diagonal_vector ! Hamiltonian Diagonal Elements
@@ -38,19 +38,30 @@ MODULE u3_2dvm_mod
   REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: H_4b_pars
   !
   ! 4 Body Hamiltonian case U(2) Basis
+  ! W^4  P46 in 4 body Hamiltonian 
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M46_P13_matrix
+  !
+  ! 4 Body Hamiltonian case SO(3) Basis
+  ! n^2 P21 in 4 body Hamiltonian
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M21_P2_matrix 
+  ! n^3 P31 in 4 body Hamiltonian 
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M31_P5_matrix
+  ! n l^2 P32 in 4 body Hamiltonian
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M32_P6_matrix
+  ! n^4 P41 in 4 body Hamiltonian
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M41_P8_matrix
+  ! n^2 l^2 P42 in 4 body Hamiltonian
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M42_P9_matrix
+  !
+  ! Operators common to both Dynamical Symmetries
   ! Wbar^2 Casimir Matrix
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2bar_matrix ! Atomic M23bar in 4 body Hamiltonian
   ! n x W^2 + W^2 x n  P33 in 4 body Hamiltonian 
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M33_P7_matrix
-  ! W^2 l^2 P44 in 4 body Hamiltonian
-  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M44_P11_matrix
   ! n^2 x W^2 + W^2 x n^2  P45 in 4 body Hamiltonian 
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M45_P12_matrix
-  ! W^4  P46 in 4 body Hamiltonian 
-  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M46_P13_matrix
   ! W^2 x Wbar^2 + Wbar^2 x W^2  P47 in 4 body Hamiltonian 
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: M47_P14_matrix
-  !
   INTEGER(KIND = I4B) :: Ierr, Iprint
   !
   LOGICAL :: Eigenvec_Log     ! If .T. compute eigenvalues and eigenvectors
@@ -408,6 +419,63 @@ CONTAINS
     !
   END FUNCTION POCCHAMMER_S
   !
+  !
+  SUBROUTINE U2_Cas_Build(N_val, L_val, dim_block, SO3_basis, n_matrix)
+    !
+    ! Subroutine to build the U(2) n Casimir operator in the 2DVM Chain II
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Vibrational Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Block dimension for N_val and L_val
+    !
+    TYPE(so3_bas), DIMENSION(:), INTENT(IN) :: SO3_Basis ! Displaced oscillator basis
+    !
+    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: n_matrix
+    !
+    ! Local variables
+    INTEGER(KIND = I4B) :: SO3_state
+    REAL(KIND = DP) :: Nvalue, Lvalue
+    REAL(KIND = DP) :: omega_val
+    !
+    ! Initialize
+    n_matrix = 0.0_DP
+    Nvalue = REAL(N_val,DP)
+    Lvalue =  REAL(L_val,DP)
+    !
+    ! Number Operator n ---> NON DIAGONAL Eq. (35) PRA (Check Typos)
+    !
+    ! Diagonal contribution 
+    DO SO3_state = 1, dim_block
+       !
+       omega_val = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+       !
+       n_matrix(SO3_state, SO3_state) = n_matrix(SO3_state, SO3_state) + &
+            n_elem_diag(Nvalue, omega_val, L_val)
+       !
+    ENDDO
+    !
+    !
+    ! Non-Diagonal contribution w2 -> w1+2 (B_0)
+    DO SO3_state = 1, dim_block - 1
+       !
+       omega_val = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+       !
+       n_matrix(SO3_state, SO3_state + 1) = n_matrix(SO3_state, SO3_state + 1) + &
+            B0(Nvalue,omega_val,L_val)
+       n_matrix(SO3_state + 1, SO3_state) = n_matrix(SO3_state, SO3_state + 1) 
+       !
+    ENDDO
+    !
+    !
+    RETURN
+    !
+  END SUBROUTINE U2_Cas_Build
   !
   SUBROUTINE Build_Mod_Ham_SO3(N_val, L_val, dim_block, SO3_Basis, Ham_U3_mat) 
     !
@@ -1148,7 +1216,7 @@ CONTAINS
        !
     ENDDO
     !
-    ! Non-diagonal in U(2) Dynamical Symmetry contributions
+    ! Non-diagonal U(2) Dynamical Symmetry contributions
     !
     ! W^2 matrix Parameter 4
     IF (H_4b_pars(4) /= 0) THEN
@@ -1195,5 +1263,550 @@ CONTAINS
     RETURN
     !
   END SUBROUTINE BUILD_HAM_4BODY_U2
+  !
+  !
+  SUBROUTINE Build_SO3DS_Operator_Matrices(N_val, L_val, dim_block, SO3_Basis)
+    !
+    ! Subroutine to allocate and build the Operator Matrices for the U(3) 2DVM Four-Body Hamiltonian
+    !
+    ! Displaced Oscillator Basis SO(3)
+    !
+    !     H = P11 n + 
+    !         P21 n^2 + P22 l^2 + P23 W^2 +  
+    !         P31 n^3 + P32 n·l^2 + P33 (n·W^2 + W^2·n) +
+    !         P41 n^4 + P42 n^2·l^2 + P43 l^4 + P44 l^2·W^2 + 
+    !         P45 (n^2·W^2 + W^2·n^2) + P46 W^4 + P47 (W^2·Wbar^2 + Wbar^2·W^2)/2
+    !
+    !     HPAR(1)   P11
+    !     HPAR(2)   P21
+    !     HPAR(3)   P22
+    !     HPAR(4)   P23
+    !     HPAR(5)   P31
+    !     HPAR(6)   P32
+    !     HPAR(7)   P33
+    !     HPAR(8)   P41
+    !     HPAR(9)   P42
+    !     HPAR(10)  P43
+    !     HPAR(11)  P44
+    !     HPAR(12)  P45
+    !     HPAR(13)  P46
+    !     HPAR(14)  P47
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    TYPE(so3_bas), DIMENSION(:), INTENT(IN) :: SO3_Basis   ! SO(3) DS basis   { | [N] w L > }
+    !
+    !
+    INTEGER(KIND = I4B) :: SO3_state, omega_v
+    REAL(KIND = DP), DIMENSION(1:dim_block) :: omega_values ! omega values
+    REAL(KIND = DP) :: omega, omegap, Nvalue, lvalue2
+    !
+    IF (IPRINT >= 2) WRITE(*,*) 'Subroutine Build_SO3DS_Operator_Matrices'
+    !
+    Nvalue = REAL(N_val, DP)
+    !
+    lvalue2 = REAL(L_val**2, DP)
+    !
+    !
+    DO SO3_state = 1, dim_block
+       !
+       omega_values(SO3_state) = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+       !
+    ENDDO
+    ! Allocate Hamiltonian Matrix
+    IF (ALLOCATED(Ham_matrix)) THEN
+       DEALLOCATE(Ham_matrix, STAT = Ierr)
+       IF (Ierr /= 0) STOP 'Ham_matrix  DEALLOCATION ERROR'
+    ENDIF
+    ALLOCATE(Ham_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+    IF (IERR /= 0) THEN
+       WRITE(UNIT = *, FMT = *) "Ham_matrix allocation request denied."
+       STOP
+    ENDIF
+    !
+    ! Allocate Eigenvalues Matrix
+    IF (ALLOCATED(Eigenval_vector)) THEN
+       DEALLOCATE(Eigenval_vector, STAT = Ierr)
+       IF (Ierr /= 0) STOP 'Eigenval_vector DEALLOCATION ERROR'
+    ENDIF
+    ALLOCATE(Eigenval_vector(1:dim_block), STAT = Ierr)
+    IF (Ierr /= 0) STOP 'Eigenval_vector ALLOCATION ERROR'
+    !
+    ! n Casimir matrix
+    IF (ALLOCATED(n_matrix)) THEN
+       DEALLOCATE(n_matrix, STAT = Ierr)
+       IF (Ierr /= 0) STOP 'n_matrix  DEALLOCATION ERROR'
+    ENDIF
+    ALLOCATE(n_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+    IF (IERR /= 0) THEN
+       WRITE(UNIT = *, FMT = *) "n_casimir allocation request denied."
+       STOP
+    ENDIF
+    !
+    ! Build n Casimir matrix Parameter 1 and atomic operator 
+    CALL U2_Cas_Build(N_val, L_val, dim_block, SO3_basis, n_matrix)
+    !
+    ! n^2 matrix Parameter 2
+    IF (H_4b_pars(2) /= 0 .OR. H_4b_pars(9) /= 0 .OR. H_4b_pars(12) /= 0) THEN
+       !
+       IF (ALLOCATED(M21_P2_matrix)) THEN
+          DEALLOCATE(M21_P2_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M21_P2_matrix DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M21_P2_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M21_P2_matrix allocation request denied."
+          STOP
+       ENDIF
+       M21_P2_matrix = 0.0_DP
+       !
+       M21_P2_matrix = MATMUL(n_matrix, n_matrix)
+       !
+       !
+    ENDIF
+    !
+    ! n^3 matrix Parameter 5
+    IF (H_4b_pars(5) /= 0) THEN
+       !
+       IF (ALLOCATED(M31_P5_matrix)) THEN
+          DEALLOCATE(M31_P5_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M31_P5_matrix DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M31_P5_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M31_P5_matrix allocation request denied."
+          STOP
+       ENDIF
+       M31_P5_matrix = 0.0_DP
+       !
+       M31_P5_matrix = MATMUL(MATMUL(n_matrix, n_matrix), n_matrix)
+       !
+       !
+    ENDIF
+    !
+    ! n^4 matrix Parameter 8
+    IF (H_4b_pars(8) /= 0) THEN
+       !
+       IF (ALLOCATED(M41_P8_matrix)) THEN
+          DEALLOCATE(M41_P8_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M41_P8_matrix DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M41_P8_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M41_P8_matrix allocation request denied."
+          STOP
+       ENDIF
+       M41_P8_matrix = 0.0_DP
+       !
+       M41_P8_matrix = MATMUL(MATMUL(n_matrix, n_matrix), MATMUL(n_matrix, n_matrix))
+       !
+       !
+    ENDIF
+    !
+    ! n x W^2 + W^2 x n matrix Parameter 7
+    IF (H_4b_pars(7) /= 0) THEN
+       IF (ALLOCATED(M33_P7_matrix)) THEN
+          DEALLOCATE(M33_P7_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M33_P7_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M33_P7_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M33_P7_matrix allocation request denied."
+          STOP
+       ENDIF
+       M33_P7_matrix = 0.0_DP
+       !
+       DO SO3_state = 1, dim_block-1
+          ! 
+          omega = omega_values(SO3_state)*(omega_values(SO3_state) + 1.0_DP)
+          omegap = omega_values(SO3_state+1)*(omega_values(SO3_state+1) + 1.0_DP)
+          !
+          M33_P7_matrix(SO3_state, SO3_state) = 2.0_DP*omega*n_matrix(SO3_state, SO3_state)
+          M33_P7_matrix(SO3_state, SO3_state+1) = (omegap+omega)*n_matrix(SO3_state, SO3_state+1)
+          M33_P7_matrix(SO3_state+1, SO3_state) = M33_P7_matrix(SO3_state, SO3_state+1)
+          !
+       ENDDO
+       !
+       ! SO3_state = dim_block case
+       omega = omega_values(dim_block)*(omega_values(dim_block) + 1.0_DP)
+       M33_P7_matrix(dim_block, dim_block) = 2.0_DP*omega*n_matrix(dim_block, dim_block)
+       !
+    ENDIF
+    !
+    !
+    ! n^2 x W^2 + W^2 x n^2 matrix Parameter 12
+    ! Double banded operator n^2 --> M21_P2_matrix
+    IF (H_4b_pars(12) /= 0) THEN
+       IF (ALLOCATED(M45_P12_matrix)) THEN
+          DEALLOCATE(M45_P12_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M45_P12_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M45_P12_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M45_P12_matrix allocation request denied."
+          STOP
+       ENDIF
+       M45_P12_matrix = 0.0_DP
+       !
+       !
+       DO SO3_state = 1, dim_block
+          ! 
+          omega = omega_values(SO3_state)*(omega_values(SO3_state) + 1.0_DP)
+          !
+          M45_P12_matrix(SO3_state, SO3_state) = 2.0_DP*omega*M21_P2_matrix(SO3_state, SO3_state)
+          !
+       ENDDO
+       !
+       DO SO3_state = 1, dim_block-1
+          ! 
+          omega = omega_values(SO3_state)*(omega_values(SO3_state) + 1.0_DP)
+          omegap = omega_values(SO3_state+1)*(omega_values(SO3_state+1) + 1.0_DP)
+          !
+          M45_P12_matrix(SO3_state, SO3_state+1) = (omegap+omega)*M21_P2_matrix(SO3_state, SO3_state+1)
+          M45_P12_matrix(SO3_state+1, SO3_state) = M45_P12_matrix(SO3_state, SO3_state+1)
+          !
+       ENDDO
+       !
+       DO SO3_state = 1, dim_block-2
+          ! 
+          omega = omega_values(SO3_state)*(omega_values(SO3_state) + 1.0_DP)
+          omegap = omega_values(SO3_state+2)*(omega_values(SO3_state+2) + 1.0_DP)
+          !
+          M45_P12_matrix(SO3_state, SO3_state+2) = (omegap+omega)*M21_P2_matrix(SO3_state, SO3_state+2)
+          M45_P12_matrix(SO3_state+2, SO3_state) = M45_P12_matrix(SO3_state, SO3_state+2)
+          !
+       ENDDO
+       !
+    ENDIF
+    !
+    ! Wbar^2 and W^2 x Wbar^2 + Wbar^2 x W^2 matrix Parameter 14
+    IF (H_4b_pars(14) /= 0) THEN
+       IF (ALLOCATED(W2bar_matrix)) THEN
+          DEALLOCATE(W2bar_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'W2bar_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(W2bar_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "W2bar_matrix allocation request denied."
+          STOP
+       ENDIF
+       !
+       DO SO3_state = 1, dim_block ! Diagonal contribution
+          ! 
+          omega_v = SO3_Basis(SO3_state)%omega_SO3_val
+          !
+          W2bar_matrix(SO3_state, SO3_state) = A_SO4BAR(N_val, omega_v, L_val)**2 + &
+               B_SO4BAR(N_val, omega_v, L_val)**2 + &
+               C_SO4BAR(N_val, omega_v, L_val)**2 + lvalue2
+          !
+       ENDDO
+       !
+       DO SO3_state = 1, dim_block - 1 ! First Diagonal contribution
+          ! 
+          omega_v = SO3_Basis(SO3_state)%omega_SO3_val
+          !
+          W2bar_matrix(SO3_state, SO3_state + 1) = A_SO4BAR(N_val, omega_v, L_val)*B_SO4BAR(N_val, omega_v + 2_I4B, L_val) + &
+               C_SO4BAR(N_val, omega_v, L_val)*A_SO4BAR(N_val, omega_v + 2_I4B, L_val)
+          !
+          W2bar_matrix(SO3_state + 1, SO3_state) = W2bar_matrix(SO3_state, SO3_state + 1) 
+          !
+       ENDDO
+       !
+       DO SO3_state = 1, dim_block - 2 ! Second Diagonal contribution
+          ! 
+          omega_v = SO3_Basis(SO3_state)%omega_SO3_val
+          !
+          W2bar_matrix(SO3_state, SO3_state + 2) = B_SO4BAR(N_val, omega_v + 4_I4B, L_val) * C_SO4BAR(N_val, omega_v, L_val)
+          !
+          W2bar_matrix(SO3_state + 2, SO3_state) = W2bar_matrix(SO3_state, SO3_state + 2) 
+          !
+       ENDDO
+       !
+       IF (ALLOCATED(M47_P14_matrix)) THEN
+          DEALLOCATE(M47_P14_matrix, STAT = Ierr)
+          IF (Ierr /= 0) STOP 'M47_P14_matrix  DEALLOCATION ERROR'
+       ENDIF
+       ALLOCATE(M47_P14_matrix(1:dim_block,1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "M47_P14_matrix allocation request denied."
+          STOP
+       ENDIF
+       M47_P14_matrix = 0.0_DP
+       !
+       DO SO3_state = 1, dim_block ! Diagonal contribution
+          !
+          M47_P14_matrix(SO3_state, SO3_state) = W2bar_matrix(SO3_state, SO3_state)* &
+               2.0_DP*omega_values(SO3_state)*(omega_values(SO3_state) + 1.0_DP)
+          !
+       ENDDO
+       !
+       DO SO3_state = 1, dim_block - 1 ! First Diagonal contribution
+          !
+          M47_P14_matrix(SO3_state, SO3_state+1) = W2bar_matrix(SO3_state, SO3_state+1)* &
+               (omega_values(SO3_state)*(omega_values(SO3_state) + 1.0_DP) + &
+               omega_values(SO3_state+1)*(omega_values(SO3_state+1) + 1.0_DP))
+          !
+          M47_P14_matrix(SO3_state+1, SO3_state) =M47_P14_matrix(SO3_state, SO3_state+1)
+          !
+       ENDDO
+       !
+       DO SO3_state = 1, dim_block - 2 ! Second Diagonal contribution
+          ! 
+          M47_P14_matrix(SO3_state, SO3_state+2) = W2bar_matrix(SO3_state, SO3_state+2)* &
+               (omega_values(SO3_state)*(omega_values(SO3_state) + 1.0_DP) + &
+               omega_values(SO3_state+2)*(omega_values(SO3_state+2) + 1.0_DP))
+          !
+          M47_P14_matrix(SO3_state+2, SO3_state) =M47_P14_matrix(SO3_state, SO3_state+2)
+          !
+       ENDDO
+       !
+    ENDIF
+    !
+    RETURN
+    !
+  END SUBROUTINE Build_SO3DS_Operator_Matrices
+  !
+  !
+  SUBROUTINE Build_Ham_4Body_SO3(N_val, L_val, dim_block, SO3_Basis) 
+    !
+    !
+    ! Subroutine to build the U(3) 2DVM Four-Body Hamiltonian
+    !
+    ! Displaced Oscillator Basis SO(3)
+    !
+    !     H = P11 n + 
+    !         P21 n^2 + P22 l^2 + P23 W^2 +  
+    !         P31 n^3 + P32 n·l^2 + P33 (n·W^2 + W^2·n) +
+    !         P41 n^4 + P42 n^2·l^2 + P43 l^4 + P44 l^2·W^2 + 
+    !         P45 (n^2·W^2 + W^2·n^2) + P46 W^4 + P47 (W^2·Wbar^2 + Wbar^2·W^2)/2
+    !
+    !     HPAR(1)   P11
+    !     HPAR(2)   P21
+    !     HPAR(3)   P22
+    !     HPAR(4)   P23
+    !     HPAR(5)   P31
+    !     HPAR(6)   P32
+    !     HPAR(7)   P33
+    !     HPAR(8)   P41
+    !     HPAR(9)   P42
+    !     HPAR(10)  P43
+    !     HPAR(11)  P44
+    !     HPAR(12)  P45
+    !     HPAR(13)  P46
+    !     HPAR(14)  P47
+    !
+    !  by Currix TM.
+    !
+    IMPLICIT NONE
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
+    !
+    TYPE(so3_bas), DIMENSION(:), INTENT(IN) :: SO3_Basis   ! SO3 basis   { | [N] w L > }
+    !
+    ! Local variables
+    INTEGER(KIND = I4B) :: SO3_state
+    REAL(KIND = DP), DIMENSION(1:dim_block) :: omega_values ! w values
+    REAL(KIND = DP) :: omega_val, Nvalue, lvalue2
+    !
+    !
+    Nvalue = REAL(N_val, DP)
+    lvalue2 = REAL(L_val**2, DP)
+    !
+    !
+    DO SO3_state = 1, dim_block
+       !
+       omega_values(SO3_state) = REAL(SO3_Basis(SO3_state)%omega_SO3_val, DP)
+       !
+    ENDDO
+    !
+    ! Build Hamiltonian
+    !
+    Ham_matrix = 0.0_DP
+    !
+    ! Diagonal contributions in the SO(3) dynamical symmetry
+    !
+    DO SO3_state = 1, dim_block
+       !
+       omega_val = omega_values(SO3_state)
+       !
+       Ham_matrix(SO3_state, SO3_state) = Ham_matrix(SO3_state, SO3_state) + &
+            !
+            ! lvalue2 polynomial term
+            lvalue2 * ( &
+            H_4b_pars(3) + &  ! l^2 -- P22 -- 3
+            lvalue2 *  &
+            H_4b_pars(10) &   ! l^4 -- P43 -- 10
+            ) 
+       !
+       Ham_matrix(SO3_state, SO3_state) = Ham_matrix(SO3_state, SO3_state) + &
+            !
+            ! W^2 polynomial term
+            omega_val*(omega_val + 1.0_DP) * ( &
+            H_4b_pars(4) + &  ! W^2 -- P23 -- 4
+            omega_val*(omega_val + 1.0_DP) *  &
+            H_4b_pars(13) &   ! W^4 -- P46 -- 13
+            )
+            !
+       Ham_matrix(SO3_state, SO3_state) = Ham_matrix(SO3_state, SO3_state) + &
+            !
+            H_4b_pars(11)*omega_val*(omega_val + 1.0_DP) * lvalue2  ! W^2 l^2 -- P44 -- 11
+       !            
+    ENDDO
+    !
+    ! Non-diagonal SO(3) Dynamical Symmetry contributions
+    !
+    ! n matrix Parameter 1
+    IF (H_4b_pars(1) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(1)*n_matrix
+       !
+    ENDIF
+    !
+    ! n^2 matrix Parameter 2
+    IF (H_4b_pars(2) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(2)*M21_P2_matrix
+       !
+    ENDIF
+    !
+    ! n^3 matrix Parameter 5
+    IF (H_4b_pars(5) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(5)*M31_P5_matrix
+       !
+    ENDIF
+    !
+    ! n l^2 matrix Parameter 6
+    IF (H_4b_pars(6) /= 0 .AND. L_val /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(6)*lvalue2*n_matrix
+       !
+    ENDIF
+    !
+    ! n x W^2 + W^2 x n matrix Parameter 7
+    IF (H_4b_pars(7) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(7)*M33_P7_matrix
+       !
+    ENDIF
+    !
+    ! n^4 matrix Parameter 8
+    IF (H_4b_pars(8) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(8)*M41_P8_matrix
+       !
+    ENDIF
+    !
+    ! n^2 l^2 matrix Parameter 9
+    IF (H_4b_pars(9) /= 0 .AND. L_val /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(9)*lvalue2*M21_P2_matrix
+       !
+    ENDIF
+    !
+    ! n^2 x W^2 + W^2 x n^2 matrix Parameter 12
+    IF (H_4b_pars(12) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(12)*M45_P12_matrix
+       !
+    ENDIF
+    !
+    ! Wbar^2 and W^2 x Wbar^2 + Wbar^2 x W^2 matrix Parameter 14
+    IF (H_4b_pars(14) /= 0) THEN
+       !
+       Ham_matrix = Ham_matrix + H_4b_pars(14)*M47_P14_matrix
+       !
+    ENDIF
+    !
+    RETURN
+   !
+    !
+  END SUBROUTINE BUILD_HAM_4BODY_SO3
+  !
+  !
+  FUNCTION A_SO4BAR(N_val, omega_val, l_val)
+    !
+    ! <N w l-1 | R- | N w l > 
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val, omega_val, l_val ! N, omega and angular momentum
+    !
+    REAL(KIND = DP) :: A_SO4BAR
+    !
+    !  Local variables
+    REAL(KIND = DP) :: Nv, wv, lv 
+    !
+    Nv = REAL(N_val,DP)
+    wv = REAL(omega_val,DP)
+    lv = REAL(L_val,DP)
+    !
+    A_SO4BAR = (2.0_DP*Nv+3.0_DP)*(2.0_DP*lv + 1.0_DP)* &
+         SQRT(0.5_DP*(wv-lv+1.0_DP)*(wv+lv))/ &
+         ((2.0_DP*wv-1.0_DP)*(2.0_DP*wv+3.0_DP))
+    !
+    RETURN
+    !
+  END FUNCTION A_SO4BAR
+  !
+  FUNCTION B_SO4BAR(N_val, omega_val, l_val)
+    !
+    ! <N w-2 l-1 | R- | N w l > 
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val, omega_val, l_val ! N, omega and angular momentum
+    !
+    REAL(KIND = DP) :: B_SO4BAR
+    !
+    !  Local variables
+    REAL(KIND = DP) :: Nv, wv, lv 
+    !
+    Nv = REAL(N_val,DP)
+    wv = REAL(omega_val,DP)
+    lv = REAL(L_val,DP)
+    !
+    B_SO4BAR = -SQRT(2.0_DP* &
+         (Nv+wv+1.0_DP)*(Nv-wv+2.0_DP)* &
+         (wv+lv)*(wv-lv)*(wv+lv-1.0_DP)*(wv+lv-2.0_DP)/ &
+         ((2.0_DP*wv+1.0_DP)*(2.0_DP*wv-1.0_DP)**2*(2.0_DP*wv-3.0_DP)) &
+         )
+    !
+    RETURN
+    !
+  END FUNCTION B_SO4BAR
+  !
+  FUNCTION C_SO4BAR(N_val, omega_val, l_val)
+    !
+    ! <N w+2 l-1 | R- | N w l > 
+    !
+    INTEGER(KIND = I4B), INTENT(IN) :: N_val, omega_val, l_val ! N, omega and angular momentum
+    !
+    REAL(KIND = DP) :: C_SO4BAR
+    !
+    !  Local variables
+    REAL(KIND = DP) :: Nv, wv, lv 
+    !
+    Nv = REAL(N_val,DP)
+    wv = REAL(omega_val,DP)
+    lv = REAL(L_val,DP)
+    !
+    C_SO4BAR = SQRT(2.0_DP* &
+         (Nv+wv+3.0_DP)*(Nv-wv)* &
+         (wv-lv+1.0_DP)*(wv+lv+1.0_DP)*(wv-lv+2.0_DP)*(wv-lv+3.0_DP)/ &
+         ((2.0_DP*wv+1.0_DP)*(2.0_DP*wv+3.0_DP)**2*(2.0_DP*wv+5.0_DP)) &
+         )
+    !
+    RETURN
+    !
+  END FUNCTION C_SO4BAR
   !
 END MODULE u3_2dvm_mod

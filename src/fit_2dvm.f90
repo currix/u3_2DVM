@@ -42,8 +42,8 @@ MODULE FIT_2DVM
   !     STATISTICAL VARIABLES
   REAL(KIND = DP) ::  CHSQP, CHSQT
   !
-  ! Minimum value of a squared component to set a state as correctly assigned
-  REAL(KIND = DP) :: Min_Sq_Comp = 0.75_DP
+  ! Minimum value of a squared component to flag a state as correctly assigned
+  REAL(KIND = DP) :: Min_Sq_Comp = 0.5_DP
   !
   !     TOTAL NUMBER OF EXPERIMENTAL DATA
   INTEGER(KIND = I4B) :: TOTDAT
@@ -160,7 +160,29 @@ CONTAINS
        !
        IF (BENT) THEN
           !
-          STOP 'BENT CASE NOT READY. YET...'
+          ! Build U(3) > SO(3) > SO(2) Basis
+          IF (ALLOCATED(SO3_Basis)) THEN    
+             DEALLOCATE(SO3_Basis, STAT = IERR)    
+             IF (IERR /= 0) THEN
+                WRITE(UNIT = *, FMT = *) "SO3_Basis deallocation request denied."
+                STOP
+             ENDIF
+          ENDIF
+          !
+          ALLOCATE(SO3_Basis(1:dim_block), STAT = IERR)    
+          IF (IERR /= 0) THEN
+             WRITE(UNIT = *, FMT = *) "SO3_Basis allocation request denied."
+             STOP
+          ENDIF
+          !
+          CALL SO3_BASIS_VIBRON(N_val, L, SO3_Basis) ! Build U2 basis
+          !
+          !
+          ! Allocate and Build Hamiltonian and Hamiltonian Operator Matrices
+          !
+          CALL Build_SO3DS_Operator_Matrices(N_val, L, dim_block, SO3_Basis)
+          !
+          CALL Build_Ham_4Body_SO3(N_val, L, dim_block, SO3_Basis)  
           !
        ELSE
           !
@@ -880,7 +902,7 @@ CONTAINS
     !
     ! Assign quantum numbers
     IF (BENT) THEN
-       LMC = MAX_INDEXES - 1
+       LMC = DIM - MAX_INDEXES   ! v index v = (N - w)/2
     ELSE
        LMC = L + 2*(MAX_INDEXES - 1_I4B)
     ENDIF
@@ -952,7 +974,7 @@ CONTAINS
     !
     ! Replace indexes with quantum numbers and locate ground state
     IF (BENT) THEN
-       MAX_INDEXES = MAX_INDEXES - 1
+       MAX_INDEXES = DIM - MAX_INDEXES ! v index v = (N - w)/2
        STOP 'UNFINISHED...'
     ELSE
        MAX_INDEXES = L + 2_I4B*(MAX_INDEXES - 1_I4B)
@@ -1121,775 +1143,227 @@ CONTAINS
     BLAS = 0_I4B
     PTEMP = 0_I4B      
     !
-    IF (BENT) THEN
-       !
-       !     BENT CASE
-       !
-       !     PROJECTION OF THE EIGENVECTORS TO THE BENT BASIS
-       !     (I) DIAGONALIZATION OF THE PAIRING OPERATOR TO GET TRANSF. BRACK.
-       ! ALLOCATE(TBRACK(1:DIM, 1:DIM), STAT = IERR)
-       ! IF (IERR /= 0) STOP 'ERROR ALLOCATING TBRACK - ASSGNU3 MATRIX'
-       ! TBRACK = 0.0_DP
-       !
-       stop 'not ready yet.... sayonara baby'
-       !
-       !
+    !     
+    !     LOOK FOR MAXIMUM COMPONENT
+    IF (ASSIGNALL) THEN
+       CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
     ELSE
+       CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
+    ENDIF
+    !     
+    !
+    IF (IPRINT >= 3) THEN
+       WRITE(*,*) 'MAXC', FLAG
+       WRITE(*,*) (BLAS(I),I=1,DIM)
+    ENDIF
+    !
+    !      
+    !  SAVE COPY OF INITIAL PARAMETERS
+    HPART = H_4b_pars
+    !     
+    !     MIX: NUMBER OF ITERATIONS UP AND DOWN
+    MIX = 0
+    !     
+    !     SCALE DOWN
+    !     
+    FAC = 1.0D0
+    !
+    !      IF FLAG = .T. : PROBLEMS WITH ASSIGNMENT
+    DO WHILE (FLAG)
+       !     
+       FAC = FAC*0.5_DP
        !
-       !     LINEAR CASE
+       MIX = MIX + 1
+       !     
+       !     RECOVER COPY OF INITIAL PARAMETERS
+       H_4b_pars = HPART
+       !
+       IF (IPRINT >= 2) WRITE(*,*)'SCALING DOWN MIXING BY ', FAC
+       !     
+       ICOUNT = ICOUNT + 1
+       !     
+       CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
+       !
+       !     DIAGONALIZE HAMILTONIAN
+       !
+       Eigenval_vector = 0.0_DP
+       !
+       CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !     
        !     LOOK FOR MAXIMUM COMPONENT
+       !
+       ! print*, "E1", HAM(:,1)**2
+       ! print*, ""
+       ! print*, "E2", HAM(:,2)**2
+       ! print*, ""
+       ! print*, "E3", HAM(:,3)**2
+       !
        IF (ASSIGNALL) THEN
-          CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
+          CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, &
+               Min_Sq_Comp, BLAS, FLAG)
        ELSE
-          CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
+          CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, &
+               N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
        ENDIF
-       !     
+       !
        IF (IPRINT >= 3) THEN
-          WRITE(*,*) 'MAXC', FLAG
+          WRITE(*,*) 'MAXC DOWN', FLAG
           WRITE(*,*) (BLAS(I),I=1,DIM)
        ENDIF
-       !      
-       !  SAVE COPY OF INITIAL PARAMETERS
-       HPART = H_4b_pars
-       !     
-       !     MIX: NUMBER OF ITERATIONS UP AND DOWN
-       MIX = 0
-       !     
-       !     SCALE DOWN
-       !     
-       FAC = 1.0D0
        !
-       !      IF FLAG = .T. : PROBLEMS WITH ASSIGNMENT
-       DO WHILE (FLAG)
-          !     
-          FAC = FAC*0.5_DP
-          !
-          MIX = MIX + 1
-          !     
-          !     RECOVER COPY OF INITIAL PARAMETERS
-          H_4b_pars = HPART
-          !
-          IF (IPRINT >= 2) WRITE(*,*)'SCALING DOWN MIXING BY ', FAC
-          !     
-          ICOUNT = ICOUNT + 1
-          !     
-          CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
-          !
-          !     DIAGONALIZE HAMILTONIAN
-          !
-          Eigenval_vector = 0.0_DP
-          !
-          CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
-          !     
-          !     LOOK FOR MAXIMUM COMPONENT
-          !
-          ! print*, "E1", HAM(:,1)**2
-          ! print*, ""
-          ! print*, "E2", HAM(:,2)**2
-          ! print*, ""
-          ! print*, "E3", HAM(:,3)**2
-          !
-          IF (ASSIGNALL) THEN
-             CALL Maximum_Components_U3(BENT, N2, L, Ham_matrix, DIM, &
-                  Min_Sq_Comp, BLAS, FLAG)
-          ELSE
-             CALL Maximum_Components_EXP_U3(BENT, VEXPAS, NDAT, &
-                  N2, L, Ham_matrix, DIM, Min_Sq_Comp, BLAS, FLAG)
-          ENDIF
-          !
-          IF (IPRINT >= 3) THEN
-             WRITE(*,*) 'MAXC DOWN', FLAG
-             WRITE(*,*) (BLAS(I),I=1,DIM)
-          ENDIF
-          !
-       ENDDO
-       !
-       IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
-       !            
-       IF (ICOUNT == 0) RETURN ! WELL DEFINED EIGENVECTORS
-       !
-       !     SCALE UP
+    ENDDO
+    !
+    IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
+    !            
+    IF (ICOUNT == 0) RETURN ! WELL DEFINED EIGENVECTORS
+    !
+    !     SCALE UP
+    !     
+    MIXSTEP = 1.0_DP/(1.5_DP*2.0_DP**MIX)
+    FAC = 1.0_DP/(2.0_DP**MIX)      
+    !
+    HAM2 = Ham_matrix
+    !
+    scaleup: DO
+       !     RECOVER COPY OF INITIAL PARAMETERS
+       H_4b_pars = HPART
        !     
-       MIXSTEP = 1.0_DP/(1.5_DP*2.0_DP**MIX)
-       FAC = 1.0_DP/(2.0_DP**MIX)      
+       MIXSTEP = 1.5_DP*MIXSTEP
+       FAC = FAC + MIXSTEP
        !
-       scaleup_u2: DO
-          !     RECOVER COPY OF INITIAL PARAMETERS
-          H_4b_pars = HPART
-          !     
-          MIXSTEP = 1.5_DP*MIXSTEP
-          FAC = FAC + MIXSTEP
+       IF (FAC > 1.0_DP) FAC = 1.0_DP
+       !
+       IF (IPRINT >= 2) WRITE(*,*) 'SCALING MIXING UP BY ',FAC 
+       !     
+       ICOUNT = ICOUNT + 1
+       !
+       CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
+       !     
+       !     DIAGONALIZE HAMILTONIAN
+       !
+       Eigenval_vector = 0.0_DP
+       !
+       CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
+       !
+       !
+       !     PROJECTING ONTO FORMER EIGENVECTORS SAVED IN HAM2
+       !     THE EIGENVECTORS ARE PROJECTED ONTO THE PREVIOUS ONES AND 
+       !     IF EITHER SOME OF THE PROJECTIONS SQUARED IS LESS THAN Min_Sq_Comp
+       !     OR TWO HAVE THE SAME MAXIMAL PROJECTIONS THE PARAMETERS ARE 
+       !     RESCALED DOWN AGAIN.
+       !     
+       IF (ASSIGNALL) THEN
+          !     SCALAR PRODUCT
+          DO I = 1, DIM 
+             VMAX = 0.0D0
+             PTEMP(I) = 0
+             !
+             DO J = 1, DIM
+                !
+                VT = DOT_PRODUCT(Ham_matrix(:,I), HAM2(:,J))**2
+                !
+                !     MAXIMAL COMPONENT
+                IF (VT > VMAX) THEN
+                   VMAX = VT
+                   JMAX = BLAS(J)
+                ENDIF
+             ENDDO
+             PTEMP(I) = JMAX
+             !
+!!!!!!!!print*, i, vmax, jmax, ptemp(i)
+             !     
+             !     CHECK FOR AMBIGUITIES
+             IF (VMAX < Min_Sq_Comp) THEN
+                FAC = FAC - MIXSTEP
+                MIXSTEP = MIXSTEP/3.0_DP
+                CYCLE scaleup 
+             ELSE
+                DO J2 = 1, I - 1
+                   IF (PTEMP(J2) == JMAX) THEN
+                      FAC = FAC - MIXSTEP
+                      MIXSTEP = MIXSTEP/3.0_DP
+                      CYCLE scaleup
+                      !
+                   ENDIF
+                ENDDO
+             ENDIF
+             !
+          ENDDO
           !
-          IF (FAC > 1.0_DP) FAC = 1.0_DP
+       ELSE
           !
-          IF (IPRINT >= 2) WRITE(*,*) 'SCALING MIXING UP BY ',FAC 
-          !     
-          ICOUNT = ICOUNT + 1
+          !     COMPARING ONLY STATES WITH BLAS(I).NE.-1
+          !     WHICH ARE THE EXPERIMENTAL ONES
+          PTEMP = -1
           !
-          HAM2 = Ham_matrix
-          !
-          CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
-          !     
-          !     DIAGONALIZE HAMILTONIAN
-          !
-          Eigenval_vector = 0.0_DP
-          !
-          CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
-          !
-          !
-          !     PROJECTING ONTO FORMER EIGENVECTORS SAVED IN HAM2
-          !     THE EIGENVECTORS ARE PROJECTED ONTO THE PREVIOUS ONES AND 
-          !     IF EITHER SOME OF THE PROJECTIONS SQUARED IS LESS THAN Min_Sq_Comp
-          !     OR TWO HAVE THE SAME MAXIMAL PROJECTIONS THE PARAMETERS ARE 
-          !     RESCALED DOWN AGAIN.
-          !     
-          IF (ASSIGNALL) THEN
-             !     SCALAR PRODUCT
-             DO I = 1, DIM 
+          DO I = 1, DIM
+             IF (BLAS(I) /= -1) THEN
                 VMAX = 0.0D0
-                PTEMP(I) = 0
                 !
                 DO J = 1, DIM
                    !
-                   VT = DOT_PRODUCT(Ham_matrix(:,I), HAM2(:,J))**2
+                   VT = DOT_PRODUCT(Ham_matrix(:,J),HAM2(:,I))
                    !
                    !     MAXIMAL COMPONENT
+                   VT = VT * VT
                    IF (VT > VMAX) THEN
                       VMAX = VT
-                      JMAX = BLAS(J)
+                      JMAX = J
                    ENDIF
                 ENDDO
-                PTEMP(I) = JMAX
                 !
-                print*, i, vmax, jmax, ptemp(i)
-                !     
-                !     CHECK FOR AMBIGUITIES
+                PTEMP(JMAX) = BLAS(I)
+                !
+                IF (IPRINT > 2) WRITE(*,*) I, BLAS(I), JMAX, VMAX
+                !
+                !     CHECK FOR AMBIGUITIES 
                 IF (VMAX < Min_Sq_Comp) THEN
                    FAC = FAC - MIXSTEP
                    MIXSTEP = MIXSTEP/3.0_DP
-                   CYCLE scaleup_u2 
-                ELSE
-                   DO J2 = 1, I - 1
-                      IF (PTEMP(J2) == JMAX) THEN
-                         FAC = FAC - MIXSTEP
-                         MIXSTEP = MIXSTEP/3.0_DP
-                         CYCLE scaleup_u2
-                         !
-                      ENDIF
-                   ENDDO
+                   CYCLE scaleup
                 ENDIF
-                !
-             ENDDO
-             !
-          ELSE
-             !
-             !     COMPARING ONLY STATES WITH BLAS(I).NE.-1
-             !     WHICH ARE THE EXPERIMENTAL ONES
-             PTEMP = -1
-             !
-             DO I = 1, DIM
-                IF (BLAS(I) /= -1) THEN
-                   VMAX = 0.0D0
-                   !
-                   DO J = 1, DIM
-                      !
-                      VT = DOT_PRODUCT(Ham_matrix(:,J),HAM2(:,I))
-                      !
-                      !     MAXIMAL COMPONENT
-                      VT = VT * VT
-                      IF (VT > VMAX) THEN
-                         VMAX = VT
-                         JMAX = J
-                      ENDIF
-                   ENDDO
-                   !
-                   PTEMP(JMAX) = BLAS(I)
-                   !
-                   IF (IPRINT > 2) WRITE(*,*) I, BLAS(I), JMAX, VMAX
-                   !
-                   !     CHECK FOR AMBIGUITIES 
-                   IF (VMAX < Min_Sq_Comp) THEN
+                DO J2 = 1, DIM
+                   IF (PTEMP(J2) == BLAS(I) .AND. J2 /= JMAX) THEN
                       FAC = FAC - MIXSTEP
-                      MIXSTEP = MIXSTEP/3.0_DP
-                      CYCLE scaleup_u2
+                      MIXSTEP = MIXSTEP/3.0D0
+                      CYCLE scaleup
                    ENDIF
-                   DO J2 = 1, DIM
-                      IF (PTEMP(J2) == BLAS(I) .AND. J2 /= JMAX) THEN
-                         FAC = FAC - MIXSTEP
-                         MIXSTEP = MIXSTEP/3.0D0
-                         CYCLE scaleup_u2
-                      ENDIF
-                   ENDDO
-                   !                    
-                ENDIF
-                !
-             ENDDO
+                ENDDO
+                !                    
+             ENDIF
              !
-          ENDIF
+          ENDDO
           !
-          HAM2 = Ham_matrix
-          !
-          BLAS = PTEMP
-          !
-          WRITE(*,*) 'FAC', FAC
-          WRITE(*,*) 'BLAS', BLAS
-          !
-          IF (FAC == 1.0_DP) THEN
-             !
-             CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
-             !
-             Eigenval_vector = 0.0_DP
-             !
-             CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
-             !     
-             IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
-             !
-             IF (IPRINT > 2) WRITE(*,*) 'FINAL BLAS', BLAS
-             !
-             RETURN
-             !    
-          ENDIF
-          !
-       END DO scaleup_u2
+       ENDIF
        !
-    ENDIF
+       HAM2 = Ham_matrix
+       !
+       BLAS = PTEMP
+       !
+!!!!print*, 'FAC', FAC
+!!!!print*, 'BLAS', BLAS
+       !
+       IF (FAC == 1.0_DP) THEN
+          !
+          CALL Scale_Hamiltonian(FAC, BENT, N2, L, DIM)
+          !
+          Eigenval_vector = 0.0_DP
+          !
+          CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
+          !     
+          IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
+          !
+          IF (IPRINT > 2) WRITE(*,*) 'FINAL BLAS', BLAS
+          !
+          RETURN
+          !    
+       ENDIF
+       !
+    END DO scaleup
+    !
+    RETURN
     !
   END SUBROUTINE ASSIGN_U3_DSYMMETRY
   !
   !
 END MODULE FIT_2DVM
-      
-
-
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!   SUBROUTINE ASSGNU3(BENT, ASSIGNALL, N2, L, DIM, W2, W4, W2W2B, HAM, EIGEN, &
-!        VEXPAS, NDAT, BLAS, IPRINT)
-!     !
-!     !     SUBROUTINE THAT LOOKS FOR THE BEST ASSIGNATIONS  
-!     !     FOR THE CALCULATED LEVELS TO
-!     !     LOCAL BASIS STATES IN THE U(3) MODEL.
-!     !
-!     !     IF LINEAR IT ASSIGNS TO A n,l BASIS IF BENT TO A v,K BASIS
-!     !
-!     !     IN CASE OF HIGH MIXING THE ASSIGNMENT COULD BE AMBIGUOUS AND 
-!     !     THEN IT IS FOLLOWED BY SCALING DOWN THE MIXING PARAMETERS UNTIL 
-!     !     AN UNAMBIGUOUS ASSIGNMENT CAN BE FOUND AND THEN SCALE THEM UP 
-!     !     AGAIN TO THE ORIGINAL VALUE, PROJECTING IN EACH STEP ONTO THE 
-!     !     PREVIOUS ONES (PROCEDURE USED TO RESOLVE  STARK MIXED ROTATIONAL
-!     !     LEVELS, PROGRAMMED BY THOMAS MULLER). 
-!     !     
-!     !     INPUT
-!     !     BENT     : .T. BENT MOLECULE, .F. LINEAR MOLECULE
-!     !     ASSIGNALL: IF .F. ASSIGN UNAMBIGUOUSLY ONLY DATA WITH EXPERIMENTAL INFO  
-!     !     N2       : U(3) IRREP LABEL (BENDING)
-!     !     L        : VIBRATIONAL ANGULAR MOMENTUM LABEL
-!     !     DIM      : BLOCK DIMENSION
-!     !     W2       : ARRAY WITH THE SO(3) CASIMIR BLOCK 
-!     !     W4       : ARRAY WITH THE SO(3) CASIMIR BLOCK 
-!     !     W2W2B    : ARRAY WITH THE SO(3) W2·W2B + W2B·W2 CASIMIR BLOCK 
-!     !     HAM      : HAMILTONIAN MATRIX (EIGENVECTOR MATRIX IN INPUT)
-!     !     EIGEN    : EIGENVALUES VECTOR
-!     !     VEXPAS   : EXPERIMENTAL ASSIGNMENTS FOR POLYAD (L) FORMAT:(V l) OR (n l)
-!     !     NDAT     : NUMBER OF EXPERIMENTAL DATA FOR POLYAD (L)
-!     !
-!     !     OUTPUT
-!     !     BLAS  :  LOCAL BASIS (BENT OR LINEAR) VECTOR WITH ASSIGNMENTS
-!     !
-!     !     by Currix TM
-!     !     
-!     IMPLICIT NONE
-!     !
-!     !     DEFINITION OF VARIABLES
-!     !
-!     LOGICAL, INTENT(IN) :: BENT, ASSIGNALL
-!     INTEGER(KIND = I4B), INTENT(IN) :: N2
-!     INTEGER(KIND = I4B), INTENT(IN) :: L, DIM, NDAT, IPRINT
-!     REAL(KIND = DP), DIMENSION(:,:), INTENT(INOUT)  :: W2, W4, W2W2B, HAM
-!     REAL(KIND = DP), DIMENSION(:), INTENT(INOUT)  :: EIGEN
-!     INTEGER(KIND = I4B), DIMENSION(:,:), INTENT(IN) :: VEXPAS
-!     !
-!     INTEGER(KIND = I4B), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: BLAS
-!     !
-!     !
-!     ! LOCAL VARIABLES                                     
-!     LOGICAL :: FLAG
-!     INTEGER(KIND = I4B) :: IERR
-!     REAL(KIND = DP), DIMENSION(1:NPMAX)  :: HPART
-!     INTEGER(KIND = I4B) :: MIX
-!     INTEGER(KIND = I4B), DIMENSION(1:DIM) :: PTEMP
-!     REAL(KIND = DP) :: FAC, MIXSTEP
-!     REAL(KIND = DP) :: VMAX, VT
-!     REAL(KIND = DP), DIMENSION(1:DIM,1:DIM) :: HAM2
-!     REAL(KIND = DP), DIMENSION(1:DIM) :: EIGEN2
-!     REAL(KIND = DP), DIMENSION(1:DIM,1:DIM) :: TBRACK
-!     INTEGER(KIND = I4B) :: I, J, J2, JMAX, ICOUNT
-!     !
-!     !
-!     IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE ASSIGN STARTS HERE'
-!     !
-!     ! !     POLYAD DIMENSION
-!     ! DIM = (N2 - MOD(N2 - L,2) - L)/2 + 1
-!     !
-!     !      INITIALIZE COUNTER
-!     !
-!     ICOUNT = 0
-!     !
-!     !
-!     ! ALLOCATE(HAM2(1:DIM, 1:DIM), STAT = IERR)
-!     ! IF (IERR /= 0) STOP 'ERROR ALLOCATING HAM2 - ASSGNU3 MATRIX'
-!     ! HAM2 = 0.0_DP
-!     ! !
-!     ! ALLOCATE(EIGEN2(1:DIM), STAT = IERR)
-!     ! IF (IERR /= 0) STOP 'ERROR ALLOCATING EIGEN2 - ASSGNU3 MATRIX'
-!     ! EIGEN2 = 0.0_DP
-!     ! !
-!     ! ALLOCATE(PTEMP(1:DIM), STAT = IERR)
-!     ! IF (IERR /= 0) STOP 'ERROR ALLOCATING PTEMP - ASSGNU3 MATRIX'
-!     ! PTEMP = 0      
-!     !
-!     ALLOCATE(BLAS(1:DIM), STAT = IERR)
-!     IF (IERR /= 0) STOP 'ERROR ALLOCATING BLAS - ASSGNU3 MATRIX'
-!     PTEMP = 0      
-!     !
-!     IF (BENT) THEN
-!        !
-!        !     BENT CASE
-!        !
-!        !     PROJECTION OF THE EIGENVECTORS TO THE BENT BASIS
-!        !     (I) DIAGONALIZATION OF THE PAIRING OPERATOR TO GET TRANSF. BRACK.
-!        ! ALLOCATE(TBRACK(1:DIM, 1:DIM), STAT = IERR)
-!        ! IF (IERR /= 0) STOP 'ERROR ALLOCATING TBRACK - ASSGNU3 MATRIX'
-!        ! TBRACK = 0.0_DP
-!        !
-!        CALL SO3CASBUILD(W2, N2, L, Iprint)
-!        !
-!        !     CHANGE SIGN TO W2 TO GET THE CORRECT GROUND STATE WF
-!        !       CALL LA_SYEVR(A=-W2, W=HAM2(:,1), JOBZ='V', UPLO='U')
-!        W2 = -W2
-!        CALL LA_SYEVR(A=W2, W=EIGEN2, JOBZ='V', UPLO='U')
-!        TBRACK = W2
-!        !
-!        W2 = MATMUL(TBRACK, HAM)
-!        !
-!        !      LOOK FOR MAXIMUM COMPONENT
-!        IF (ASSIGNALL) THEN
-!           CALL MAXCU3(BENT, N2, L, W2, DIM, BLAS, FLAG, IPRINT)
-!        ELSE
-!           CALL MAXCU3EXP(BENT, VEXPAS, NDAT, N2, L, W2, DIM, BLAS, FLAG, IPRINT)
-!        ENDIF
-!        !
-!        IF (IPRINT >= 3) THEN
-!           WRITE(*,*) 'MAXC', FLAG
-!           WRITE(*,*) (BLAS(I),I=1,DIM)
-!        ENDIF
-!        !
-!        !     SAVE COPY OF INITIAL PARAMETERS
-!        HPART = H_4b_pars
-!        !     
-!        !     MIX: NUMBER OF ITERATIONS UP AND DOWN
-!        !     
-!        MIX = 0
-!        !
-!        !     SCALE DOWN
-!        !     
-!        FAC = 1.0_DP
-!        !     
-!        !     IF FLAG = .T. PROBLEMS WITH ASSIGNMENT     
-!        DO WHILE (FLAG)
-!           !     
-!           FAC = FAC/2.0D0
-!           !     
-!           MIX = MIX + 1
-!           !     
-!           !     RECOVER COPY OF INITIAL PARAMETERS
-!           H_4b_pars = HPART
-!           !     
-!           IF (IPRINT >= 2) WRITE(*,*)'SCALING DOWN MIXING BY ', FAC
-!           !
-!           ICOUNT = ICOUNT + 1
-!           !     
-!           CALL SCLHAM(FAC, BENT, N2, L, HAM, W2, W4, W2W2B, IPRINT)
-!           !     
-!           !     DIAGONALIZE HAMILTONIAN
-!           !
-!           EIGEN = 0.0D0
-!           !     
-!           CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
-!           !     
-!           !     LOOK FOR MAXIMUM COMPONENT
-!           !     
-!           !     (II) MATRIX PRODUCT
-!           W2 = MATMUL(TRANSPOSE(TBRACK), HAM)
-!           !
-!           IF (ASSIGNALL) THEN
-!              CALL MAXCU3(BENT, N2, L, W2, DIM, BLAS, FLAG, IPRINT)
-!           ELSE
-!              CALL MAXCU3EXP(BENT, VEXPAS, NDAT, N2, L, W2, DIM, BLAS, FLAG, IPRINT)
-!           ENDIF
-!           !     
-!           IF (IPRINT >= 4) THEN
-!              write(*,*) 'maxc', flag
-!              WRITE(*,*) (BLAS(I),I=1,DIM)
-!           ENDIF
-!           !
-!        END DO
-!        !
-!        IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
-!        !            
-!        IF (ICOUNT == 0) RETURN ! WELL DEFINED EIGENVECTORS
-!        !
-!        !     
-!        !     SCALE UP
-!        MIXSTEP = 1.0_DP/(1.5_DP*2.0_DP**MIX)
-!        FAC = 1.0_DP/(2.0_DP**MIX)
-!        !
-!        HAM = W2 
-!        !
-!        scaleup_so3: DO
-!           !
-!           !     RECOVER COPY OF INITIAL PARAMETERS
-!           H_4b_pars = HPART
-!           !     
-!           MIXSTEP = 1.5_DP*MIXSTEP
-!           FAC = FAC + MIXSTEP
-!           !
-!           IF (FAC > 1.0_DP) FAC = 1.0_DP
-!           !     
-!           IF (IPRINT >= 2) WRITE(*,*) 'SCALING MIXING UP BY ', FAC 
-!           !
-!           ICOUNT = ICOUNT + 1
-!           !
-!           CALL SCLHAM(FAC,BENT,N2,L,HAM2,W2,W4,W2W2B, iprint)
-!           !     
-!           !     DIAGONALIZE HAMILTONIAN
-!           EIGEN = 0.0_DP
-!           !
-!           CALL LA_SYEVR(A=HAM2, W=EIGEN, JOBZ='V', UPLO='U')
-!           !
-!           !     (II) MATRIX PRODUCT
-!           W2 = MATMUL(TRANSPOSE(TBRACK), HAM2)
-!           !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!           !   
-!           !   PROJECTING ONTO FORMER EIGENVECTORS
-!           !   THE EIGENVECTORS ARE PROJECTED ONTO THE PREVIOUS ONES AND 
-!           !   IF EITHER SOME OF THE PROJECTIONS SQUARED IS LESS THAN 0.5
-!           !   OR TWO HAVE THE SAME MAXIMAL PROJECTIONS THE PARAMETERS ARE 
-!           !   RESCALED DOWN AGAIN.
-!           !   
-!           IF (ASSIGNALL) THEN
-!              !     SCALAR PRODUCT
-!              DO I = 1, DIM 
-!                 VMAX = 0.0_DP
-!                 PTEMP(I) = 0
-!                 DO J = 1, DIM
-!                    VT = DOT_PRODUCT(HAM(:,J), W2(:,I))
-!                    !     
-!                    !     MAXIMAL COMPONENT
-!                    VT = VT * VT
-!                    IF (VT > VMAX) THEN
-!                       VMAX = VT
-!                       JMAX = BLAS(J)
-!                    ENDIF
-!                 ENDDO
-!                 PTEMP(I) = JMAX 
-!                 !     
-!                 !     CHECK FOR AMBIGUITIES 
-!                 IF (VMAX < 0.9_DP) THEN
-!                    FAC = FAC - MIXSTEP
-!                    MIXSTEP = MIXSTEP/3.0_DP
-!                    CYCLE scaleup_so3 
-!                 ELSE
-!                    DO J2 = 1, I-1
-!                       IF (PTEMP(J2).EQ.JMAX) THEN
-!                          FAC = FAC - MIXSTEP
-!                          MIXSTEP = MIXSTEP/3.0_DP
-!                          CYCLE scaleup_so3
-!                       ENDIF
-!                    ENDDO
-!                 ENDIF
-!                 !
-!              ENDDO
-!              !
-!           ELSE
-!              !
-!              !     COMPARING ONLY TO STATES WITH BLAS(I)/= -1
-!              !     SCALAR PRODUCT
-!              PTEMP = -1
-!              !
-!              !
-!              DO I = 1, DIM
-!                 IF (BLAS(I).NE.-1) THEN
-!                    VMAX = 0.0_DP
-!                    !
-!                    DO J = 1, DIM
-!                       !
-!                       VT = DOT_PRODUCT(HAM(:,I),W2(:,J))
-!                       !
-!                       !     MAXIMAL COMPONENT
-!                       VT = VT * VT
-!                       IF (VT > VMAX) THEN
-!                          VMAX = VT
-!                          JMAX = J
-!                       ENDIF
-!                    ENDDO
-!                    !     
-!                    PTEMP(JMAX) = BLAS(I)
-!                    !
-!                    IF (IPRINT > 2) WRITE(*,*) I, BLAS(I), JMAX, VMAX
-!                    !
-!                    !     CHECK FOR AMBIGUITIES 
-!                    IF (VMAX < 0.9_DP) THEN
-!                       FAC = FAC - MIXSTEP
-!                       MIXSTEP = MIXSTEP/3.0_DP
-!                       CYCLE scaleup_so3
-!                    ENDIF
-!                    DO J2 = 1, DIM
-!                       IF (PTEMP(J2) == BLAS(I).AND. J2 /= JMAX) THEN
-!                          FAC = FAC - MIXSTEP
-!                          MIXSTEP = MIXSTEP/3.0_DP
-!                          CYCLE scaleup_so3
-!                       ENDIF
-!                    ENDDO
-!                    !                    
-!                 ENDIF
-!                 !
-!              ENDDO
-!              !
-!           ENDIF
-!           !
-!           HAM = W2
-!           !
-!           BLAS = PTEMP
-!           !
-!           IF (FAC == 1.0_DP) THEN
-!              !
-!              CALL SCLHAM(FAC,BENT,N2,L,HAM,W2,W4,W2W2B,iprint)
-!              !
-!              EIGEN = 0.0_DP
-!              !
-!              CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
-!              !     
-!              IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
-!              !
-!              RETURN
-!              !    
-!           ENDIF
-!           !
-!        ENDDO scaleup_so3
-!        !
-!        !
-!     ELSE
-!        !     LINEAR CASE
-!        !     
-!        !     LOOK FOR MAXIMUM COMPONENT
-!        IF (ASSIGNALL) THEN
-!           CALL MAXCU3(BENT, N2, L, HAM, DIM, BLAS, FLAG, IPRINT)
-!        ELSE
-!           CALL MAXCU3EXP(BENT, VEXPAS, NDAT, N2, L, HAM, DIM, BLAS, FLAG, IPRINT)
-!        ENDIF
-!        !     
-!        IF (IPRINT >= 3) THEN
-!           WRITE(*,*) 'MAXC', FLAG
-!           WRITE(*,*) (BLAS(I),I=1,DIM)
-!        ENDIF
-!        !      
-!        !  SAVE COPY OF INITIAL PARAMETERS
-!        HPART = H_4b_pars
-!        !     
-!        !     MIX: NUMBER OF ITERATIONS UP AND DOWN
-!        MIX = 0
-!        !     
-!        !     SCALE DOWN
-!        !     
-!        FAC = 1.0D0
-!        !
-!        !      IF FLAG = .T. : PROBLEMS WITH ASSIGNMENT
-!        DO WHILE (FLAG)
-!           !     
-!           FAC = FAC/2.0_DP
-!           !
-!           MIX = MIX + 1
-!           !     
-!           !     RECOVER COPY OF INITIAL PARAMETERS
-!           H_4b_pars = HPART
-!           !
-!           IF (IPRINT >= 2) WRITE(*,*)'SCALING DOWN MIXING BY ', FAC
-!           !     
-!           ICOUNT = ICOUNT + 1
-!           !     
-!           CALL SCLHAM(FAC, BENT, N2, L, HAM, W2, W4, W2W2B, IPRINT)
-!           !
-!           !     DIAGONALIZE HAMILTONIAN
-!           !
-!           EIGEN = 0.0_DP
-!           !
-!           CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
-!           !     
-!           !     LOOK FOR MAXIMUM COMPONENT
-!           !
-!           ! print*, "E1", HAM(:,1)**2
-!           ! print*, ""
-!           ! print*, "E2", HAM(:,2)**2
-!           ! print*, ""
-!           ! print*, "E3", HAM(:,3)**2
-!           !
-!           IF (ASSIGNALL) THEN
-!              CALL MAXCU3(BENT, N2, L, HAM, DIM, BLAS, FLAG, IPRINT)
-!           ELSE
-!              CALL MAXCU3EXP(BENT, VEXPAS, NDAT, N2, L, HAM, DIM, BLAS, FLAG, IPRINT)
-!           ENDIF
-!           !
-!           IF (IPRINT >= 3) THEN
-!              WRITE(*,*) 'MAXC DOWN', FLAG
-!              WRITE(*,*) (BLAS(I),I=1,DIM)
-!           ENDIF
-!           !
-!        ENDDO
-!        !
-!        IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
-!        !            
-!        IF (ICOUNT == 0) RETURN ! WELL DEFINED EIGENVECTORS
-!        !
-!        !     SCALE UP
-!        !     
-!        MIXSTEP = 1.0_DP/(1.5_DP*2.0_DP**MIX)
-!        FAC = 1.0_DP/(2.0_DP**MIX)      
-!        !
-!        scaleup_u2: DO
-!           !     RECOVER COPY OF INITIAL PARAMETERS
-!           H_4b_pars = HPART
-!           !     
-!           MIXSTEP = 1.5_DP*MIXSTEP
-!           FAC = FAC + MIXSTEP
-!           !
-!           IF (FAC > 1.0_DP) FAC = 1.0_DP
-!           !
-!           IF (IPRINT >= 2) WRITE(*,*) 'SCALING MIXING UP BY ',FAC 
-!           !     
-!           ICOUNT = ICOUNT + 1
-!           !          
-!           CALL SCLHAM(FAC, BENT, N2, L, HAM2, W2, W4, W2W2B, iprint)
-!           !     
-!           !     DIAGONALIZE HAMILTONIAN
-!           !
-!           EIGEN = 0.0_DP
-!           !
-!           CALL LA_SYEVR(A=HAM2, W=EIGEN, JOBZ='V', UPLO='U')
-!           !
-!           !
-!           !     PROJECTING ONTO FORMER EIGENVECTORS
-!           !     THE EIGENVECTORS ARE PROJECTED ONTO THE PREVIOUS ONES AND 
-!           !     IF EITHER SOME OF THE PROJECTIONS SQUARED IS LESS THAN 0.5 (0.9)
-!           !     OR TWO HAVE THE SAME MAXIMAL PROJECTIONS THE PARAMETERS ARE 
-!           !     RESCALED DOWN AGAIN.
-!           !     
-!           IF (ASSIGNALL) THEN
-!              !     SCALAR PRODUCT
-!              DO I = 1, DIM 
-!                 VMAX = 0.0D0
-!                 PTEMP(I) = 0
-!                 DO J = 1, DIM
-!                    !
-!                    VT = DOT_PRODUCT(HAM(:,J), HAM2(:,I))
-!                    !
-!                    !     MAXIMAL COMPONENT
-!                    VT = VT * VT
-!                    IF (VT > VMAX) THEN
-!                       VMAX = VT
-!                       JMAX = BLAS(J)
-!                    ENDIF
-!                 ENDDO
-!                 PTEMP(I) = JMAX
-!                 !"!"!"!"!"!"!"!"!"!"print*, i, vmax, jmax, ptemp(i)
-!                 !     
-!                 !     CHECK FOR AMBIGUITIES
-!                 IF (VMAX < 0.5_DP) THEN
-!                    FAC = FAC - MIXSTEP
-!                    MIXSTEP = MIXSTEP/3.0_DP
-!                    CYCLE scaleup_u2 
-!                 ELSE
-!                    DO J2 = 1, I - 1
-!                       IF (PTEMP(J2).EQ.JMAX) THEN
-!                          FAC = FAC - MIXSTEP
-!                          MIXSTEP = MIXSTEP/3.0_DP
-!                          CYCLE scaleup_u2
-!                          !
-!                       ENDIF
-!                    ENDDO
-!                 ENDIF
-!                 !
-!              ENDDO
-!              !
-!           ELSE
-!              !
-!              !     COMPARING ONLY TO STATES WITH BLAS(I).NE.-1
-!              !     SCALAR PRODUCT
-!              PTEMP = -1
-!              !
-!              DO I = 1, DIM
-!                 IF (BLAS(I) /= -1) THEN
-!                    VMAX = 0.0D0
-!                    !
-!                    DO J = 1, DIM
-!                       !
-!                       VT = DOT_PRODUCT(HAM(:,I),HAM2(:,J))
-!                       !
-!                       !     MAXIMAL COMPONENT
-!                       VT = VT * VT
-!                       IF (VT > VMAX) THEN
-!                          VMAX = VT
-!                          JMAX = J
-!                       ENDIF
-!                    ENDDO
-!                    !
-!                    PTEMP(JMAX) = BLAS(I)
-!                    !
-!                    IF (IPRINT > 2) WRITE(*,*) I, BLAS(I), JMAX, VMAX
-!                    !
-!                    !     CHECK FOR AMBIGUITIES 
-!                    IF (VMAX < 0.5_DP) THEN
-!                       FAC = FAC - MIXSTEP
-!                       MIXSTEP = MIXSTEP/3.0_DP
-!                       CYCLE scaleup_u2
-!                    ENDIF
-!                    DO J2 = 1, DIM
-!                       IF (PTEMP(J2) == BLAS(I) .AND. J2 /= JMAX) THEN
-!                          FAC = FAC - MIXSTEP
-!                          MIXSTEP = MIXSTEP/3.0D0
-!                          CYCLE scaleup_u2
-!                       ENDIF
-!                    ENDDO
-!                    !                    
-!                 ENDIF
-!                 !
-!              ENDDO
-!              !
-!           ENDIF
-!           !
-!           HAM = HAM2
-!           !
-!           BLAS = PTEMP
-!           !
-!           IF (FAC == 1.0_DP) THEN
-!              !
-!              CALL SCLHAM(FAC,BENT,N2,L,HAM,W2,W4,W2W2B, iprint)
-!              !
-!              EIGEN = 0.0_DP
-!              !
-!              CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
-!              !     
-!              IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
-!              !
-!              RETURN
-!              !    
-!           ENDIF
-!           !
-!        END DO scaleup_u2
-!        !
-!     ENDIF
-!     !
-!   END SUBROUTINE ASSGNU3
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
