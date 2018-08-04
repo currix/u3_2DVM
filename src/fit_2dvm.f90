@@ -196,7 +196,8 @@ CONTAINS
        !     DIAGONALIZE HAMILTONIAN MATRIX
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !
-       print*, Eigenval_vector - Eigenval_vector(1)
+       !!print*, "Parameters MAIN :: ", H_4b_pars
+       !!print*, Eigenval_vector - Eigenval_vector(1)
        !
        !    ASSIGN  COMPUTED DATA TO LOCAL BASIS STATES
        IF (IPRINT > 0) THEN 
@@ -209,6 +210,8 @@ CONTAINS
             HAM_matrix, Eigenval_vector, VEXPAS, NDAT, BLAS, Iprint)
        !
        !     REFER ENERGIES TO GROUND L=0 STATE
+       !
+       !!print*, Eigenval_vector
        !
        IF (EMINL) THEN
           JMIN = 0
@@ -240,6 +243,7 @@ CONTAINS
        !
        Eigenval_vector = Eigenval_vector - EMIN
        !
+       !!print*, Eigenval_vector
        !     
        !     COMPARE WITH EXPERIMENT AND COMPUTE STATISTICAL PARAMETERS
        CALL CPXPDTU3(N_val,L,VEXPAS,Eigenval_vector,BLAS,VEXPEN,VEXPERR,NDAT,SPNTEX,CHSQP,IPRINT)
@@ -900,13 +904,18 @@ CONTAINS
           !
           IF (FAC == 1.0_DP) THEN
              !
+             IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
+             !
+             HAM = 0.0_DP
+             !
              CALL SCLHAM(FAC,BENT,N2,L,HAM,W2,W4,W2W2B,iprint)
              !
+             !!print*, "Parameters :: ", H_4b_pars
              EIGEN = 0.0_DP
              !
              CALL LA_SYEVR(A=HAM, W=EIGEN, JOBZ='V', UPLO='U')
-             !     
-             IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
+             !
+             !!print*, eigen
              !
              RETURN
              !    
@@ -1576,6 +1585,7 @@ CONTAINS
     H_4b_pars(7) = H_4b_pars(7)*FAC ! Both cases
     H_4b_pars(12) = H_4b_pars(12)*FAC ! Both cases
     H_4b_pars(14) = H_4b_pars(14)*FAC ! Both cases
+    !
     CALL HBLDU3GEN(N2, L, HAM, W2MAT, W4MAT, W2W2BARMAT, IPRINT)  
     !
     RETURN

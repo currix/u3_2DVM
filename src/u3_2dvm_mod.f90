@@ -1046,6 +1046,8 @@ CONTAINS
     !
     IF (IPRINT > 2) WRITE(*,*) 'SUBROUTINE SO3CASBUILD STARTS HERE'
     !
+    W2BLOCK = 0.0_DP
+    !
     DIMB = (N_val - MOD(N_val - L, 2) - L)/2 + 1
     !
     VNN = REAL(N_val, DP)
