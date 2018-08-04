@@ -219,7 +219,7 @@ CONTAINS
        Eigenval_vector = 0.0_DP
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
        !
-       print*, eigenval_vector - eigenval_vector(1)
+       !!print*, eigenval_vector - eigenval_vector(1)
        !    ASSIGN  COMPUTED DATA TO LOCAL BASIS STATES
        IF (IPRINT > 0) THEN 
           ASSIGNALL = .TRUE.
@@ -265,7 +265,7 @@ CONTAINS
        !
        Eigenval_vector = Eigenval_vector - EMIN
        !
-       print*, Eigenval_vector
+       !!print*, Eigenval_vector
        !     
        !     COMPARE WITH EXPERIMENT AND COMPUTE STATISTICAL PARAMETERS
        CALL CPXPDTU3(N_val,L,VEXPAS,Eigenval_vector,BLAS,VEXPEN,VEXPERR,NDAT,SPNTEX,CHSQP,IPRINT)
@@ -303,16 +303,16 @@ CONTAINS
        WRITE(*,42) H_PARS(14)
     ENDIF
     !
-10  FORMAT (1X,"ONE BODY :: ", " P11 = ", G15.5)
-20  FORMAT (1X,"TWO BODY :: ", " P21 = ", G15.6, &
-         " P22 = ", G15.6, " P23 = ", G15.6)
-30  FORMAT (1X,"THREE BODY :: ", " P31 = ", G15.6, &
-         " P32 = ", G15.6, " P33 = ", G15.6)
+10  FORMAT (1X,"ONE BODY :: ", " P11 = ", G17.7)
+20  FORMAT (1X,"TWO BODY :: ", " P21 = ", G17.7, &
+         " P22 = ", G17.7, " P23 = ", G17.7)
+30  FORMAT (1X,"THREE BODY :: ", " P31 = ", G17.7, &
+         " P32 = ", G17.7, " P33 = ", G17.7)
 40  FORMAT (1X,"FOUR BODY (i):: ", " P41 = ", G15.6,  &
-         " P42 = ", G15.6, " P43 = ", G15.6)
-41  FORMAT (1X,"FOUR BODY (ii):: ", " P44 = ", G15.6, &
-         " P45 = ", G15.6, " P46 = ", G15.6)
-42  FORMAT (1X,"FOUR BODY (iii):: ", " P47 = ", G15.6)
+         " P42 = ", G17.7, " P43 = ", G17.7)
+41  FORMAT (1X,"FOUR BODY (ii):: ", " P44 = ", G17.7, &
+         " P45 = ", G17.7, " P46 = ", G17.7)
+42  FORMAT (1X,"FOUR BODY (iii):: ", " P47 = ", G17.7)
     !
     RETURN 
     !
@@ -776,7 +776,7 @@ CONTAINS
              WRITE(*,1110) EIGEN(I), BLAS(I), L
              WRITE(*,*)
              DO J = 1, DIM
-                WRITE(*,1120) AVEC(J,I),  L + 2*(J - 1_I4B), L
+                WRITE(*,1120) AVEC(J,I),  DIM - J, L
              ENDDO
              WRITE(*,*)
           ENDDO
