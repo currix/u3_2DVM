@@ -8,7 +8,7 @@ PROGRAM CHI2_U3_BENDING
   !
   USE u3_2dvm_mod
   !
-  USE FIT_2DVM
+  USE fit_2dvm
   !
   IMPLICIT NONE
   !

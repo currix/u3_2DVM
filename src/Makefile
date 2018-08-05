@@ -76,11 +76,19 @@ IPR_4b_u2_OBJ = $(IPR_4b_u2_SRC:.f90=.o)
 #IPR_4b_u2_OPENMP_OBJ = $(IPR_4b_u2_SRC:.f90=.oOMP)
 #
 #
-# ALGEBRAIC MODEL FIT TO EXPERIMENT (GENERAL 4BODY HAMILTONIAN) Chain  (i) U(3) -> U(2)
 #
-CHI2_u2_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f90 chi_sqre_prg.f90 
-CHI2_u2_OBJ = $(CHI2_u2_SRC:.f90=.o)
-#CHI2_u2_OPENMP_OBJ = $(CHI2_u2_SRC:.f90=.oOMP)
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL 4-Body HAMILTONIAN) Chain (i) U(3) -> SO(3)
+#
+IPR_4b_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_so3.f90 
+IPR_4b_so3_OBJ = $(IPR_4b_so3_SRC:.f90=.o)
+#IPR_4b_so3_OPENMP_OBJ = $(IPR_4b_so3_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL FIT TO EXPERIMENT (GENERAL 4BODY HAMILTONIAN) Chains  (i) U(3) -> U(2) and (ii) U(3) -> SO(3)
+#
+CHI2_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f90 chi_sqre_prg.f90 
+CHI2_OBJ = $(CHI2_SRC:.f90=.o)
+#CHI2_OPENMP_OBJ = $(CHI2_SRC:.f90=.oOMP)
 #
 ####################################################################
 ####################################################################
@@ -115,7 +123,7 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh  ipr_U3_U2  ipr_U3_SO3 ipr_4b_U3_U2 chi2_U3_U2
+all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 chi2_U3
 #
 .PHONY : all
 #################################################################
@@ -231,16 +239,26 @@ ipr_4b_U3_U2: $(IPR_4b_u2_OBJ) Makefile
 # 	$(info Linking multi thread $@ executable:)
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
-#################################################################
-# SQUARE CHI VALUE (GENERAL 4 BODY HAMILTONIAN, Chain I)
-chi2_U3_U2: $(CHI2_u2_OBJ) Makefile
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 4 BODY HAMILTONIAN, Chain II)
+ipr_4b_U3_SO3: $(IPR_4b_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC) -Wall -o $(BINPATH)/$@_$(FC) $(CHI2_u2_OBJ) $(OPTFLAGS) $(LIBS)
-# chi2_U3_U2_openmp: $(CHI2_u2_OPENMP_OBJ) Makefile  .PHONY 
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_4b_so3_OBJ) $(OPTFLAGS) $(LIBS)
+# ipr_4b_U3_SO3_openmp: $(IPR_4b_so3_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
-# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(CHI2_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_4b_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
+#################################################################
+#################################################################
+# SQUARE CHI VALUE (GENERAL 4 BODY HAMILTONIAN, Chain I)
+chi2_U3: $(CHI2_OBJ) Makefile
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) -Wall -o $(BINPATH)/$@_$(FC) $(CHI2_OBJ) $(OPTFLAGS) $(LIBS)
+# chi2_U3_openmp: $(CHI2_OPENMP_OBJ) Makefile  .PHONY 
+# 	$(info )
+# 	$(info Linking multi thread $@ executable:)
+# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(CHI2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 clean:
 	@echo "Cleaning object files"
 	@rm -f *.o *.mod
