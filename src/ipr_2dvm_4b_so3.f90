@@ -1,4 +1,4 @@
-PROGRAM ipr_4b_2DVM_u2
+PROGRAM ipr_4b_2DVM_so3
   !
   ! Program to compute Energy and Participation Ratio (PR) of the
   ! U(3) 2DVM 4-Body Hamiltonian in the U(2) Dynamical Symmetry Basis
@@ -94,23 +94,23 @@ PROGRAM ipr_4b_2DVM_u2
      ! L_VAL = 0 BLOCK DIMENSION
      dim_block = DIM_L_BLOCK(N_val, 0)
      !
-     ! Build U(3) > U(2) > SO(2) Basis
+     ! Build U(3) > SO(3) > SO(2) Basis
      ! ALLOCATE BASIS
-     ALLOCATE(U2_Basis(1:dim_block), STAT = IERR)    
+     ALLOCATE(SO3_Basis(1:dim_block), STAT = IERR)    
      IF (IERR /= 0) THEN
-        WRITE(UNIT = *, FMT = *) "U2_Basis allocation request denied."
+        WRITE(UNIT = *, FMT = *) "SO3_Basis allocation request denied."
         STOP
      ENDIF
      !
-     CALL U2_BASIS_VIBRON(N_val, 0, U2_Basis) ! Build U2 basis
+     CALL SO3_BASIS_VIBRON(N_val, 0, SO3_Basis) ! Build SO3 basis
      !
      !
      ! Allocate and Build Hamiltonian and Hamiltonian Operator Matrices
      !
-     CALL Build_U2DS_Operator_Matrices(N_val, 0, dim_block, U2_Basis)
+     CALL Build_SO3DS_Operator_Matrices(N_val, 0, dim_block, SO3_Basis)
      !
      !
-     CALL Build_Ham_4Body_U2(N_val, 0, dim_block, U2_Basis)  
+     CALL Build_Ham_4Body_SO3(N_val, 0, dim_block, SO3_Basis)  
      !
      ! Hamiltonian Diagonalization
      !
@@ -138,30 +138,30 @@ PROGRAM ipr_4b_2DVM_u2
   ! L_VAL BLOCK DIMENSION
   dim_block = DIM_L_BLOCK(N_val, l_val)
   !
-  ! Build U(3) > U(2) > SO(2) Basis
+  ! Build U(3) > SO(3) > SO(2) Basis
   ! ALLOCATE BASIS
-  IF (ALLOCATED(U2_Basis)) THEN    
-     DEALLOCATE(U2_Basis, STAT = IERR)    
+  IF (ALLOCATED(SO3_Basis)) THEN    
+     DEALLOCATE(SO3_Basis, STAT = IERR)    
      IF (IERR /= 0) THEN
-        WRITE(UNIT = *, FMT = *) "U2_Basis deallocation request denied."
+        WRITE(UNIT = *, FMT = *) "SO3_Basis deallocation request denied."
         STOP
      ENDIF
   ENDIF
   !
-  ALLOCATE(U2_Basis(1:dim_block), STAT = IERR)    
+  ALLOCATE(SO3_Basis(1:dim_block), STAT = IERR)    
   IF (IERR /= 0) THEN
-     WRITE(UNIT = *, FMT = *) "U2_Basis allocation request denied."
+     WRITE(UNIT = *, FMT = *) "SO3_Basis allocation request denied."
      STOP
   ENDIF
   !
-  CALL U2_BASIS_VIBRON(N_val, L_val, U2_Basis) ! Build U2 basis
+  CALL SO3_BASIS_VIBRON(N_val, L_val, SO3_Basis) ! Build SO3 basis
   !
   ! Allocate and Build Hamiltonian and Hamiltonian Operator Matrices
   !
-  CALL Build_U2DS_Operator_Matrices(N_val, L_val, dim_block, U2_Basis)
+  CALL Build_SO3DS_Operator_Matrices(N_val, L_val, dim_block, SO3_Basis)
   !
   !
-  CALL Build_Ham_4Body_U2(N_val, L_val, dim_block, U2_Basis)  
+  CALL Build_Ham_4Body_SO3(N_val, L_val, dim_block, SO3_Basis)  
   !
   IF (Save_avec_Log) THEN
      !
@@ -245,10 +245,10 @@ PROGRAM ipr_4b_2DVM_u2
      IF (Excitation_Log) THEN
         !
         CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
-             Eigenval_vector, Diagonal_vector - GS_energy, "u2", Ham_matrix)
+             Eigenval_vector, Diagonal_vector - GS_energy, "so3", Ham_matrix)
      ELSE
         CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
-             Eigenval_vector, Diagonal_vector, "u2", Ham_matrix)
+             Eigenval_vector, Diagonal_vector, "so3", Ham_matrix)
      ENDIF
      !
      DEALLOCATE(Diagonal_vector, STAT = IERR)    
@@ -258,4 +258,4 @@ PROGRAM ipr_4b_2DVM_u2
   !
   !    
   !
-END PROGRAM ipr_4b_2DVM_u2
+END PROGRAM ipr_4b_2DVM_so3

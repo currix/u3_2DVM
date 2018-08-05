@@ -875,7 +875,7 @@ CONTAINS
     !
     INTEGER(KIND = I4B), INTENT(IN) :: dim_block ! Angular momentum L_val block dimension
     !
-    CHARACTER(LEN=*), INTENT(IN) :: Basis
+    CHARACTER(LEN=*), INTENT(IN) :: Basis  ! u2 or so3 basis label
     !
     REAL(KIND = DP), DIMENSION(:,:), INTENT(IN) :: Ham_U3_mat ! Hamiltonian matrix
     !
