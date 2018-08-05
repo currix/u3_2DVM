@@ -1,6 +1,6 @@
-Suite of programs for calculations using the two-dimensional limit of
-the Vibron Model (2DVM). Includes Minuit minimization program for
-molecular bending modelling.
+Suite of Fortran 90 and Python programs for calculations using the
+two-dimensional limit of the Vibron Model (2DVM). Includes Minuit
+minimization program for molecular bending modelling.
 
 by Currix TM
 
@@ -14,17 +14,21 @@ avec_U3_U2_XXXX       :: Eigenvalues and eigenvectors of the general 2body Hamil
 
 avec_U3_SO3_XXXX      :: Eigenvalues and eigenvectors of the general 2body Hamiltonian using the displaced oscillator basis.
 
-ipr_U3_U2_mh_XXXX     :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian using the cylindrical oscillator basis.
+ipr_U3_U2_mh_XXXX     :: Inverse Participation Ratio and energies for eigenvectors of the model Hamiltonian using the cylindrical oscillator basis.
 
-ipr_U3_SO3_mh_XXXX    :: Inverse Participation Ratio for eigenvectors of the model Hamiltonian using the displaced oscillator basis.
+ipr_U3_SO3_mh_XXXX    :: Inverse Participation Ratio and energies for eigenvectors of the model Hamiltonian using the displaced oscillator basis.
 
-ipr_U3_U2_XXXX        :: Inverse Participation Ratio for eigenvectors of the general 2body Hamiltonian using the cylindrical oscillator basis.
+ipr_U3_U2_XXXX        :: Inverse Participation Ratio and energies for eigenvectors of the general 2body Hamiltonian using the cylindrical oscillator basis.
 
-ipr_U3_SO3_XXXX       :: Inverse Participation Ratio for eigenvectors of the general 2body Hamiltonian using the displaced oscillator basis.
+ipr_U3_SO3_XXXX       :: Inverse Participation Ratio and energies for eigenvectors of the general 2body Hamiltonian using the displaced oscillator basis.
 
 ipr_Husimi_U3_U2_mh_XXXX   :: Inverse Participation Ratio as the second moment of the Husimi distribution of the model Hamiltonian.
 
-chi2_U3_U2_XXXX      :: CHI2 or Residuals for function optimization with Python.
+ipr_4b_U3_U2_XXXX        :: Inverse Participation Ratio and energies for eigenvectors of the general 4body Hamiltonian using the cylindrical oscillator basis.
+
+ipr_4b_U3_SO3_XXXX       :: Inverse Participation Ratio and energies for eigenvectors of the general 4body Hamiltonian using the displaced oscillator basis.
+
+chi2_U3_XXXX      :: CHI2 or Residuals for function optimization with Python.
 
 select_eigstate_components :: Perl script to select a particular eigenstate components from an array of eigenstate components saved in a file.
 
@@ -38,7 +42,7 @@ minimize_script_ipython.py :: Script example of function optimization.
 Note that XXXX stands for "gfortran" or "ifort", depending on the compiler used.
 
 
-The program user's guide will be found in the doc directory in pdf,
+The user's guide for these programs will be found in the doc directory in pdf,
 html, and txt formats.
 
 (See ToDo file)
