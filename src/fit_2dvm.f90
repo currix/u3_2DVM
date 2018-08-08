@@ -69,18 +69,6 @@ CONTAINS
     !
     INTEGER(KIND = I4B) :: I, JMIN, L, NDAT
     !
-    REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
-    !
-    REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: Ham_matrix 
-    !
-    !     COMPUTED W2 AND SQUARED W2 (SO(3) CASIMIR) MATRICES
-    REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2MAT, W4MAT
-    !
-    !     COMPUTED W2·WBAR2+WBAR2·W2 (SO(3) CASIMIR x barSO(3) CASIMIR) MATRIX
-    REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2W2BARMAT
-    !
-    REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: AVEZERO
-    !
     REAL(KIND = DP) :: EMIN
     !
     !
@@ -226,12 +214,6 @@ CONTAINS
           !
        ENDIF
        !
-       ALLOCATE(AVEZERO(1:dim_block), STAT = Ierr)
-       IF (Ierr /= 0) STOP 'AVEZERO ALLOCATION ERROR'
-       !
-       !     BUILD HAMILTONIAN MATRIX OF ALGEBRAIC HAMILTONIAN
-       CALL HBLDU3GEN(N_val, L, HAM_matrix, W2MAT, W4MAT, W2W2BARMAT, IPRINT)  
-       !     
        !     DIAGONALIZE HAMILTONIAN MATRIX
        Eigenval_vector = 0.0_DP
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
@@ -266,7 +248,6 @@ CONTAINS
              IF (BLAS(I) == 0) JMIN = I
           ENDDO
           EMIN = Eigenval_vector(JMIN)
-          AVEZERO = Ham_matrix(:,JMIN)
           !    
           IF (IPRINT >= 2) WRITE(*,*) 'J(E_MIN) = ', JMIN
           !     
@@ -292,28 +273,6 @@ CONTAINS
        TOTDAT = TOTDAT + NDAT - NOT_FIT_LEVELS
        !     
        CHSQT = CHSQT + CHSQP
-       !
-       ! DEALLOCATE MATRICES
-       DEALLOCATE(Ham_matrix, STAT = Ierr)
-       IF (Ierr /= 0) STOP 'Ham_matrix DEALLOCATION ERROR'
-       !  
-       ! DEALLOCATE(Ham2, STAT = Ierr)
-       ! IF (Ierr /= 0) STOP 'Ham2 DEALLOCATION ERROR'
-       !  
-       DEALLOCATE(W2MAT, STAT = IERR)
-       IF (IERR /= 0) STOP 'ERROR DEALLOCATING W2MAT MATRIX'
-       !     
-       DEALLOCATE(W4MAT, STAT = IERR)
-       IF (IERR /= 0) STOP 'ERROR DEALLOCATING W4MAT MATRIX'
-       !     
-       DEALLOCATE(W2W2BARMAT, STAT = IERR)
-       IF (IERR /= 0) STOP 'ERROR DEALLOCATING W2W2BARMAT MATRIX'
-       !
-       DEALLOCATE(Eigenval_vector, STAT = Ierr)
-       IF (Ierr /= 0) STOP 'Eigenval_vector DEALLOCATION ERROR'
-       !
-       DEALLOCATE(AVEZERO, STAT = Ierr)
-       IF (Ierr /= 0) STOP 'AVEZERO DEALLOCATION ERROR'
        !
     ENDDO
     !
@@ -1016,21 +975,21 @@ CONTAINS
        ELSE
           Index_Exp_Pointer(0:0) = PACK(Index_vector, Mask_vector)
        ENDIF
-       DO I2 = 1, NDAT
-          IF (VEXPAS(I2,1) == NUT) THEN
-             NASSIGNED = NASSIGNED + 1
-             LMC(I) = VEXPAS(I2,1)
-             !
-             DO I3 = 1, I-1
-                IF (LMC(I3) == NUT) FLAG = .TRUE.
-             END DO
-             !     
-             IF (VMAX < 0.5D0) FLAG = .TRUE.
-             !
-             EXIT
-             !
-          ENDIF
-       ENDDO
+       ! DO I2 = 1, NDAT
+       !    IF (VEXPAS(I2,1) == NUT) THEN
+       !       NASSIGNED = NASSIGNED + 1
+       !       LMC(I) = VEXPAS(I2,1)
+       !       !
+       !       DO I3 = 1, I-1
+       !          IF (LMC(I3) == NUT) FLAG = .TRUE.
+       !       END DO
+       !       !     
+       !       IF (VMAX < 0.5D0) FLAG = .TRUE.
+       !       !
+       !       EXIT
+       !       !
+       !    ENDIF
+       ! ENDDO
        !
     ELSE
        MAX_INDEXES = L + 2_I4B*(MAX_INDEXES - 1_I4B)
@@ -1089,10 +1048,6 @@ CONTAINS
     !     N2    : U(3) IRREP LABEL (BENDING)
     !     L     : VIBRATIONAL ANGULAR MOMENTUM LABEL
     !     
-    !
-    !     OUTPUT
-    !     HAM      : RECOMPUTED HAMILTONIAN MATRIX
-    !
     !
     !     by Currix TM
     !     
