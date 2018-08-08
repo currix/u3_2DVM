@@ -952,9 +952,6 @@ CONTAINS
     !
     TYPE(u2_bas), DIMENSION(:), INTENT(IN) :: U2_Basis   ! U2 basis   { | [N] np L > }
     !
-    !     MATRIX DIMENSIONS
-    dim_block = (N_val-MOD(N_val-L,2)-L)/2+1
-    !
     INTEGER(KIND = I4B) :: U2_state
     REAL(KIND = DP), DIMENSION(1:dim_block) :: np_values ! n values
     REAL(KIND = DP) :: npvalue, npvaluep1, sqnpvalue, sqnpvaluep1, Nvalue, lvalue2
@@ -964,9 +961,6 @@ CONTAINS
     Nvalue = REAL(N_val, DP)
     !
     lvalue2 = REAL(L_val**2, DP)
-    !
-    !     HAM MULTIPLYING W2 TIMES P23 PARAMETER
-    HAM = H_4b_pars(4)*W2MAT
     !
     DO U2_state = 1, dim_block
        !
@@ -1445,8 +1439,6 @@ CONTAINS
        !
     ENDIF
     !
-    !     BUILDING W4 BLOCK
-    !
     ! n^2 x W^2 + W^2 x n^2 matrix Parameter 12
     ! Double banded operator n^2 --> M21_P2_matrix
     IF (H_4b_pars(12) /= 0) THEN
@@ -1582,11 +1574,6 @@ CONTAINS
   !
   SUBROUTINE Build_Ham_4Body_SO3(N_val, L_val, dim_block, SO3_Basis) 
     !
-    RETURN
-  END SUBROUTINE HBLDU3GEN
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-  SUBROUTINE SO3CASBUILD(W2BLOCK, N_val, L, Iprint)
-    !
     ! Subroutine to build the U(3) 2DVM Four-Body Hamiltonian
     !
     ! Displaced Oscillator Basis SO(3)
@@ -1617,10 +1604,6 @@ CONTAINS
     IMPLICIT NONE
     !     
     !    DEFINITION OF VARIABLES
-    INTEGER(KIND = I4B), INTENT(IN)  ::  N_val, L
-    INTEGER(KIND = I4B), INTENT(IN)  ::  Iprint
-    REAL(KIND = DP), DIMENSION(:,:), INTENT(OUT) :: W2BLOCK
-    !
     INTEGER(KIND = I4B), INTENT(IN) :: N_val ! U(3) [N]
     !
     INTEGER(KIND = I4B), INTENT(IN) :: L_val ! Angular momentum
