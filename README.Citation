@@ -1,10 +1,11 @@
 Citation
 
-At the moment, there is no publication describing triat_u3, although
-one is in the draft stages.
+At the moment, there is no publication describing the program suite 2DVM_U3,
+although one is in the draft stages.
 
-The preferred way to cite triat_u3 is:
+The preferred way to cite this program is:
 
-triat_u3, Version 3.X :: https://github.com/currix/u3_2DVM/archive/master.zip
+2DVM_U3 suite :: https://github.com/currix/u3_2DVM/archive/master.zip
 
-Please make sure to quote the particular version of triat_u3 you are using.
+Please make sure to quote the particular version of the suite that you
+are using.
