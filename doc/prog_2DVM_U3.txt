@@ -18,7 +18,7 @@ Table of Contents
 ..... 2.3.1 Operator Matrix Elements in the Dynamical Symmetry (I)
 ..... 2.3.2 Operator Matrix Elements in the Dynamical Symmetry (II)
 3 Programs included in the package
-.. 3.1 `Fortran' programs to compute eigenvector, eigenvalues, and other quantities
+.. 3.1 `Fortran' programs to compute eigenvectors, eigenvalues, and other quantities
 ..... 3.1.1 Programs `avec_U3_U2_mh' and `avec_U3_SO3_mh'
 ..... 3.1.2 Programs `avec_U3_U2' and `avec_U3_SO3'
 ..... 3.1.3 Programs `ipr_U3_U2_mh' and  `ipr_U3_SO3_mh'
@@ -44,12 +44,12 @@ Table of Contents
 2 Theory Outline
 ════════════════
 
-  The original paper where the 2DVM was presented is Ref.~\cite{u3}. We
-  also make extensive use of the detailed description of the model
-  provided in Ref.~\cite{PBernal2008}. Other references deal mainly with
-  the application of the 2DVM to molecular bending vibrations
-  \cite{Ishikawa2002,Iachello2003,PBernal2005}, quantum phase
-  transitions
+  The original paper where the 2DVM was presented is
+  Ref.~\cite{Iachello1996}. We also make extensive use of the detailed
+  description of the model provided in Ref.~\cite{PBernal2008}. Other
+  references deal mainly with the application of the 2DVM to molecular
+  bending vibrations \cite{Ishikawa2002,Iachello2003,PBernal2005},
+  quantum phase transitions
   \cite{Caprio2008,PBernal2010,PFernandez2011,PRA86,Santos2015,santos2016,Castanos2016,PB_Santos2016},
   or both \cite{Larese2011,algmonod1}. New developments also consider
   the coupling of several \(U(3)\) dynamical algebras for the modeling
@@ -64,7 +64,7 @@ Table of Contents
   circular \(\tau_\pm^\dagger\) bosonic creation operators with the
   corresponding annihilation operators, \(\sigma,\tau_\pm\)
   \cite{PBernal2008}. The nine generators are recasted to provide a
-  deeper physical insight as \cite{u3}
+  deeper physical insight as \cite{Iachello1996}
 
   \begin{equation}
     \begin{array}{lcl}
@@ -284,15 +284,15 @@ Table of Contents
 
   The diagonal operators in this dynamical symmetry are
 
-  Operator \(\hat n^p\): \(\langle [N];n^\ell|\hat n^p|[N];n^\ell\rangle
-                         =& n^p\) for \(p = 1,2,3,4\).
+  Operator \(\hat n^p\): \(\langle [N];n^\ell|\hat n^p|[N];n^\ell\rangle =
+                         n^p\) for \(p = 1,2,3,4\).
 
   Operator \(\hat \ell^{2q}\): \(\langle [N];n^\ell|\hat
-                               \ell^{2q}|[N];n^\ell\rangle =& \ell^{2q}\)
+                               \ell^{2q}|[N];n^\ell\rangle = \ell^{2q}\)
                                for \(q = 1,2\).
 
   Operator \(\hat n^p\hat \ell^{2q}\): \(\langle [N];n^\ell|\hat
-                                       n^p\ell^{2q}|[N];n^\ell\rangle =&
+                                       n^p\ell^{2q}|[N];n^\ell\rangle =
                                        n^p\ell^{2q}\) for \(p = 1,2\) and
                                        \(q = 1\).
 
@@ -390,19 +390,19 @@ Table of Contents
   The diagonal operators in this dynamical symmetry are
 
   \(SO(3)\) Casimir Operator \(\hat W^2\): \(\langle [N];\omega \ell|\hat
-                                           W^2|[N]; \omega \ell\rangle =&
+                                           W^2|[N]; \omega \ell\rangle =
                                            \omega(\omega + 1)\).
 
   Operator \(\hat \ell^{2q}\): \(\langle [N];\omega \ell|\hat
-                               \ell^{2q}|[N];\omega \ell\rangle =&
+                               \ell^{2q}|[N];\omega \ell\rangle =
                                \ell^{2q}\) for \(q = 1,2\).
 
   Operator \(\hat \ell^2 \hat W^2\): \(\langle [N];\omega \ell|\hat \ell^2
-                                     \hat W^2|[N]; \omega \ell\rangle =&
+                                     \hat W^2|[N]; \omega \ell\rangle =
                                      \ell^2 \omega(\omega + 1\).
 
   Operator \(\hat W^4\): \(\langle [N];\omega \ell|\hat W^2|[N]; \omega
-                         \ell\rangle =& \omega^2(\omega + 1)^2\).
+                         \ell\rangle = \omega^2(\omega + 1)^2\).
 
   The non-diagonal matrix elements in this basis are
   Operator \(\hat n\): 
@@ -563,8 +563,8 @@ Table of Contents
   \cite{laug}.
 
 
-3.1 `Fortran' programs to compute eigenvector, eigenvalues, and other quantities
-────────────────────────────────────────────────────────────────────────────────
+3.1 `Fortran' programs to compute eigenvectors, eigenvalues, and other quantities
+─────────────────────────────────────────────────────────────────────────────────
 
 3.1.1 Programs `avec_U3_U2_mh' and `avec_U3_SO3_mh'
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
