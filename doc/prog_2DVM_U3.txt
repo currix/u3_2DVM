@@ -1,6 +1,5 @@
 		    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 		     2D VIBRON MODEL PROGRAM SUITE
-			 U(3) Dynamical Algebra
 		    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -18,16 +17,16 @@ Table of Contents
 ..... 2.3.1 Operator Matrix Elements in the Dynamical Symmetry (I)
 ..... 2.3.2 Operator Matrix Elements in the Dynamical Symmetry (II)
 3 Programs included in the package
-.. 3.1 `Fortran' programs to compute eigenvectors, eigenvalues, and other quantities
-..... 3.1.1 Programs `avec_U3_U2_mh' and `avec_U3_SO3_mh'
-..... 3.1.2 Programs `avec_U3_U2' and `avec_U3_SO3'
-..... 3.1.3 Programs `ipr_U3_U2_mh' and  `ipr_U3_SO3_mh'
-..... 3.1.4 Program `ipr_Husimi_U3_U2_mh'
-..... 3.1.5 Programs `ipr_U3_U2' and `ipr_U3_SO3'
-..... 3.1.6 Program `ipr_4b_U3_U2' and `ipr_4b_U3_SO3'
+.. 3.1 \texttt{Fortran} programs to compute eigenvectors, eigenvalues, and other quantities
+..... 3.1.1 Programs \texttt{avec\_U3\_U2\_mh} and \texttt{avec\_U3\_SO3\_mh}
+..... 3.1.2 Programs \texttt{avec\_U3\_U2} and \texttt{avec\_U3\_SO3}
+..... 3.1.3 Programs \texttt{ipr\_U3\_U2\_mh} and  \texttt{ipr\_U3\_SO3\_mh}
+..... 3.1.4 Program \texttt{ipr\_Husimi\_U3\_U2\_mh}
+..... 3.1.5 Programs \texttt{ipr\_U3\_U2} and \texttt{ipr\_U3\_SO3}
+..... 3.1.6 Program \texttt{ipr\_4b\_U3\_U2} and \texttt{ipr\_4b\_U3\_SO3}
 .. 3.2 Programs to fit experimental vibrational bending spectra
-..... 3.2.1 Program `chi2_U3'
-.. 3.3 `Perl' scripts
+..... 3.2.1 Program \texttt{chi2\_U3}
+.. 3.3 \texttt{Perl} scripts
 
 
 
@@ -558,16 +557,16 @@ Table of Contents
   `Fortran' programs have names with the suffix `_gfortran' or `_ifort'
   depending on the compiler used.
 
-  The subroutine used for matrix diagonalization is `LA_SYEVR' from the
+   The subroutine used for matrix diagonalization is `LA_SYEVR' from the
   `Lapack95' \cite{LAPACK95}, the `Fortran 95' interface to `Lapack'
   \cite{laug}.
 
 
-3.1 `Fortran' programs to compute eigenvectors, eigenvalues, and other quantities
-─────────────────────────────────────────────────────────────────────────────────
+3.1 \texttt{Fortran} programs to compute eigenvectors, eigenvalues, and other quantities
+────────────────────────────────────────────────────────────────────────────────────────
 
-3.1.1 Programs `avec_U3_U2_mh' and `avec_U3_SO3_mh'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+3.1.1 Programs \texttt{avec\_U3\_U2\_mh} and \texttt{avec\_U3\_SO3\_mh}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The programs `avec_U3_XX_mh' compute, and eventually save, eigenvalues
   and eigenvectors of the model Hamiltonian (\ref{modham1}) using the
@@ -656,35 +655,393 @@ Table of Contents
   └────
 
 
-3.1.2 Programs `avec_U3_U2' and `avec_U3_SO3'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+3.1.2 Programs \texttt{avec\_U3\_U2} and \texttt{avec\_U3\_SO3}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The Programs `avec_U3_XX' compute the 2D Vibron Model energies and
+  eigenstates using the XX chain for fixed parameters of
+  -Eq. (\ref{ham2b}).  The input file is similar to the one in the last
+  section:
+
+  ┌────
+  │ #
+  │ #       INPUT FILE FOR U(3) 2 Body Hamiltonian Calculations
+  │ #
+  │ &par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T., Save_avec_Log = .F.  /
+  │ &par_0   N_val = 10, L_val = 0 /
+  │ &par_1   epsilon_p=0.8, alpha_p=-0.000667779632721202, beta_p=0.0, A_p=0.0003339 /
+  └────
 
 
-3.1.3 Programs `ipr_U3_U2_mh' and  `ipr_U3_SO3_mh'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+  The new elements in this input file are \(\epsilon\), \(\alpha\),
+  \(\beta\) and \(A\) of the -Eq. (\ref{ham2b}).  To run this program
+  using an `UNIX' terminal:
+
+  ┌────
+  │ $ [...]/bin/avec_U3_XX_gfortran < u3_ham.inp
+  └────
+
+  where `[...]' is the path of the program's `bin' folder.  The output
+  of running it with the given input is:
+
+  ┌────
+  │  0   0.0000000000000000     
+  │  2   1.5859642569051831     
+  │  4   3.1719656273638952     
+  │  6   4.7579771193315414     
+  │  8   6.3439717420554338     
+  │ 10   7.9299225026296547
+  └────
 
 
-3.1.4 Program `ipr_Husimi_U3_U2_mh'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+3.1.3 Programs \texttt{ipr\_U3\_U2\_mh} and  \texttt{ipr\_U3\_SO3\_mh}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The programs `ipr_U3_XX_mh' compute the energies and the Inverse
+  Participation Ratio (IPR) in the XX chain for -Eq.(\ref{modham1})
+  Hamiltonian.  The input looks like the last one:
+
+  ┌────
+  │ #
+  │ #       INPUT FILE FOR U(3) Model Hamiltonian Calculations
+  │ #
+  │ &par_aux Iprint = 2, Eigenvec_Log = .T., Excitation_Log = .T. /
+  │ &par_0   N_val = 15, L_val = 0 /
+  │ &par_1   epsilon = 1.0,   xi = 0.75 /
+  └────
+
+  Introducing
+
+  ┌────
+  │ $[...]/bin/ipr_U3_U2_mh_gfortran < ipr_u3_modham.inp
+  └────
+
+  in the command line, it is given back the following output:
+
+  ┌────
+  │ Reading  N_val, L_val
+  │ Reading  epsilon, xi
+  │  Iprint =  2; Eigenvec_LOG =  T; Excitation_Log =  T
+  │ N_val =     15; L_val =      0
+  │ epsilon =  1.0000000E+00; xi =  7.5000000E-01
+  │ Operator number            1
+  │ Operator number            2
+  │ GS_energy =    1.7321844551756294     
+  │ L_val =            0
+  │           1   0.0000000000000000        3.5165700354623559     
+  │           2   3.0929130257955548        4.4667740770364324     
+  │           3   5.7488037073509926        4.8502861663079422     
+  │           4   7.9586934507799825        5.5371533436156843     
+  │           5   9.6925122152480512        4.1265672238584008     
+  │           6   10.908945553417363        4.9730348558314166     
+  │           7   12.086226648623684        5.5191888106052103     
+  │           8   13.654429757379329        2.7538257245146016
+  └────
+
+  In this case, the verbosity has been increased using `IPRINT=2'.
 
 
-3.1.5 Programs `ipr_U3_U2' and `ipr_U3_SO3'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+3.1.4 Program \texttt{ipr\_Husimi\_U3\_U2\_mh}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
 
-3.1.6 Program `ipr_4b_U3_U2' and `ipr_4b_U3_SO3'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+3.1.5 Programs \texttt{ipr\_U3\_U2} and \texttt{ipr\_U3\_SO3}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The `ipr_U3_XX' program is similar to `ipr_U3_XX_mh'. The main
+  difference is the input file, because of the Hamiltonian used is
+  -Eq. (\ref{ham2b}) instead of -Eq.(\ref{modham1}).  In this case, an
+  example of the input file could be:
+
+  ┌────
+  │ #                                                                        
+  │ #       INPUT FILE FOR U(3) Model Hamiltonian Calculations 
+  │ #                   
+  │ &par_aux Iprint = 2, Eigenvec_Log = .T., Excitation_Log = .T., Save_avec_Log = .F./                        
+  │ &par_0   N_val = 30, L_val = 0 /                                       
+  │ &par_1   epsilon_p = 1.0, alpha_p = 0.0, beta_p = 0.0, A_p = 0.0 /
+  └────
+
+  Running it in the \(U(2)\) chain, we can analyze the output to test
+  the program:
+
+  ┌────
+  │ $ [...]/bin/ipr_U3_U2_gfortran < ipr_u3_ham.inp 
+  │ 
+  │  Reading  N_val, L_val
+  │  Reading  Hamiltonian Paramenters
+  │   Iprint =  2; Eigenvec_LOG =  T; Excitation_Log =  T; Save_Avec_Log =  F
+  │  N_val =     30; L_val =      0
+  │  epsilon =  1.0000000E+00; alpha =  0.0000000E+00 ; beta =  0.0000000E+00; A =  0.0000000E+00
+  │  Operator number            1
+  │  Operator number            2
+  │  Operator number            3
+  │  Operator number            4
+  │  GS_energy =    0.0000000000000000     
+  │  L_val =            0
+  │            1   0.0000000000000000        1.0000000000000000     
+  │            2   2.0000000000000000        1.0000000000000000     
+  │            3   4.0000000000000000        1.0000000000000000     
+  │            4   6.0000000000000000        1.0000000000000000     
+  │            5   8.0000000000000000        1.0000000000000000     
+  │            6   10.000000000000000        1.0000000000000000     
+  │            7   12.000000000000000        1.0000000000000000     
+  │            8   14.000000000000000        1.0000000000000000     
+  │            9   16.000000000000000        1.0000000000000000     
+  │           10   18.000000000000000        1.0000000000000000     
+  │           11   20.000000000000000        1.0000000000000000     
+  │           12   22.000000000000000        1.0000000000000000     
+  │           13   24.000000000000000        1.0000000000000000     
+  │           14   26.000000000000000        1.0000000000000000     
+  │           15   28.000000000000000        1.0000000000000000     
+  │           16   30.000000000000000        1.0000000000000000
+  └────
+
+
+  The output consist of three columns: an integer one, the eigenvalues
+  of \(\hat n\) and the `IPR'. The last column was expected because
+  \(\hat n\) eigenstates are well located in the \(U(2)\) basis (they
+  match basis' components).  Now, if we compute it using \(SO(3)\)
+  basis,
+
+  ┌────
+  │ $ [...]/bin/ipr_U3_SO3_gfortran < ipr_u3_ham.inp 
+  │ 
+  │  Reading  N_val, L_val
+  │  Reading  Hamiltonian Paramenters
+  │   Iprint =  2; Eigenvec_LOG =  T; Excitation_Log =  T; Save_Avec_Log =  F
+  │  N_val =     30; L_val =      0
+  │  epsilon =  1.0000000E+00; alpha =  0.0000000E+00 ; beta =  0.0000000E+00; A =  0.0000000E+00
+  │  Operator number            1
+  │  Operator number            2
+  │  Operator number            3
+  │  Operator number            4
+  │  GS_energy =   -7.1054273576010019E-015
+  │  L_val =            0
+  │            1   0.0000000000000000        6.2158795395844608     
+  │            2   2.0000000000000142        7.8800707358483129     
+  │            3   4.0000000000000107        8.8145249866016897     
+  │            4   6.0000000000000213        9.3394577175011282     
+  │            5   8.0000000000000284        9.5645594435444661     
+  │            6   10.000000000000000        9.5200527843596721     
+  │            7   12.000000000000014        9.1667631466188073     
+  │            8   14.000000000000014        8.2391939350606123     
+  │            9   16.000000000000014        8.2352287186286670     
+  │           10   18.000000000000007        9.1475889006614128     
+  │           11   20.000000000000021        9.4784447604423558     
+  │           12   22.000000000000011        9.4915382955106420     
+  │           13   24.000000000000014        9.2204419120130368     
+  │           14   26.000000000000011        8.6203298376166941     
+  │           15   28.000000000000004        7.5323034205731147     
+  │           16   30.000000000000007        5.3098659835781525
+  └────
+
+  we obtain the same result excluding the IPR column. In the \(SO(3)\)
+  basis, the \(\hat n\) eingenstates are not well located.
+
+
+3.1.6 Program \texttt{ipr\_4b\_U3\_U2} and \texttt{ipr\_4b\_U3\_SO3}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  If the reader needs more precision, `ipr_4b_U3_XX' program is
+  available to compute the energies, eigenvectors and IPR in both chains
+  considering higher interactions of the Hamiltonian.  Here, the
+  difference is the same than in the last case: the input file.
+
+
+  ┌────
+  │  &INP1 N_val=10, L_val=1, IPRINT=1, Eigenvec_log = .TRUE., Excitation_Log = .True., Save_avec_Log = .True. /
+  │ # Hamiltonian Parameters
+  │  &INP1b P11=2378.0D0 /
+  │  &INP2b P21=-37.597D0, P22=19.312D0, P23=-9.6422D0 /
+  │  &INP3b P31=0.0D0, P32=0.0D0, P33=0.0D0 /
+  │  &INP4b P41=0.0D0, P42=0.0D0, P43=0.0D0, P44=0.0D0, P45=0.0D0, P46=0.0D0, P47=0.0D0 /
+  └────
+
+  \(P_{ij}\) elements correspond to the parameters of the Hamiltonian in
+  the -Eq. (\ref{H4b}).  To run this program in the \(SO(3)\) chain, for
+  example, write the following commands in the terminal:
+
+  ┌────
+  │ $ echo ipr_4b.inp | [...]/bin/ipr_4b_U3_SO3_gfortran
+  └────
+
+  The output in this case is
+
+  ┌────
+  │ GS_energy =   -200.60192731579809     
+  │ L_val =            0
+  │           1   0.0000000000000000        3.7732656477725937     
+  │           2   4311.9024599974764        4.1827037058586312     
+  │           3   8488.9872790600057        3.5354457958151770     
+  │           4   12523.812560924473        3.8730517993482945     
+  │           5   16407.548813126232        3.9800419071796886     
+  │           6   20129.470450786630        3.1403615181153479
+  └────
 
 
 3.2 Programs to fit experimental vibrational bending spectra
 ────────────────────────────────────────────────────────────
 
-3.2.1 Program `chi2_U3'
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+3.2.1 Program \texttt{chi2\_U3}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  `2D Vibron Model Program Suite' includes a `chi2_U3' program to
+  compute the \(\chi^2\) and use it in different minimization
+  methods. This package provides two methods: one of them is implemented
+  in `Python' and the other has been written in `FORTRAN 90'.
 
 
-3.3 `Perl' scripts
-──────────────────
+◊ 3.2.1.1 Minimization using the \texttt{Python-script}
+
+
+◊ 3.2.1.2 Minimization using \texttt{Minuit-CERN} package \cite{minuit}
+
+  In this section we are going to explain how to use this minimization
+  method, where `Minuit-CERN' package has been used. First of all we
+  need to collect the experimental data into a file. In this example we
+  use the `hydrogen isocyanide' (HNC) molecule.
+
+  ┌────
+  │ 19
+  │ 462.72    1.0   1    1  
+  │ 926.50    1.0   2    0  
+  │ 936.05    1.0   2    2  
+  │ 1398.56   1.0   3    1 
+  │ 1419.97   1.0   3    3 
+  │ 1867.05   1.0   4    0 
+  │ 1878.72   1.0   4    2 
+  │ 1913.87   1.0   4    4 
+  │ 2341.84   1.0   5    1 
+  │ 2366.83   1.0   5    3 
+  │ 2417.57   1.0   5    5 
+  │ 2809.29   1.0   6    0 
+  │ 2822.75   1.0   6    2 
+  │ 2863.11   1.0   6    4 
+  │ 2930.90   1.0   6    6 
+  │ 3281.50   1.0   7    1 
+  │ 3309.78   1.0   7    3 
+  │ 3367.37   1.0   7    5 
+  │ 3453.78   1.0   7    7
+  └────
+
+  The first line must be the total number of experimental data. After
+  that, the file is structured in 4 columns. The first column
+  corresponds with the energy, the next one to the experimental error of
+  data and, the last two are the quantum numbers. If you want to include
+  any data in the prediction but not at the fitting time, you can set
+  the experiemntal error to 0.0 . The energy's label must be in
+  accordance with the nature of the molecule: linear, \(U(2)\) basis
+  \(\ket{n\ell}\), or bent, \(SO(3)\) \(\ket{{\nu_b}^{\ell}}\).
+
+  Once finished, the next step is to construct the input file:
+
+  ┌────
+  │  &INP0 BENT=.F., exp_data_file='exp_HNC.dat', output_file_0="output_HNC" / 
+  │  &INP1 N_val=40, LMAX=7, VMAX=7, EMINL=.F. /
+  │ #
+  │ # PARAMETERS THAT TUNE THE OUTPUT
+  │ #
+  │  &INP2 IPRINT=0, DIS_RES = .F. /
+  │  &INP1b P11=740.0D0 /
+  │  &INP2b P21=-3.597D0, P22=1.5D0, P23=-7.2D0 /
+  │  &INP3b P31=0.0D0, P32=0.002D0, P33=0.0D0 /
+  │  &INP4b P41=0.0D0, P42=0.0D0, P43=0.0D0, P44=0.0D0, P45=0.0D0, P46=0.0D0, P47=0.0D0 /
+  │  &fix_par fixed_par = 'fix  5 7 8 9 10 11 12 13 14' /
+  │  
+  │  # P11 ---> 1
+  │  # P21 ---> 2
+  │  # P22 ---> 3
+  │  # P23 ---> 4
+  │  # P31 ---> 5
+  │  # P32 ---> 6
+  │  # P33 ---> 7
+  │  # P41 ---> 8
+  │  # P42 ---> 9
+  │  # P43 ---> 10
+  │  # P44 ---> 11
+  │  # P45 ---> 12
+  │  # P46 ---> 13
+  │  # P47 ---> 14
+  └────
+
+  Most of definitions have been explained in previous sections, the
+  others mean:
+
+  • `BENT': `.T.' (`.F.') if the molecule is bent (linear).
+  • `exp_data_file': The name of the experimental energies' file.
+  • `output_file_0': To choose the name of the file where the fit report
+    will be saved.
+  • `LMAX': The highest angular momentum number \(\ell\) in
+    `exp_data_file'.
+  • `VMAX': The highest harmonic number \(n\) for the linear case or the
+    bending number \(\nu_b\) when `BENT' is true.
+  • `DIS_RES': Match as true (.T.) to display residuals energies.
+  • \(P_{ij}\): Initial value of the parameter \(P_{ij}\)
+  • `fixed_par': `Minuit' order. This string of characters consists of
+    different integers that are associated with the \(P_{ij}\)
+    parameters. If one of them appears, `Minuit' will keep it fixed.
+
+  If the program `Min_minuit_gfortran' is executed as mentioned:
+
+  ┌────
+  │ $ echo fit.inp | ../bin/Min_minuit_gfortran
+  │ 
+  │ Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG IEEE_DIVIDE_BY_ZERO IEEE_UNDERFLOW_FLAG IEEE_DENORMAL
+  │ 
+  │ $ tail -n 43 output_HNC
+  │ 
+  │   EXT PARAMETER                APPROXIMATE        STEP         FIRST   
+  │   NO.   NAME        VALUE          ERROR          SIZE      DERIVATIVE 
+  │    1     P11        1413.8       0.37063       0.67417E-03  -0.14902    
+  │    2     P21       -29.832       0.15233E-01   0.14225E-04   -1.8667    
+  │    3     P22        15.807       0.10429       0.75373E-05  -0.14985    
+  │    4     P23       -8.0528       0.28648E-02   0.38399E-05   -13.647    
+  │    5     P31        0.0000         fixed    
+  │    6     P32       0.48757E-01   0.95612E-02   0.65872E-06   -1.3627    
+  │    7     P33        0.0000         fixed    
+  │    8     P41        0.0000         fixed    
+  │    9     P42        0.0000         fixed    
+  │   10     P43        0.0000         fixed    
+  │   11     P44        0.0000         fixed    
+  │   12     P45        0.0000         fixed    
+  │   13     P46        0.0000         fixed    
+  │   14     P47        0.0000         fixed    
+  │ 
+  │  EXTERNAL ERROR MATRIX.    NDIM=  50    NPAR=  5    ERR DEF=  1.00    
+  │   0.137E+00-0.432E-02-0.926E-03-0.915E-03 0.200E-03
+  │  -0.432E-02 0.232E-03 0.563E-03 0.154E-04-0.537E-04
+  │  -0.926E-03 0.563E-03 0.109E-01-0.862E-04-0.978E-03
+  │  -0.915E-03 0.154E-04-0.862E-04 0.821E-05 0.628E-05
+  │   0.200E-03-0.537E-04-0.978E-03 0.628E-05 0.914E-04
+  │  ERR MATRIX NOT POS-DEF
+  │ 
+  │  PARAMETER  CORRELATION COEFFICIENTS
+  │        NO.  GLOBAL     1     2     3     4     6
+  │         1  0.99666  1.000-0.766-0.024-0.861 0.056
+  │         2  0.98707 -0.766 1.000 0.355 0.353-0.369
+  │         3  0.99201 -0.024 0.355 1.000-0.288-0.980
+  │         4  0.99374 -0.861 0.353-0.288 1.000 0.229
+  │         6  0.99086  0.056-0.369-0.980 0.229 1.000
+  │  ERR MATRIX NOT POS-DEF
+  │ minuit>  **********
+  │  **    4 **CALL    3.000    
+  │  **********
+  │   ___________________________________ 
+  │  | rms =    7.9576384169698269E-002  |
+  │  |___________________________________|
+  │ minuit>  **********
+  │  **    5 **EXIT 
+  │  **********
+  │  ..........MINUIT TERMINATED BY MINUIT COMMAND: EXIT 
+  │ 
+  │ $
+  └────
+
+
+3.3 \texttt{Perl} scripts
+─────────────────────────
+
 
   \printbibliography
 
@@ -693,5 +1050,5 @@ Table of Contents
 Footnotes
 ─────────
 
-[1] In case `Excitation_Log = .True.' the ground state energy is also
-substracted from the Hamiltonian matrix diagonal.
+[1] In case \texttt{Excitation\_Log = .True.} the ground state energy
+is also substracted from the Hamiltonian matrix diagonal.
