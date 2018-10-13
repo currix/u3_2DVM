@@ -83,8 +83,8 @@ IPR_4b_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2
 IPR_4b_so3_OBJ = $(IPR_4b_so3_SRC:.f90=.o)
 #IPR_4b_so3_OPENMP_OBJ = $(IPR_4b_so3_SRC:.f90=.oOMP)
 #
-#
-# ALGEBRAIC MODEL FIT TO EXPERIMENT (GENERAL 4BODY HAMILTONIAN) Chains  (i) U(3) -> U(2) and (ii) U(3) -> SO(3)
+#	
+# ALGEBRAIC MODEL Chi^2 TO EXPERIMENT (GENERAL 4BODY HAMILTONIAN) Chains  (i) U(3) -> U(2) and (ii) U(3) -> SO(3)
 #
 CHI2_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f90 chi_sqre_prg.f90 
 CHI2_OBJ = $(CHI2_SRC:.f90=.o)
