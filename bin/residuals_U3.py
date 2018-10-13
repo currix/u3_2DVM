@@ -37,10 +37,13 @@ def residuals_U3(U3H_FIT_param, input_filename, bin_path, BENT, exp_data_file, N
     input_f.write(output)
     input_f.close()
     #
-    command = "echo " + input_filename + " | " + bin_path + "/chi2_U3_U2_gfortran"
+    command = "echo " + input_filename + " | " + bin_path + "/chi2_U3_gfortran"
+    #
     p = Popen([command], stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
     output, err = p.communicate()
     residuals = np.fromstring(output, dtype=float, sep='\n')
     #print "RESIDUALS ", residuals
+    #
     print np.sum(residuals**2)
+    #
     return residuals
