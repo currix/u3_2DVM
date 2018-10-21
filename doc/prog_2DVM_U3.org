@@ -446,8 +446,8 @@ The \(\hat W^2 \hat{\overline{W}}^2 + \hat{\overline{W}}^2\hat W^2 \) operator i
 * Programs included in the package
 
 We proceed to describe the different programs provided. Compiled
-~Fortran~ programs have names with the suffix  ~_gfortran~ or ~_ifort~
-depending on the compiler used.
+~Fortran~ programs have names with the suffix  ~_gfortran~ or ~_ifort~,
+depending on the compiler used for its compilation.
 
  The
 subroutine used for matrix diagonalization is ~LA_SYEVR~ from the ~Lapack95~ \cite{LAPACK95}, the ~Fortran 95~
@@ -456,6 +456,8 @@ interface to ~Lapack~ \cite{laug}.
 ** \texttt{Fortran} programs to compute eigenvectors, eigenvalues, and other quantities
 
 *** Programs \texttt{avec\_U3\_U2\_mh} and \texttt{avec\_U3\_SO3\_mh}
+
+
 The programs ~avec_U3_XX_mh~ compute, and eventually save, eigenvalues
 and eigenvectors of the model Hamiltonian (\ref{modham1}) using the
 ~XX = U2~ -Eq. (\ref{cobas})- or ~SO3~ -Eq. (\ref{anosbas})- basis.  The input file for this program is of
@@ -517,8 +519,8 @@ $ ../bin/avec_U3_U2_mh_gfortran < u3_modham.inp
 
 #+END_EXAMPLE
 
-A file named ~eigvec_u2_N20_L0.dat~ is created. This file includes the
-energies, the Hamiltonian matrix diagonal[fn:diagonalH] and the eigenstates in column-major order and it
+As ~Save_avec_Log = .T.~ a file named ~eigvec_u2_N20_L0.dat~ is created. This file includes the
+energies, the Hamiltonian matrix diagonal[fn:diagonalH], and the eigenstates in column-major order. It
 has the following structure, where ~XX = u2~ or ~so3~, depending on
 the basis selected.
 
@@ -537,8 +539,8 @@ the basis selected.
 #+END_EXAMPLE
 
 *** Programs \texttt{avec\_U3\_U2} and \texttt{avec\_U3\_SO3}
-     The Programs ~avec_U3_XX~ compute the 2D Vibron Model energies and eigenstates using the XX chain for fixed parameters of -Eq. (\ref{ham2b}). 
-     The input file is similar to the one in the last section:
+     The Programs ~avec_U3_XX~ compute the 2D Vibron Model energies and eigenstates using the XX chain basis for a given set of parameters of the most general one- and two-body Hamiltonian in Eq. (\ref{ham2b}). 
+     The input file is similar to the input in the previous section [[Programs \texttt{avec\_U3\_U2\_mh} and \texttt{avec\_U3\_SO3\_mh}]], the main difference being the Hamiltonian parameters:
 
 #+BEGIN_EXAMPLE
 #
