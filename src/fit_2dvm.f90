@@ -1,4 +1,4 @@
-MODULE FIT_2DVM
+MODULE Fit_2DVM
   !
   USE nrtype
   USE defparam_2DVM
@@ -1389,9 +1389,44 @@ CONTAINS
     !
   END SUBROUTINE ASSIGN_U3_DSYMMETRY
   !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Jamil Code
+  !
+  FUNCTION PRE_CHI_SQRE(P11,P21,P22,P23,P31,P32,P33,P41, &
+       P42,P43,P44,P45,P46,P47)
+    !
+    ! H_pars VECTOR:
+    ! P11,P21,P22,P23,P31,P32,P33,P41,P42,P43,P44,P45,P46,P47
+    !
+    IMPLICIT NONE
+    !     DEFINITION OF VARIABLES
+    REAL(KIND = DP),  INTENT(IN) :: P11,P21,P22,P23,P31,P32,P33,P41, &
+         P42,P43,P44,P45,P46,P47
+    REAL(KIND = DP) :: PRE_CHI_SQRE
+    !
+    H_4b_pars = 0.0_DP
+    !
+    H_4b_pars(1) = P11
+    H_4b_pars(2) = P21
+    H_4b_pars(3) = P22
+    H_4b_pars(4) = P23
+    H_4b_pars(5) = P31
+    H_4b_pars(6) = P32
+    H_4b_pars(7) = P33
+    H_4b_pars(8) = P41
+    H_4b_pars(9) = P42
+    H_4b_pars(10) = P43
+    H_4b_pars(11) = P44
+    H_4b_pars(12) = P45
+    H_4b_pars(13) = P46
+    H_4b_pars(14) = P47
+    !
+    PRE_CHI_SQRE = CHI_SQRE(H_4b_pars)
+    !
+    RETURN
+    !
+  END FUNCTION PRE_CHI_SQRE
+  !
   !
 END MODULE FIT_2DVM
-      
-
 
 

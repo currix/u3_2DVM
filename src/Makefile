@@ -90,11 +90,16 @@ CHI2_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f9
 CHI2_OBJ = $(CHI2_SRC:.f90=.o)
 #CHI2_OPENMP_OBJ = $(CHI2_SRC:.f90=.oOMP)
 #
+#
+#Minimization with Minuit-77
+Min_minuit_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f90 minuit-cern.f FCN_func.f90 minimization.f90 
+Min_minuit_OBJ = nrtype.o loggamma.o defparam_2dvm.o u3_2dvm_mod.o fit_2dvm.o minuit-cern.o FCN_func.o minimization.o
+
 ####################################################################
 ####################################################################
 #
 .SUFFIXES: 
-.SUFFIXES: .o .f90 .oOMP 
+.SUFFIXES: .o .f90 .oOMP .f
 #
 FC = gfortran
 #
@@ -123,7 +128,7 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 chi2_U3
+all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 chi2_U3 Min_minuit
 #
 .PHONY : all
 #################################################################
@@ -131,6 +136,11 @@ all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ip
 	$(info )
 	$(info Compiling single thread object file:)
 	$(FC) -c $(PREP) $(OPTFLAGS)  "$<"
+#################################################################
+.f.o:
+	$(info )
+	$(info Compiling single thread fortran 77 object file:)
+	$(FC) -c $(PREP) $(OPTFLAGS) "$<"
 #################################################################
 .f90.oOMP:
 	$(info )
@@ -259,6 +269,14 @@ chi2_U3: $(CHI2_OBJ) Makefile
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(CHI2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
+#################################################################
+#Minuit minimization:
+Min_minuit: $(Min_minuit_OBJ) Makefile
+		$(info )
+		$(info Linking single thread $@ executable:)
+		$(FC) -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(OPTFLAGS) $(LIBS)
+#################################################################
+
 clean:
 	@echo "Cleaning object files"
 	@rm -f *.o *.mod
