@@ -33,6 +33,6 @@ U3H_FIT_param.add('P45',value=0.0,vary=False)
 U3H_FIT_param.add('P46',value=0.0,vary=False)
 U3H_FIT_param.add('P47',value=0.0,vary=False)
 
-out_0 = minimize(residuals_U3, U3H_FIT_param, args=(input_filename, BENT, exp_data_file, N_val, LMAX, VMAX, EMINL))
+out_0 = minimize(residuals_U3, U3H_FIT_param, args=(input_filename, bin_path, BENT, exp_data_file, N_val, LMAX, VMAX, EMINL))
 
 print fit_report(out_0)
