@@ -1064,21 +1064,31 @@ CONTAINS
     !
     !     RESCALE PARAMETERS
     !
+    ! Only model Hamiltonian parameters are considered to avoid level crossings and convergence problems.
+    !
     IF (.NOT.BENT) THEN
        H_4b_pars(4) = H_4b_pars(4)*FAC         
-       H_4b_pars(11) = H_4b_pars(11)*FAC
-       H_4b_pars(13) = H_4b_pars(13)*FAC
+       ! H_4b_pars(11) = H_4b_pars(11)*FAC
+       ! H_4b_pars(13) = H_4b_pars(13)*FAC
     ELSE
        H_4b_pars(1) = H_4b_pars(1)*FAC
-       H_4b_pars(2) = H_4b_pars(2)*FAC
-       H_4b_pars(5) = H_4b_pars(5)*FAC
-       H_4b_pars(6) = H_4b_pars(6)*FAC
-       H_4b_pars(8) = H_4b_pars(8)*FAC
-       H_4b_pars(9) = H_4b_pars(9)*FAC
+       ! H_4b_pars(2) = H_4b_pars(2)*FAC
+       ! H_4b_pars(5) = H_4b_pars(5)*FAC
+       ! H_4b_pars(6) = H_4b_pars(6)*FAC
+       ! H_4b_pars(8) = H_4b_pars(8)*FAC
+       ! H_4b_pars(9) = H_4b_pars(9)*FAC
     ENDIF
-    H_4b_pars(7) = H_4b_pars(7)*FAC ! Both cases
-    H_4b_pars(12) = H_4b_pars(12)*FAC ! Both cases
-    H_4b_pars(14) = H_4b_pars(14)*FAC ! Both cases
+    ! Both cases
+    H_4b_pars(2) = H_4b_pars(2)*FAC
+    H_4b_pars(5) = H_4b_pars(5)*FAC
+    H_4b_pars(6) = H_4b_pars(6)*FAC
+    H_4b_pars(7) = H_4b_pars(7)*FAC 
+    H_4b_pars(8) = H_4b_pars(8)*FAC
+    H_4b_pars(9) = H_4b_pars(9)*FAC
+    H_4b_pars(11) = H_4b_pars(11)*FAC
+    H_4b_pars(12) = H_4b_pars(12)*FAC 
+    H_4b_pars(13) = H_4b_pars(13)*FAC
+    H_4b_pars(14) = H_4b_pars(14)*FAC 
     !
     IF (BENT) THEN
        CALL Build_Ham_4Body_SO3(N2, L, Dim, SO3_Basis)  
