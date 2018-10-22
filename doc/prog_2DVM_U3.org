@@ -381,9 +381,9 @@ a band matrix with non-zero matrix elements are located in the main and first di
         (w_1-l)(w_1-l-1)\right]}{2(2w_1+1)(2w_1-1)} \right\}\,
   \delta_{w_2,w_1} \label{nW2matel_so3}\\
 +& \left[\omega_1(\omega_1+1) + (\omega_1 +2)(\omega_1+3)\right]\nonumber\\
-&\times\sqrt{\frac{(N-w_1)(N+w_1+3)(w_1-l+2)(w_1-l+1)(w_1+l+2)(w_1+l+1)}{(2w_1+1)(2w_1+3)^2(2w_1+5)}}\delta_{w_2,w_1+2}\nonumber\\
+\times &  \sqrt{\frac{(N-w_1)(N+w_1+3)(w_1-l+2)(w_1-l+1)(w_1+l+2)(w_1+l+1)}{(2w_1+1)(2w_1+3)^2(2w_1+5)}}\delta_{w_2,w_1+2}\nonumber\\
 +& \left[(\omega_1 - 2)(\omega_1-1) + \omega_1 (\omega_1+1)\right]\nonumber\\
-&\times \sqrt{\frac{(N-w_1+2)(N+w_1+1)(w_1-l)(w_1-l-1)(w_1+l)(w_1+l-1)}{(2w_1-3)(2w_1-1)^2(2w_1+1)}}\delta_{w_2,w_1-2}\nonumber
+\times & \sqrt{\frac{(N-w_1+2)(N+w_1+1)(w_1-l)(w_1-l-1)(w_1+l)(w_1+l-1)}{(2w_1-3)(2w_1-1)^2(2w_1+1)}}\delta_{w_2,w_1-2}\nonumber
 \end{align}
 
 
@@ -418,7 +418,7 @@ C_{w,\ell} = & \sqrt{\frac{2(N+w+3)(N-w)(w+\ell+1)(w-\ell+1)(w-\ell+2)(w-\ell+3)
 The previous result can be used for the obtention of an expression for the \(\hat R_{+}\) operator matrix elements
 \begin{align}
 \langle [N];w_2 \ell_2|\hat R_{-}|[N];w_1 \ell_1\rangle^\dagger =& \langle [N];w_1 \ell_1|\hat R_{+}|[N];w_2 \ell_2\rangle \\
-=& A_{w_2,\ell_2+1}  \delta_{w_1,w_2} \delta_{\ell_1,\ell_2+1} + B_{w_2+2,\ell_2+1}  \delta_{w_1,w_2-2} \delta_{\ell_1,\ell_2+1} + C_{w_2-2,\ell_2+1}  \delta_{w_1,w_2+2} \delta_{\ell_1,\ell_2+1}~.\nonumber
+=& A_{w_2,\ell_2+1}  \delta_{w_1,w_2} \delta_{\ell_1,\ell_2+1} + B_{w_2+2,\ell_2+1}  \delta_{w_1,w_2-2} \delta_{\ell_1,\ell_2+1}  \nonumber \\ & + C_{w_2-2,\ell_2+1}  \delta_{w_1,w_2+2} \delta_{\ell_1,\ell_2+1}~.\nonumber
 \end{align}
 
 The upper diagonal matrix elements of the Casimir operator \(\hat{\overline{W}}^2 = \hat R_{+}\hat R_{-} + \hat \ell^2\) can then be expressed as
@@ -446,8 +446,8 @@ The \(\hat W^2 \hat{\overline{W}}^2 + \hat{\overline{W}}^2\hat W^2 \) operator i
 * Programs included in the package
 
 We proceed to describe the different programs provided. Compiled
-~Fortran~ programs have names with the suffix  ~_gfortran~ or ~_ifort~,
-depending on the compiler used for its compilation.
+~Fortran~ programs have names with the suffix  ~_gfortran~ or ~_ifort~
+depending on the compiler used.
 
  The
 subroutine used for matrix diagonalization is ~LA_SYEVR~ from the ~Lapack95~ \cite{LAPACK95}, the ~Fortran 95~
@@ -553,7 +553,7 @@ the basis selected.
 
 
      The new elements in this input file are \(\epsilon\), \(\alpha\), \(\beta\) and \(A\) of the -Eq. (\ref{ham2b}).
-     To run this program using an ~UNIX~ terminal:
+     To run this program using a ~UNIX~ terminal:
 
 #+BEGIN_EXAMPLE
  $ [...]/bin/avec_U3_XX_gfortran < u3_ham.inp
@@ -746,15 +746,14 @@ $ [...]/bin/ipr_U3_SO3_gfortran < ipr_u3_ham.inp
 #+END_EXAMPLE
 
 ** Programs to fit experimental vibrational bending spectra
-
+    This part of the software has two different purposes depending on the input definitions, so, before explaining them, we present experimental energies and input files.
 *** Program \texttt{chi2\_U3}
-    ~2D Vibron Model Program Suite~ includes a ~chi2_U3~ program to compute the \(\chi^2\) and use it in different minimization methods. This package provides two methods: one of them is implemented in ~Python~ and the other has been written in ~FORTRAN 90~.
+\label{chi2p}
+    ~2D Vibron Model Program Suite~ includes a ~chi2_U3~ program to compute the \(\chi^2\) and use it in different minimization methods.
 
-**** Minimization using the \texttt{Python-script}
+    This part of the software has two different purposes depending on the input definitions, so, before explaining them, we present experimental energies and input files.
 
-**** Minimization using \texttt{Minuit-CERN} package \cite{minuit}
-     
-     In this section we are going to explain how to use this minimization method, where ~Minuit-CERN~ package has been used. First of all we need to collect the experimental data into a file. In this example we use the ~hydrogen isocyanide~ (HNC) molecule.
+First of all we need to collect the experimental data into a file. In this example we use the ~hydrogen isocyanide~ (HNC) molecule \cite{MellauHNC,BunkerHNC}.
 
 #+BEGIN_EXAMPLE
   
@@ -784,6 +783,77 @@ $ [...]/bin/ipr_U3_SO3_gfortran < ipr_u3_ham.inp
      The first line must be the total number of experimental data. After that, the file is structured in 4 columns. The first column corresponds with the energy, the next one to the experimental error of data and, the last two are the quantum numbers. If you want to include any data in the prediction but not at the fitting time, you can set the experiemntal error to 0.0 . The energy's label must be in accordance with the nature of the molecule: linear, \(U(2)\) basis \(\ket{n\ell}\), or bent, \(SO(3)\) \(\ket{{\nu_b}^{\ell}}\).
      
      Once finished, the next step is to construct the input file:
+
+#+BEGIN_EXAMPLE
+
+ &INP0 BENT=.F., exp_data_file='exp_HNC_Danielle.dat' / 
+ &INP1 N_val=40, LMAX=7, VMAX=7, EMINL=.F. /
+#
+# PARAMETERS THAT TUNE THE OUTPUT
+#
+ &INP2 IPRINT=0, DIS_RES = *** /
+ &INP1b P11=1414.0D0 /
+ &INP2b P21=-29.837D0, P22=15.81D0, P23=-8.054D0 /
+ &INP3b P31=0.0D0, P32=4.9D-2, P33=0.0D0 /
+ &INP4b P41=0.0D0, P42=0.0D0, P43=0.0D0, P44=0.0D0, P45=0.0D0, P46=0.0D0, P47=0.0D0 /
+
+#+END_EXAMPLE
+
+- ~BENT~: ~.T.~ (~.F.~) if the molecule is bent (linear).
+- ~exp_data_file~: The name of the experimental energies' file.
+- ~N_val~: Vibron number. Determines the Hilbert space size.
+- ~LMAX~: The highest angular momentum number \(\ell\) in ~exp_data_file~.
+- ~VMAX~: The highest harmonic number \(n\) for the linear case or the bending number \(\nu_b\) when ~BENT~ is true.
+- ~EMINL~: Fix the lowest level at the zero energy.
+- ~Iprint~: Integer variable. Controls the program's verbosity.
+- ~DIS_RES~: Match as true (.T.) to display residuals energies or false (.F.) to get only the \(\chi^2\).
+- \(P_{ij}\): Initial value of the parameter \(P_{ij}\)
+
+  Running the program with ~DIS_RES=.T.~:
+  
+#+BEGIN_EXAMPLE
+
+$ echo fit.inp | ../../bin/chi2_U3_gfortran 
+
+
+   7.0788432691415437E-003
+  -2.7776246656685544E-004
+   9.1877661752732820E-003
+  -3.3695279357061736E-002
+  -3.0352671044056478E-002
+  -8.4165727005256485E-002
+  -4.9249332600084017E-002
+   5.6619175268906474E-002
+  -3.3439091556601852E-002
+  -4.1176236554747447E-002
+  -5.0164535727162729E-002
+   7.7310508308073622E-002
+  0.16723874181343490     
+  -2.9727267470207153E-002
+   1.0623963672060199E-002
+   5.5108955660216452E-002
+ -0.11479814853555581     
+  0.16486361585430132     
+  0.19601871556506012  
+
+#+END_EXAMPLE
+
+On the other hand, if you set ~DIS_RES~ to false:
+
+#+BEGIN_EXAMPLE
+
+$ echo fit.inp | ../../bin/chi2_U3_gfortran 
+
+  0.13699774310846663  
+
+#+END_EXAMPLE
+
+
+*** Minimization using the \texttt{Python-script}
+
+*** Minimization using \texttt{Minuit-CERN} package
+     
+     In this section we are going to explain how to use this minimization method, where ~Minuit-CERN~ package \cite{minuit} has been used. Most of the inputs items have been detailed at subsection \ref{chi2p}. The energies file have the same structure and the input file is similar changing the meaning of ~DIS_RES~:
 
 #+BEGIN_EXAMPLE
 

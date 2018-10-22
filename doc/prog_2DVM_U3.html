@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>2D Vibron Model Program Suite</title>
-<!-- 2018-09-12 Wed 13:01 -->
+<!-- 2018-10-22 Mon 18:38 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <style type="text/css">
@@ -211,6 +211,8 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-2">3.2. Programs to fit experimental vibrational bending spectra</a>
 <ul>
 <li><a href="#sec-3-2-1">3.2.1. Program \texttt{chi2\_U3}</a></li>
+<li><a href="#sec-3-2-2">3.2.2. Minimization using the \texttt{Python-script}</a></li>
+<li><a href="#sec-3-2-3">3.2.3. Minimization using \texttt{Minuit-CERN} package</a></li>
 </ul>
 </li>
 <li><a href="#sec-3-3">3.3. \texttt{Perl} scripts</a></li>
@@ -665,9 +667,9 @@ elements
         (w_1-l)(w_1-l-1)\right]}{2(2w_1+1)(2w_1-1)} \right\}\,
   \delta_{w_2,w_1} \label{nW2matel_so3}\\
 +& \left[\omega_1(\omega_1+1) + (\omega_1 +2)(\omega_1+3)\right]\nonumber\\
-&\times\sqrt{\frac{(N-w_1)(N+w_1+3)(w_1-l+2)(w_1-l+1)(w_1+l+2)(w_1+l+1)}{(2w_1+1)(2w_1+3)^2(2w_1+5)}}\delta_{w_2,w_1+2}\nonumber\\
+\times &  \sqrt{\frac{(N-w_1)(N+w_1+3)(w_1-l+2)(w_1-l+1)(w_1+l+2)(w_1+l+1)}{(2w_1+1)(2w_1+3)^2(2w_1+5)}}\delta_{w_2,w_1+2}\nonumber\\
 +& \left[(\omega_1 - 2)(\omega_1-1) + \omega_1 (\omega_1+1)\right]\nonumber\\
-&\times \sqrt{\frac{(N-w_1+2)(N+w_1+1)(w_1-l)(w_1-l-1)(w_1+l)(w_1+l-1)}{(2w_1-3)(2w_1-1)^2(2w_1+1)}}\delta_{w_2,w_1-2}\nonumber
+\times & \sqrt{\frac{(N-w_1+2)(N+w_1+1)(w_1-l)(w_1-l-1)(w_1+l)(w_1+l-1)}{(2w_1-3)(2w_1-1)^2(2w_1+1)}}\delta_{w_2,w_1-2}\nonumber
 \end{align}
 
 
@@ -714,7 +716,7 @@ The previous result can be used for the obtention of an expression for the \(\ha
 </p>
 \begin{align}
 \langle [N];w_2 \ell_2|\hat R_{-}|[N];w_1 \ell_1\rangle^\dagger =& \langle [N];w_1 \ell_1|\hat R_{+}|[N];w_2 \ell_2\rangle \\
-=& A_{w_2,\ell_2+1}  \delta_{w_1,w_2} \delta_{\ell_1,\ell_2+1} + B_{w_2+2,\ell_2+1}  \delta_{w_1,w_2-2} \delta_{\ell_1,\ell_2+1} + C_{w_2-2,\ell_2+1}  \delta_{w_1,w_2+2} \delta_{\ell_1,\ell_2+1}~.\nonumber
+=& A_{w_2,\ell_2+1}  \delta_{w_1,w_2} \delta_{\ell_1,\ell_2+1} + B_{w_2+2,\ell_2+1}  \delta_{w_1,w_2-2} \delta_{\ell_1,\ell_2+1}  \nonumber \\ & + C_{w_2-2,\ell_2+1}  \delta_{w_1,w_2+2} \delta_{\ell_1,\ell_2+1}~.\nonumber
 \end{align}
 
 <p>
@@ -850,8 +852,8 @@ $ ../bin/avec_U3_U2_mh_gfortran &lt; u3_modham.inp
 </pre>
 
 <p>
-A file named <code>eigvec_u2_N20_L0.dat</code> is created. This file includes the
-energies, the Hamiltonian matrix diagonal<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup> and the eigenstates in column-major order and it
+As <code>Save_avec_Log = .T.</code> a file named <code>eigvec_u2_N20_L0.dat</code> is created. This file includes the
+energies, the Hamiltonian matrix diagonal<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup>, and the eigenstates in column-major order. It
 has the following structure, where <code>XX = u2</code> or <code>so3</code>, depending on
 the basis selected.
 </p>
@@ -873,8 +875,8 @@ the basis selected.
 <h4 id="sec-3-1-2"><span class="section-number-4">3.1.2</span> Programs \texttt{avec\_U3\_U2} and \texttt{avec\_U3\_SO3}</h4>
 <div class="outline-text-4" id="text-3-1-2">
 <p>
-The Programs <code>avec_U3_XX</code> compute the 2D Vibron Model energies and eigenstates using the XX chain for fixed parameters of -Eq. (\ref{ham2b}). 
-The input file is similar to the one in the last section:
+The Programs <code>avec_U3_XX</code> compute the 2D Vibron Model energies and eigenstates using the XX chain basis for a given set of parameters of the most general one- and two-body Hamiltonian in Eq. (\ref{ham2b}). 
+The input file is similar to the input in the previous section <a href="#sec-3-1-1">3.1.1</a>, the main difference being the Hamiltonian parameters:
 </p>
 
 <pre class="example">
@@ -889,7 +891,7 @@ The input file is similar to the one in the last section:
 
 <p>
 The new elements in this input file are \(\epsilon\), \(\alpha\), \(\beta\) and \(A\) of the -Eq. (\ref{ham2b}).
-To run this program using an <code>UNIX</code> terminal:
+To run this program using a <code>UNIX</code> terminal:
 </p>
 
 <pre class="example">
@@ -1118,19 +1120,24 @@ L_val =            0
 <div id="outline-container-sec-3-2" class="outline-3">
 <h3 id="sec-3-2"><span class="section-number-3">3.2</span> Programs to fit experimental vibrational bending spectra</h3>
 <div class="outline-text-3" id="text-3-2">
-</div><div id="outline-container-sec-3-2-1" class="outline-4">
+<p>
+This part of the software has two different purposes depending on the input definitions, so, before explaining them, we present experimental energies and input files.
+</p>
+</div>
+<div id="outline-container-sec-3-2-1" class="outline-4">
 <h4 id="sec-3-2-1"><span class="section-number-4">3.2.1</span> Program \texttt{chi2\_U3}</h4>
 <div class="outline-text-4" id="text-3-2-1">
 <p>
-<code>2D Vibron Model Program Suite</code> includes a <code>chi2_U3</code> program to compute the \(\chi^2\) and use it in different minimization methods. This package provides two methods: one of them is implemented in <code>Python</code> and the other has been written in <code>FORTRAN 90</code>.
+\label{chi2p}
+    <code>2D Vibron Model Program Suite</code> includes a <code>chi2_U3</code> program to compute the \(\chi^2\) and use it in different minimization methods.
 </p>
-</div>
 
-<ol class="org-ol"><li><a id="sec-3-2-1-1" name="sec-3-2-1-1"></a>Minimization using the \texttt{Python-script}<br  /></li>
-
-<li><a id="sec-3-2-1-2" name="sec-3-2-1-2"></a>Minimization using \texttt{Minuit-CERN} package \cite{minuit}<br  /><div class="outline-text-5" id="text-3-2-1-2">
 <p>
-In this section we are going to explain how to use this minimization method, where <code>Minuit-CERN</code> package has been used. First of all we need to collect the experimental data into a file. In this example we use the <code>hydrogen isocyanide</code> (HNC) molecule.
+This part of the software has two different purposes depending on the input definitions, so, before explaining them, we present experimental energies and input files.
+</p>
+
+<p>
+First of all we need to collect the experimental data into a file. In this example we use the <code>hydrogen isocyanide</code> (HNC) molecule \cite{MellauHNC,BunkerHNC}.
 </p>
 
 <pre class="example">
@@ -1162,6 +1169,93 @@ The first line must be the total number of experimental data. After that, the fi
 
 <p>
 Once finished, the next step is to construct the input file:
+</p>
+
+<pre class="example">
+ &amp;INP0 BENT=.F., exp_data_file='exp_HNC_Danielle.dat' / 
+ &amp;INP1 N_val=40, LMAX=7, VMAX=7, EMINL=.F. /
+#
+# PARAMETERS THAT TUNE THE OUTPUT
+#
+ &amp;INP2 IPRINT=0, DIS_RES = *** /
+ &amp;INP1b P11=1414.0D0 /
+ &amp;INP2b P21=-29.837D0, P22=15.81D0, P23=-8.054D0 /
+ &amp;INP3b P31=0.0D0, P32=4.9D-2, P33=0.0D0 /
+ &amp;INP4b P41=0.0D0, P42=0.0D0, P43=0.0D0, P44=0.0D0, P45=0.0D0, P46=0.0D0, P47=0.0D0 /
+</pre>
+
+<ul class="org-ul">
+<li><code>BENT</code>: <code>.T.</code> (<code>.F.</code>) if the molecule is bent (linear).
+</li>
+<li><code>exp_data_file</code>: The name of the experimental energies' file.
+</li>
+<li><code>N_val</code>: Vibron number. Determines the Hilbert space size.
+</li>
+<li><code>LMAX</code>: The highest angular momentum number \(\ell\) in <code>exp_data_file</code>.
+</li>
+<li><code>VMAX</code>: The highest harmonic number \(n\) for the linear case or the bending number \(\nu_b\) when <code>BENT</code> is true.
+</li>
+<li><code>EMINL</code>: Fix the lowest level at the zero energy.
+</li>
+<li><code>Iprint</code>: Integer variable. Controls the program's verbosity.
+</li>
+<li><code>DIS_RES</code>: Match as true (.T.) to display residuals energies or false (.F.) to get only the \(\chi^2\).
+</li>
+<li>\(P_{ij}\): Initial value of the parameter \(P_{ij}\)
+
+<p>
+Running the program with <code>DIS_RES=.T.</code>:
+</p>
+</li>
+</ul>
+
+<pre class="example">
+$ echo fit.inp | ../../bin/chi2_U3_gfortran 
+
+
+   7.0788432691415437E-003
+  -2.7776246656685544E-004
+   9.1877661752732820E-003
+  -3.3695279357061736E-002
+  -3.0352671044056478E-002
+  -8.4165727005256485E-002
+  -4.9249332600084017E-002
+   5.6619175268906474E-002
+  -3.3439091556601852E-002
+  -4.1176236554747447E-002
+  -5.0164535727162729E-002
+   7.7310508308073622E-002
+  0.16723874181343490     
+  -2.9727267470207153E-002
+   1.0623963672060199E-002
+   5.5108955660216452E-002
+ -0.11479814853555581     
+  0.16486361585430132     
+  0.19601871556506012
+</pre>
+
+<p>
+On the other hand, if you set <code>DIS_RES</code> to false:
+</p>
+
+<pre class="example">
+$ echo fit.inp | ../../bin/chi2_U3_gfortran 
+
+  0.13699774310846663
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3-2-2" class="outline-4">
+<h4 id="sec-3-2-2"><span class="section-number-4">3.2.2</span> Minimization using the \texttt{Python-script}</h4>
+</div>
+
+<div id="outline-container-sec-3-2-3" class="outline-4">
+<h4 id="sec-3-2-3"><span class="section-number-4">3.2.3</span> Minimization using \texttt{Minuit-CERN} package</h4>
+<div class="outline-text-4" id="text-3-2-3">
+<p>
+In this section we are going to explain how to use this minimization method, where <code>Minuit-CERN</code> package \cite{minuit} has been used. Most of the inputs items have been detailed at subsection \ref{chi2p}. The energies file have the same structure and the input file is similar changing the meaning of <code>DIS_RES</code>:
 </p>
 
 <pre class="example">
@@ -1274,7 +1368,6 @@ minuit&gt;  **********
 $
 </pre>
 </div>
-</li></ol>
 </div>
 </div>
 
@@ -1300,7 +1393,7 @@ In case \texttt{Excitation\_Log = .True.} the ground state energy is also substr
 </div></div>
 <div id="postamble" class="status">
 <p class="date">Date: \today</p>
-<p class="date">Created: 2018-09-12 Wed 13:01</p>
+<p class="date">Created: 2018-10-22 Mon 18:38</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
