@@ -14,11 +14,19 @@ MODULE u3_2dvm_mod
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: W2_matrix ! Atomic M23 in 4 body Hamiltonian with U(2) basis
   ! n Casimir Matrix in SO(3) DS
   REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: n_matrix ! Atomic M11 in 4 body Hamiltonian with SO(3) basis
-  !
-  ! Eigenvalue Vector
-  REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Diagonal_vector ! Hamiltonian Diagonal Elements
+  ! 
   ! Hamiltonian Diagonal Vector
+  REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Diagonal_vector ! Hamiltonian Diagonal Elements
+#ifdef  __GFORTRAN__
+  ! gfortran
+  ! Eigenvalue Vector
   REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
+#else
+  !ifort
+  ! Eigenvalue Vector
+  REAL(KIND = DP), DIMENSION(:), ALLOCATABLE :: Eigenval_vector ! Hamiltonian Eigenvalues
+  REAL(KIND = DP), DIMENSION(:,:), ALLOCATABLE :: Eigenvec_array ! Hamiltonian Eigenvectors
+#endif  
   ! Cylindrical Oscillator Basis
   TYPE(u2_bas), DIMENSION(:), ALLOCATABLE :: U2_Basis !  U(3) > U(2) > SO(2) basis
   ! Displaced Oscillator Basis

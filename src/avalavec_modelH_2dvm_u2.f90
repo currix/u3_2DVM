@@ -13,8 +13,15 @@ PROGRAM avalavec_modelH_u2_2DVM
   USE u3_2dvm_mod
   !
   ! Lapack 95
+#ifdef  __GFORTRAN__
+  ! gfortran
   USE LA_PRECISION, ONLY: WP => DP
   USE F95_LAPACK, ONLY: LA_SYEVR
+#else
+  !ifort
+  USE F95_PRECISION, ONLY: WP => DP
+  USE LAPACK95, ONLY: SYEVR
+#endif  
   !
   !
   IMPLICIT NONE
@@ -111,7 +118,13 @@ PROGRAM avalavec_modelH_u2_2DVM
      time_check_ref = time_check
      !
      ! Diagonalize Hamiltonian matrix (LAPACK95)
+#ifdef  __GFORTRAN__
+     !gfortran
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='N', UPLO='U', IL=1, IU=1)
+#else
+     !ifort
+     CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', IL=1, IU=1)
+#endif  
      !
      GS_energy = Eigenval_vector(1)
      !
@@ -182,7 +195,7 @@ PROGRAM avalavec_modelH_u2_2DVM
      ALLOCATE(Diagonal_vector(1:dim_block), STAT = IERR)    
      IF (IERR /= 0) STOP 'Diagonal_vector allocation request denied.'
      !
-     forall (state_index=1:dim_block) Diagonal_vector(state_index) = Ham_matrix(state_index, state_index)
+     FORALL (state_index=1:dim_block) Diagonal_vector(state_index) = Ham_matrix(state_index, state_index)
      !
   ENDIF
   !
@@ -197,6 +210,8 @@ PROGRAM avalavec_modelH_u2_2DVM
   ! Hamiltonian Diagonalization
   !
   !
+#ifdef  __GFORTRAN__
+  !gfortran
   ! ALLOCATE EIGENVALUES VECTOR
   ALLOCATE(Eigenval_vector(1:dim_block), STAT = IERR)    
   IF (IERR /= 0) THEN
@@ -204,6 +219,20 @@ PROGRAM avalavec_modelH_u2_2DVM
      STOP
   ENDIF
   !
+#else
+  !ifort
+  ! ALLOCATE EIGENVALUES AND EIGENVECTOR ARRAY
+  ALLOCATE(Eigenval_vector(1:dim_block), STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Eigenval_vector allocation request denied."
+     STOP
+  ENDIF
+  ALLOCATE(Eigenvec_array(1:dim_block, 1:dim_block), STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Eigenvec_array allocation request denied."
+     STOP
+  ENDIF
+#endif  
   !      
   ! Check time
   CALL CPU_TIME(time_check)
@@ -212,11 +241,22 @@ PROGRAM avalavec_modelH_u2_2DVM
   time_check_ref = time_check
   !
   ! Diagonalize Hamiltonian matrix (LAPACK95)
+#ifdef  __GFORTRAN__
+  !gfortran
   IF (Eigenvec_Log .OR. Save_avec_Log) THEN
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
   ELSE
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='N', UPLO='U')
   ENDIF
+#else
+     !ifort
+  IF (Eigenvec_Log .OR. Save_avec_Log) THEN
+     CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', Z = Eigenvec_array)
+  ELSE
+     CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U')
+  ENDIF
+  Ham_matrix = Eigenvec_array
+#endif  
   !
   IF (Excitation_Log) THEN
      !
