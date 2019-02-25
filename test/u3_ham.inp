@@ -1,8 +1,8 @@
 #
 #       INPUT FILE FOR U(3) 2 Body Hamiltonian Calculations
 #
-&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T., Save_avec_Log = .F.  /
-&par_0   N_val = 600, L_val = 0 /
+&par_aux Iprint = 1 Eigenvec_Log = .T., Excitation_Log = .T., Save_avec_Log = .T.  /
+&par_0   N_val = 60, L_val = 0 /
 &par_1   epsilon_p = 0.8, alpha_p = -0.000667779632721202, beta_p = 0.0, A_p = 0.000333889816360601 /    
 
 

@@ -21,6 +21,90 @@ AVEC_modH_u2_OBJ = $(AVEC_modH_u2_SRC:.f90=.o)
 #
 # AVEC_modH_u2_OPENMP_OBJ = $(AVEC_modH_u2_SRC:.f90=.oOMP)
 #
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain (ii) U(3) -> SO(3)
+#
+AVEC_modH_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_so3.f90 
+AVEC_modH_so3_OBJ = $(AVEC_modH_so3_SRC:.f90=.o)
+#
+#AVEC_modH_so3_OPENMP_OBJ = $(AVEC_modH_so3_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (GENERAL HAMILTONIAN) Chain  (i) U(3) -> U(2)
+#
+AVEC_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm_u2.f90 
+AVEC_u2_OBJ = $(AVEC_u2_SRC:.f90=.o)
+#AVEC_u2_OPENMP_OBJ = $(AVEC_u2_SRC:.f90=.oOMP)
+#
+# ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (GENERAL HAMILTONIAN) Chain  (ii) U(3) -> SO(3)
+#
+AVEC_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm_so3.f90 
+AVEC_so3_OBJ = $(AVEC_so3_SRC:.f90=.o)
+#AVEC_so3_OPENMP_OBJ = $(AVEC_so3_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain  (i) U(3) -> U(2)
+#
+IPR_modH_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm_u2.f90 
+IPR_modH_u2_OBJ = $(IPR_modH_u2_SRC:.f90=.o)
+#IPR_modH_u2_OPENMP_OBJ = $(IPR_modH_u2_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (MODEL HAMILTONIAN) Chain  (ii) U(3) -> SO(3)
+#
+IPR_modH_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_modelH_2dvm_so3.f90 
+IPR_modH_so3_OBJ = $(IPR_modH_so3_SRC:.f90=.o)
+#IPR_modH_so3_OPENMP_OBJ = $(IPR_modH_so3_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain  (i) U(3) -> U(2)
+#
+IPR_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_u2.f90 
+IPR_u2_OBJ = $(IPR_u2_SRC:.f90=.o)
+#IPR_u2_OPENMP_OBJ = $(IPR_u2_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain  (ii) U(3) -> SO(3)
+#
+IPR_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_so3.f90 
+IPR_so3_OBJ = $(IPR_so3_SRC:.f90=.o)
+#IPR_so3_OPENMP_OBJ = $(IPR_so3_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL 4-Body HAMILTONIAN) Chain (i) U(3) -> U(2)
+#
+IPR_4b_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_u2.f90 
+IPR_4b_u2_OBJ = $(IPR_4b_u2_SRC:.f90=.o)
+#IPR_4b_u2_OPENMP_OBJ = $(IPR_4b_u2_SRC:.f90=.oOMP)
+#
+#
+#
+# ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL 4-Body HAMILTONIAN) Chain (i) U(3) -> SO(3)
+#
+IPR_4b_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_so3.f90 
+IPR_4b_so3_OBJ = $(IPR_4b_so3_SRC:.f90=.o)
+#IPR_4b_so3_OPENMP_OBJ = $(IPR_4b_so3_SRC:.f90=.oOMP)
+#
+#
+# ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
+#
+IPR_modH_Hus_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_Husimi_modelH_2dvm_u2.f90 
+IPR_modH_Hus_u2_OBJ = $(IPR_modH_Hus_u2_SRC:.f90=.o)
+#IPR_modH_Hus_u2_OPENMP_OBJ = $(IPR_modH_Hus_u2_SRC:.f90=.oOMP)
+#
+#	
+# ALGEBRAIC MODEL Chi^2 TO EXPERIMENT (GENERAL 4BODY HAMILTONIAN) Chains  (i) U(3) -> U(2) and (ii) U(3) -> SO(3)
+CHI2_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f90 chi_sqre_prg.f90 
+CHI2_OBJ = $(CHI2_SRC:.f90=.o)
+#CHI2_OPENMP_OBJ = $(CHI2_SRC:.f90=.oOMP)
+#
+#
+####################################################################
+####################################################################
+#
+#Minimization with Minuit-77
+Min_minuit_SRC = nrtype.f90 loggamma.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 fit_2dvm.f90 minuit-cern.f FCN_func.f90 minimization.f90 
+Min_minuit_OBJ = nrtype.o loggamma.o defparam_2dvm.o u3_2dvm_mod.o fit_2dvm.o minuit-cern.o FCN_func.o minimization.o
+
 ####################################################################
 ####################################################################
 #
@@ -44,7 +128,7 @@ LIBS = $(mklroot)/lib/intel64/libmkl_lapack95_lp64.a -L${MKLROOT}/lib/intel64 -l
 ######################################################################
 ######################################################################
 #
-all: avec_U3_U2_mh
+all: avec_U3_U2_mh avec_U3_SO3_mh avec_U3_U2 avec_U3_SO3 ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 IPR_Husimi_U3_U2_mh chi2_U3 Min_minuit
 #
 ######################################################################
 ######################################################################
@@ -66,6 +150,90 @@ avec_U3_U2_mh: $(AVEC_modH_u2_OBJ) Makefile_intel
 	$(info )
 	$(info Linking single thread avec_U3_U2_mh executable:)
 	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OBJ) $(LIBS) 
+	$(info Done)
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (ii)
+avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile_intel	
+	$(info )
+	$(info Linking single thread avec_U3_SO3_mh executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OBJ) $(LIBS) 
+	$(info Done)
+#
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain (i)
+avec_U3_U2:  $(AVEC_u2_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread avec_U3_U2 executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OBJ) $(LIBS) 
+	$(info Done)
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain (ii)
+avec_U3_SO3:  $(AVEC_so3_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread avec_U3_SO3 executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OBJ) $(LIBS) 
+	$(info Done)
+#################################################################
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS. MODEL HAMILTONIAN, Chain (i)
+ipr_U3_U2_mh: $(IPR_modH_u2_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread IPR_U3_U2_mh executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_modH_u2_OBJ) $(LIBS) 
+	$(info Done)
+
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR. MODEL HAMILTONIAN, Chain (ii)
+ipr_U3_SO3_mh: $(IPR_modH_so3_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread IPR_U3_SO3_mh executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_modH_so3_OBJ) $(LIBS) 
+	$(info Done)
+#################################################################
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 2 BODY HAMILTONIAN, Chain I)
+ipr_U3_U2: $(IPR_u2_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread IPR_U3_U2 executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_u2_OBJ) $(LIBS) 
+	$(info Done)
+
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 2 BODY HAMILTONIAN, Chain II)
+ipr_U3_SO3: $(IPR_so3_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread IPR_U3_SO3 executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_so3_OBJ) $(LIBS) 
+	$(info Done)
+#################################################################
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 4 BODY HAMILTONIAN, Chain I)
+ipr_4b_U3_U2: $(IPR_4b_u2_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread IPR_4b_U3_U2 executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OBJ) $(LIBS) 
+	$(info Done)
+
+# HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 4 BODY HAMILTONIAN, Chain II)
+ipr_4b_U3_SO3: $(IPR_4b_so3_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread IPR_4b_U3_SO3 executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_4b_so3_OBJ) $(LIBS) 
+	$(info Done)
+#################################################################
+# MODEL HAMILTONIAN HUSIMI IBR Chain (i)
+IPR_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_modH_Hus_u2_OBJ) $(LIBS) 
+	$(info Done)
+#################################################################
+# SQUARE CHI VALUE (GENERAL 4 BODY HAMILTONIAN, Chain I)
+chi2_U3: $(CHI2_OBJ) Makefile_intel
+	$(info )
+	$(info Linking single thread $@ executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(CHI2_OBJ) $(LIBS) 
+	$(info Done)
+#Minuit minimization:
+Min_minuit: $(Min_minuit_OBJ) Makefile_intel
+	$(info )	
+	$(info Linking single thread $@ executable:)
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(LIBS) 
 	$(info Done)
 #
 #################################################################

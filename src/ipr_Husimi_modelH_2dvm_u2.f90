@@ -13,8 +13,15 @@ PROGRAM ipr_modelH_2DVM
   USE u3_2dvm_mod
   !
   ! Lapack 95
+#ifdef  __GFORTRAN__
+  ! gfortran
   USE LA_PRECISION, ONLY: WP => DP
   USE F95_LAPACK, ONLY: LA_SYEVR
+#else
+  !ifort
+  USE F95_PRECISION, ONLY: WP => DP
+  USE LAPACK95, ONLY: SYEVR
+#endif  
   !
   !
   IMPLICIT NONE
@@ -111,7 +118,13 @@ PROGRAM ipr_modelH_2DVM
      time_check_ref = time_check
      !
      ! Diagonalize Hamiltonian matrix (LAPACK95)
+#ifdef  __GFORTRAN__
+     !gfortran
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='N', UPLO='U', IL=1, IU=1)
+#else
+     !ifort
+     CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', IL=1, IU=1)
+#endif 
      !
      GS_energy = Eigenval_vector(1)
      !
@@ -203,11 +216,35 @@ PROGRAM ipr_modelH_2DVM
   time_check_ref = time_check
   !
   ! Diagonalize Hamiltonian matrix (LAPACK95)
+#ifdef  __GFORTRAN__
+  !gfortran
   IF (Eigenvec_Log) THEN
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
   ELSE
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='N', UPLO='U')
   ENDIF
+#else
+  !ifort
+  IF (Eigenvec_Log .OR. Save_avec_Log) THEN
+     !
+     ALLOCATE(Eigenvec_array(1:dim_block, 1:dim_block), STAT = IERR)    
+     IF (IERR /= 0) THEN
+        WRITE(UNIT = *, FMT = *) "Eigenvec_array allocation request denied."
+        STOP
+     ENDIF
+     !
+     CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', Z = Eigenvec_array)
+  ELSE
+     CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U')
+  ENDIF
+  Ham_matrix = Eigenvec_array
+  !
+  DEALLOCATE(Eigenvec_array, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Eigenvec_array deallocation request denied."
+     STOP
+  ENDIF
+#endif  
   !
   IF (Excitation_Log) THEN
      !
