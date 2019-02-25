@@ -210,8 +210,6 @@ PROGRAM avalavec_modelH_u2_2DVM
   ! Hamiltonian Diagonalization
   !
   !
-#ifdef  __GFORTRAN__
-  !gfortran
   ! ALLOCATE EIGENVALUES VECTOR
   ALLOCATE(Eigenval_vector(1:dim_block), STAT = IERR)    
   IF (IERR /= 0) THEN
@@ -219,20 +217,6 @@ PROGRAM avalavec_modelH_u2_2DVM
      STOP
   ENDIF
   !
-#else
-  !ifort
-  ! ALLOCATE EIGENVALUES AND EIGENVECTOR ARRAY
-  ALLOCATE(Eigenval_vector(1:dim_block), STAT = IERR)    
-  IF (IERR /= 0) THEN
-     WRITE(UNIT = *, FMT = *) "Eigenval_vector allocation request denied."
-     STOP
-  ENDIF
-  ALLOCATE(Eigenvec_array(1:dim_block, 1:dim_block), STAT = IERR)    
-  IF (IERR /= 0) THEN
-     WRITE(UNIT = *, FMT = *) "Eigenvec_array allocation request denied."
-     STOP
-  ENDIF
-#endif  
   !      
   ! Check time
   CALL CPU_TIME(time_check)
@@ -249,13 +233,26 @@ PROGRAM avalavec_modelH_u2_2DVM
      CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='N', UPLO='U')
   ENDIF
 #else
-     !ifort
+  !ifort
   IF (Eigenvec_Log .OR. Save_avec_Log) THEN
+     !
+     ALLOCATE(Eigenvec_array(1:dim_block, 1:dim_block), STAT = IERR)    
+     IF (IERR /= 0) THEN
+        WRITE(UNIT = *, FMT = *) "Eigenvec_array allocation request denied."
+        STOP
+     ENDIF
+     !
      CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', Z = Eigenvec_array)
   ELSE
      CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U')
   ENDIF
   Ham_matrix = Eigenvec_array
+  !
+  DEALLOCATE(Eigenvec_array, STAT = IERR)    
+  IF (IERR /= 0) THEN
+     WRITE(UNIT = *, FMT = *) "Eigenvec_array deallocation request denied."
+     STOP
+  ENDIF
 #endif  
   !
   IF (Excitation_Log) THEN
