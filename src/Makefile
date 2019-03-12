@@ -50,7 +50,7 @@ IPR_modH_so3_OBJ = $(IPR_modH_so3_SRC:.f90=.o)
 #
 AVEC_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm_u2.f90 
 AVEC_u2_OBJ = $(AVEC_u2_SRC:.f90=.o)
-#AVEC_u2_OPENMP_OBJ = $(AVEC_u2_SRC:.f90=.oOMP)
+AVEC_u2_OPENMP_OBJ = $(AVEC_u2_SRC:.f90=.oOMP)
 #
 # ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (GENERAL HAMILTONIAN) Chain  (ii) U(3) -> SO(3)
 #
@@ -103,8 +103,9 @@ Min_minuit_OBJ = nrtype.o loggamma.o defparam_2dvm.o u3_2dvm_mod.o fit_2dvm.o mi
 .SUFFIXES: 
 .SUFFIXES: .o .f90 .oOMP .f
 #
+#FC = gfortran
 FC = gfortran
-FC_Path = /usr/bin/gfortran
+FC_Path = /opt/ohpc/pub/compiler/gcc/7.3.0/bin/gfortran
 #
 FOPT=-O3 -Wall
 #
@@ -114,24 +115,27 @@ ARCH = -march=native
 #
 #
 # Module directories
-MODLIB   = -I/usr/local/lib/lapack95/lapack95_modules -I/usr/local/include/lapack95_modules
+#MODLIB   = -I/opt/LAPACK95/lapack95_modules 
+MODLIB	= -I/home/jamil/usr/src_jamil/LAPACK95/lapack95_modules/
 #
 OPTFLAGS = $(FOPT)
 OPTFLAGS += $(ARCH)
 OPTFLAGS += $(MODLIB)
 #
 # Libraries
-LAPACK95 = -L/usr/local/lib/lapack95 -llapack95 -L/usr/local/lib -llapack95
+#LAPACK95 = -L/opt/LAPACK95/lapack95 -llapack95 -L/usr/local/lib -llapack95
+LAPACK95 = -L/home/jamil/usr/lib -llapack95
 ## Debian Lapack and Blas Libraries
-LAPACK77 = -llapack
-BLAS     = -lblas
-#
-LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
+# LAPACK77 = -llapack
+# BLAS	 = -lblas
+LAPACK77 = -L/home/jamil/usr/lib/ -llapack
+#BLAS = -L/home/jamil/usr/lib/ -llibblas
+LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS) 
 #
 ######################################################################
 ######################################################################
 #
-all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 chi2_U3 Min_minuit
+all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 chi2_U3 Min_minuit avec_U3_U2_openmp
 #
 .PHONY : all
 #################################################################
@@ -157,10 +161,10 @@ avec_U3_U2:  $(AVEC_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_U2 executable:)
 	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OBJ) $(OPTFLAGS) $(LIBS) 
-# avec_U3_U2_openmp:  $(AVEC_u2_OPENMP_OBJ) Makefile .PHONY 
-# 	$(info )
-# 	$(info Linking multithread avec_U3_U2 executable:)
-# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
+avec_U3_U2_openmp:  $(AVEC_u2_OPENMP_OBJ) Makefile
+	$(info )
+	$(info Linking multithread avec_U3_U2 executable:)
+	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (2 BODY HAMILTONIAN, Chain II)
 avec_U3_SO3: $(AVEC_so3_OBJ) Makefile
@@ -282,7 +286,7 @@ Min_minuit: $(Min_minuit_OBJ) Makefile
 
 clean:
 	@echo "Cleaning object files"
-	@rm -f *.o *.mod
+	@rm -f *.o *.mod *.oOMP
 
 
 

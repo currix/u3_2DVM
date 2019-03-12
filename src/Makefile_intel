@@ -115,7 +115,7 @@ FC = ifort
 #
 #FOPT   += -O0  -qopt-report=5 -qopt-report-file=$@.optrpt
 #
-CPUFLAGS = -fpp
+CPUFLAGS =  -fpp
 #
 FOPTIONS = -no-wrap-margin
 #
@@ -123,7 +123,7 @@ mklroot = ${MKLROOT}
 #
 MODLIB   =  -I$(mklroot)/include/intel64/lp64/	
 #
-LIBS = $(mklroot)/lib/intel64/libmkl_lapack95_lp64.a -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm
+LIBS = $(mklroot)/lib/intel64/libmkl_lapack95_lp64.a -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -mkl  -lmkl_sequential
 #
 ######################################################################
 ######################################################################

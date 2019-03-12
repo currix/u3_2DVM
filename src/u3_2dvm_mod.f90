@@ -863,7 +863,7 @@ CONTAINS
   END FUNCTION Inv_Part_Ratio
   !
   !
-  SUBROUTINE SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, Eigvals, Diagonal, Basis, Ham_U3_mat)
+  SUBROUTINE SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, Eigvals, Diagonal, Basis, Ham_U3_mat, unit)
     !
     ! Subroutine to save the energies, the diagonal of the Hamiltonian and the
     ! components of the eigenvectors of the U(3) 2DVM Model Hamiltonian.
@@ -891,33 +891,74 @@ CONTAINS
     !
     CHARACTER(LEN=65) :: output_filename
     !
+    INTEGER(KIND = I4B),INTENT(IN), OPTIONAL:: unit
     !
-    ! Build filename
-    IF ( N_val < 10) THEN !to avoid spaces
-       WRITE(output_filename, '("eigvec_",A,"_N",I1,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
-    ELSE IF ( N_val < 100) THEN 
-       WRITE(output_filename, '("eigvec_",A,"_N",I2,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
-    ELSE IF ( N_val < 1000) THEN 
-       WRITE(output_filename, '("eigvec_",A,"_N",I3,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
-    ELSE IF ( N_val < 10000) THEN 
-       WRITE(output_filename, '("eigvec_",A,"_N",I4,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+    INTEGER(KIND = I4B):: u_sv,IERR
+    !
+    IF (present(unit)) THEN
+       u_sv = unit
     ELSE
-       WRITE(output_filename, '("eigvec_",A,"_N",I6,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+       u_sv = 76
     ENDIF
     !
-    OPEN(UNIT = 76, FILE = output_filename, STATUS = "UNKNOWN", ACTION = "WRITE")
+    ! Build filename
+    IF (L_val < 10) THEN
+       IF ( N_val < 10) THEN !to avoid spaces
+          WRITE(output_filename, '("eigvec_",A,"_N",I1,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 100) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I2,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 1000) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I3,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 10000) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I4,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+       ELSE
+          WRITE(output_filename, '("eigvec_",A,"_N",I6,"_L",I1,".dat")') TRIM(Basis), N_val, L_val
+       ENDIF
+    ELSE IF (L_val >= 10 .AND. L_val<100) THEN
+       IF ( N_val < 10) THEN !to avoid spaces
+          WRITE(output_filename, '("eigvec_",A,"_N",I1,"_L",I2,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 100) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I2,"_L",I2,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 1000) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I3,"_L",I2,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 10000) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I4,"_L",I2,".dat")') TRIM(Basis), N_val, L_val
+       ELSE
+          WRITE(output_filename, '("eigvec_",A,"_N",I6,"_L",I2,".dat")') TRIM(Basis), N_val, L_val
+       ENDIF
+    ELSE
+       IF ( N_val < 10) THEN !to avoid spaces
+          WRITE(output_filename, '("eigvec_",A,"_N",I1,"_L",I3,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 100) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I2,"_L",I3,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 1000) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I3,"_L",I3,".dat")') TRIM(Basis), N_val, L_val
+       ELSE IF ( N_val < 10000) THEN 
+          WRITE(output_filename, '("eigvec_",A,"_N",I4,"_L",I3,".dat")') TRIM(Basis), N_val, L_val
+       ELSE
+          WRITE(output_filename, '("eigvec_",A,"_N",I6,"_L",I3,".dat")') TRIM(Basis), N_val, L_val
+       ENDIF
+    ENDIF
     !
-    WRITE(UNIT=76, FMT=*) "# N = ", N_val, "; L = ", L_val, " ; ", Basis,  " basis"
+    OPEN(UNIT = u_sv, FILE = output_filename, STATUS = "UNKNOWN", ACTION = "WRITE")
     !
-    WRITE(UNIT=76, FMT=*) "# Eigenvalues "
-    WRITE(UNIT=76, FMT=*) Eigvals(1:dim_block)
+    WRITE(UNIT=u_sv, FMT=*) "# N = ", N_val, "; L = ", L_val, " ; ", Basis,  " basis"
     !
-    WRITE(UNIT=76, FMT=*) "# Hamiltonian Diagonal "
-    WRITE(UNIT=76, FMT=*) Diagonal(1:dim_block)
+    WRITE(UNIT=u_sv, FMT=*) "# Eigenvalues "
+    WRITE(UNIT=u_sv, FMT=*) Eigvals(1:dim_block)
+    !
+    WRITE(UNIT=u_sv, FMT=*) "# Hamiltonian Diagonal "
+    WRITE(UNIT=u_sv, FMT=*) Diagonal(1:dim_block)
     !
     DO basis_index = 1, dim_block
-       WRITE(UNIT=76, FMT=*) Ham_U3_mat(basis_index, 1:dim_block)
+       WRITE(UNIT=u_sv, FMT=*) Ham_U3_mat(basis_index, 1:dim_block)
     ENDDO
+    !
+    CLOSE(u_sv,IOSTAT=IERR)
+    IF (IERR /= 0) THEN
+       WRITE(UNIT = *, FMT = *) "Error closing the unit of eigenstates."
+       STOP
+    ENDIF
     !
   END SUBROUTINE SAVE_EIGENV_COMPONENTS
   !
