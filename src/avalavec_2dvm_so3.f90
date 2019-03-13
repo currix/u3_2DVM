@@ -17,6 +17,9 @@ PROGRAM avalavec_2DVM_so3
   ! gfortran
   USE LA_PRECISION, ONLY: WP => DP
   USE F95_LAPACK, ONLY: LA_SYEVR
+#ifdef _OPENMP  
+  USE OMP_LIB
+#endif
 #else
   !ifort
   USE F95_PRECISION, ONLY: WP => DP
@@ -30,10 +33,20 @@ PROGRAM avalavec_2DVM_so3
   !
   INTEGER(KIND = I4B) :: state_index, state_index_2, omega
   !
+  INTEGER(KIND = I4B) :: L, L_min, L_max
+  !
+  INTEGER(KIND = I4B) :: out_unit
+  !
+  CHARACTER(LEN=65) :: output_file
+  !
+#ifdef _OPENMP
+  INTEGER(KIND = I4B) :: threads
+#endif
+  !
   !
   ! NAMELISTS
   NAMELIST/par_aux/ Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
-  NAMELIST/par_0/ N_val, L_val
+  NAMELIST/par_0/ N_val, L_val, L_min, L_max
   NAMELIST/par_1/ epsilon_p, alpha_p, beta_p, A_p
   !
   ! 
@@ -51,12 +64,13 @@ PROGRAM avalavec_2DVM_so3
   !
   IF (Iprint > 1) THEN
      WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log
-     WRITE(UNIT = *, FMT = 15) N_val, L_val
+     WRITE(UNIT = *, FMT = 15) N_val, L_min, L_max
      WRITE(UNIT = *, FMT = 25) epsilon_p, alpha_p, beta_p, A_p
   ENDIF
   !
   ! TESTS
-  IF (N_val < L_val) STOP 'ERROR :: N_VAL < L_VAL. SAYONARA BABY'
+  IF ((N_val < L_max) .OR. (N_val < L_min)) &
+       STOP 'ERROR :: N_VAL < L_VAL. SAYONARA BABY'
   !
   ! HAMILTONIAN PARAMETERS
   !ham_param(1) => n
@@ -68,7 +82,7 @@ PROGRAM avalavec_2DVM_so3
   !ham_param(4) =>       => P = N(N+1) - W^2
   Ham_parameter(4) = A_p
   !
-  IF (Excitation_Log .AND. L_val /= 0) THEN
+  IF (Excitation_Log) THEN
      ! Compute L = 0 Ground state Energy
      !
      ! Initialize time
@@ -153,6 +167,79 @@ PROGRAM avalavec_2DVM_so3
      ENDIF
   ENDIF
   !
+#ifdef _OPENMP
+  threads = omp_get_max_threads()
+  !
+  write(*,6) threads, abs(L_max-L_min)+1
+  !
+6 format("Available threads: ", I3, "; Loops iterations: ", I4)
+  !
+  IF (threads .gt. abs(L_max-L_min)+1) THEN
+     !
+     threads = abs(L_max-L_min)+1
+     !
+  ENDIF
+  !
+  ! Threads needed: auto-set
+  !
+  !$OMP PARALLEL DO DEFAULT(private), SHARED(N_val,GS_energy, epsilon_p, &
+  !$OMP alpha_p, beta_p, A_p, Save_avec_Log, Excitation_Log, Eigenvec_Log, &
+  !$OMP Iprint, L_max, L_min), num_threads(threads)
+  !
+  !
+#endif
+#ifndef __GFORTRAN__
+  call mkl_set_dynamic(0)
+#endif
+  !
+  DO L = L_min, L_max
+    !
+    out_unit = L + 100
+    !
+    L_val = L
+    !
+    ! Build filename
+    IF (L_val < 10) THEN
+       IF ( N_val < 10) THEN !to avoid spaces
+          WRITE(output_file, '("eigval_so3_N",I1,"_L",I1,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 100) THEN 
+          WRITE(output_file, '("eigval_so3_N",I2,"_L",I1,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 1000) THEN 
+          WRITE(output_file, '("eigval_so3_N",I3,"_L",I1,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 10000) THEN 
+          WRITE(output_file, '("eigval_so3_N",I4,"_L",I1,".dat")')  N_val, L_val
+       ELSE
+          WRITE(output_file, '("eigval_so3_N",I6,"_L",I1,".dat")')  N_val, L_val
+       ENDIF
+    ELSE IF (L_val >= 10 .AND. L_val<100) THEN
+       IF ( N_val < 10) THEN !to avoid spaces
+          WRITE(output_file, '("eigval_so3_N",I1,"_L",I2,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 100) THEN 
+          WRITE(output_file, '("eigval_so3_N",I2,"_L",I2,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 1000) THEN 
+          WRITE(output_file, '("eigval_so3_N",I3,"_L",I2,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 10000) THEN 
+          WRITE(output_file, '("eigval_so3_N",I4,"_L",I2,".dat")')  N_val, L_val
+       ELSE
+          WRITE(output_file, '("eigval_so3_N",I6,"_L",I2,".dat")')  N_val, L_val
+       ENDIF
+    ELSE
+       IF ( N_val < 10) THEN !to avoid spaces
+          WRITE(output_file, '("eigval_so3_N",I1,"_L",I3,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 100) THEN 
+          WRITE(output_file, '("eigval_so3_N",I2,"_L",I3,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 1000) THEN 
+          WRITE(output_file, '("eigval_so3_N",I3,"_L",I3,".dat")')  N_val, L_val
+       ELSE IF ( N_val < 10000) THEN 
+          WRITE(output_file, '("eigval_so3_N",I4,"_L",I3,".dat")')  N_val, L_val
+       ELSE
+          WRITE(output_file, '("eigval_so3_N",I6,"_L",I3,".dat")')  N_val, L_val
+       ENDIF
+    ENDIF
+    !
+  OPEN(UNIT=out_unit, FILE=output_file, STATUS='unknown', ACTION='write') 
+ 
+  !
   ! L_VAL BLOCK DIMENSION
   dim_block = DIM_L_BLOCK(N_val, l_val)
   !
@@ -188,8 +275,8 @@ PROGRAM avalavec_2DVM_so3
   ENDIF
   !
   IF (Iprint > 2) THEN
-     WRITE(*,*) ' '
-     WRITE(*,*) ' Hamiltonian Matrix'
+     WRITE(UNIT=out_unit, FMT = *) ' '
+     WRITE(UNIT=out_unit,FMT = *) ' Hamiltonian Matrix'
      DO state_index = 1, dim_block                         
         WRITE(*,*) (Ham_matrix(state_index, state_index_2), state_index_2 = 1, dim_block)
      ENDDO
@@ -205,12 +292,14 @@ PROGRAM avalavec_2DVM_so3
      STOP
   ENDIF
   !
-  !      
+  !     
+#ifndef _OPENMP 
   ! Check time
   CALL CPU_TIME(time_check)
   IF (Iprint == -2) WRITE(UNIT = *, FMT = *) "L_val = ", L_val, &
        " Time (3) :: U3 Hamiltonian Building ", time_check - time_check_ref
   time_check_ref = time_check
+#endif
   !
   ! Diagonalize Hamiltonian matrix (LAPACK95)
 #ifdef  __GFORTRAN__
@@ -247,27 +336,29 @@ PROGRAM avalavec_2DVM_so3
      !
      IF (L_val == 0_I4B) THEN
         GS_energy = eigenval_vector(1)
-        IF (Iprint > 0) WRITE(UNIT = *, FMT = *) "GS_energy = ", GS_energy
+        IF (Iprint > 0) WRITE(UNIT = out_unit, FMT = *) "GS_energy = ", GS_energy
      ENDIF
      !
      eigenval_vector = eigenval_vector - GS_energy
      !
   ENDIF
   !
+#ifndef _OPENMP
   ! Check time
   CALL CPU_TIME(time_check)
   IF (Iprint == -2) WRITE(UNIT = *, FMT = *) "L_val = ", L_val, &
        " Time (4) :: U3 Model Hamiltonian diagonalization ", time_check - time_check_ref
   time_check_ref = time_check
+#endif
   !
   !
-  IF (Iprint > 0) WRITE(UNIT = *, FMT = *) "L_val = ", L_val
+  IF (Iprint > 0) WRITE(UNIT = out_unit, FMT = *) "L_val = ", L_val
   !
   DO state_index = 1, dim_block
      !
      omega = SO3_Basis(state_index)%omega_SO3_val
      !
-     WRITE(UNIT = *, FMT = *) omega, (N_val-omega)/2, Eigenval_vector(state_index)
+     WRITE(UNIT = out_unit, FMT = *) omega, (N_val-omega)/2, Eigenval_vector(state_index)
      !
      ! Display eigenvectors
      IF (Eigenvec_Log .AND. Iprint > 0) THEN
@@ -276,7 +367,7 @@ PROGRAM avalavec_2DVM_so3
            !
            omega = SO3_Basis(state_index_2)%omega_SO3_val
            !
-           WRITE(UNIT = *, FMT = *) Ham_matrix(state_index_2, state_index), "|", omega, ">"
+           WRITE(UNIT = out_unit, FMT = *) Ham_matrix(state_index_2, state_index), "|", omega, ">"
            !
         ENDDO
         !
@@ -290,10 +381,12 @@ PROGRAM avalavec_2DVM_so3
      IF (Excitation_Log) THEN
         !
         CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
-             Eigenval_vector, Diagonal_vector - GS_energy, "so3", Ham_matrix)
+             Eigenval_vector, Diagonal_vector - GS_energy, "so3", Ham_matrix, &
+             unit=L_val+20)
      ELSE
         CALL SAVE_EIGENV_COMPONENTS(N_val, L_val, dim_block, &
-             Eigenval_vector, Diagonal_vector, "so3", Ham_matrix)
+             Eigenval_vector, Diagonal_vector, "so3", Ham_matrix, &
+             unit=L_val+20)
      ENDIF
      !
      DEALLOCATE(Diagonal_vector, STAT = IERR)    
@@ -321,6 +414,10 @@ PROGRAM avalavec_2DVM_so3
      WRITE(UNIT = *, FMT = *) "SO3_Basis deallocation request denied."
      STOP
   ENDIF
+  !
+  ENDDO
+  !
+  !$OMP END PARALLEL DO
   !
 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2, "; Save_Avec_Log = ", L2)
 10 FORMAT(1X, "Reading  N_val, L_val")

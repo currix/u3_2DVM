@@ -56,7 +56,7 @@ AVEC_u2_OPENMP_OBJ = $(AVEC_u2_SRC:.f90=.oOMP)
 #
 AVEC_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_2dvm_so3.f90 
 AVEC_so3_OBJ = $(AVEC_so3_SRC:.f90=.o)
-#AVEC_so3_OPENMP_OBJ = $(AVEC_so3_SRC:.f90=.oOMP)
+AVEC_so3_OPENMP_OBJ = $(AVEC_so3_SRC:.f90=.oOMP)
 #
 # ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL HAMILTONIAN) Chain  (i) U(3) -> U(2)
 #
@@ -105,9 +105,10 @@ Min_minuit_OBJ = nrtype.o loggamma.o defparam_2dvm.o u3_2dvm_mod.o fit_2dvm.o mi
 #
 #FC = gfortran
 FC = gfortran
-FC_Path = /opt/ohpc/pub/compiler/gcc/7.3.0/bin/gfortran
+#FC_Path = /usr/bin/gfortran
+FC_Path = /opt/ohpc/pub/compiler/gcc/7.3.0/bin/gfortran 
 #
-FOPT=-O3 -Wall
+FOPT=-O3 -Wall 
 #
 PREP = -cpp
 #
@@ -126,8 +127,8 @@ OPTFLAGS += $(MODLIB)
 #LAPACK95 = -L/opt/LAPACK95/lapack95 -llapack95 -L/usr/local/lib -llapack95
 LAPACK95 = -L/home/jamil/usr/lib -llapack95
 ## Debian Lapack and Blas Libraries
-# LAPACK77 = -llapack
-# BLAS	 = -lblas
+#LAPACK77 = -llapack
+#BLAS	 = -lblas
 LAPACK77 = -L/home/jamil/usr/lib/ -llapack
 #BLAS = -L/home/jamil/usr/lib/ -llibblas
 LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS) 
@@ -171,10 +172,10 @@ avec_U3_SO3: $(AVEC_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_SO3 executable:)
 	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OBJ) $(OPTFLAGS) $(LIBS)
-# avec_U3_SO3_openmp: $(AVEC_so3_OPENMP_OBJ) Makefile .PHONY 
-# 	$(info )
-# 	$(info Linking multi thread avec_U3_SO3 executable:)
-# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
+avec_U3_SO3_openmp: $(AVEC_so3_OPENMP_OBJ) Makefile  
+	$(info )
+	$(info Linking multi thread avec_U3_SO3 executable:)
+	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (i)
 avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile
