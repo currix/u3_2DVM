@@ -17,7 +17,7 @@ BINPATH = ../bin
 #
 AVEC_modH_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_u2.f90 
 AVEC_modH_u2_OBJ = $(AVEC_modH_u2_SRC:.f90=.o)
-#AVEC_modH_u2_OPENMP_OBJ = $(AVEC_modH_u2_SRC:.f90=.oOMP)
+AVEC_modH_u2_OPENMP_OBJ = $(AVEC_modH_u2_SRC:.f90=.oOMP)
 #
 # ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain (ii) U(3) -> SO(3)
 #
@@ -136,7 +136,7 @@ LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS)
 ######################################################################
 ######################################################################
 #
-all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 chi2_U3 Min_minuit avec_U3_U2_openmp
+all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ipr_U3_U2_mh ipr_U3_SO3_mh ipr_U3_U2 ipr_U3_SO3 ipr_4b_U3_U2 ipr_4b_U3_SO3 chi2_U3 Min_minuit avec_U3_U2_openmp avec_U3_SO3_openmp avec_U3_U2_mh_openmp
 #
 .PHONY : all
 #################################################################
@@ -182,10 +182,10 @@ avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_U2_mh executable:)
 	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OBJ) $(OPTFLAGS) $(LIBS) 
-# avec_U3_U2_mh_openmp:  $(AVEC_modH_u2_OPENMP_OBJ) Makefile .PHONY 
-# 	$(info )
-# 	$(info Linking multithread avec_U3_U2_mh executable:)
-# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
+avec_U3_U2_mh_openmp:  $(AVEC_modH_u2_OPENMP_OBJ) Makefile
+	$(info )
+	$(info Linking multithread avec_U3_U2_mh executable:)
+	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (ii)
 avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile
