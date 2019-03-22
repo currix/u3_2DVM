@@ -52,8 +52,8 @@ PROGRAM ipr_4b_2DVM_u2
   !
   !     NAMELIST DEFINITIONS
   !
-  NAMELIST/INP1/  IPRINT, Eigenvec_Log, Excitation_Log, Save_avec_Log
-  NAMELIST/INP2/  N_val, L_min, L_max
+  NAMELIST/par_aux/  IPRINT, Eigenvec_Log, Excitation_Log, Save_avec_Log
+  NAMELIST/par_0/  N_val, L_min, L_max
   NAMELIST/INP1b/ P11
   NAMELIST/INP2b/ P21, P22, P23
   NAMELIST/INP3b/ P31, P32, P33
@@ -69,8 +69,8 @@ PROGRAM ipr_4b_2DVM_u2
   !
   !     READING INPUT
   !
-  READ(10,INP1)
-  READ(10,INP2)
+  READ(10,par_aux)
+  READ(10,par_0)
   READ(10,INP1b)
   READ(10,INP2b)
   READ(10,INP3b)
@@ -198,39 +198,39 @@ PROGRAM ipr_4b_2DVM_u2
      ! Build filename
      IF (L_val < 10) THEN
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("IPR_4b_u2_N",I1,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I1,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I2,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I2,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I3,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I3,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I4,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I4,"_L",I1,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("IPR_4b_u2_N",I6,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I6,"_L",I1,".dat")')  N_val, L_val
         ENDIF
      ELSE IF (L_val >= 10 .AND. L_val<100) THEN
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("IPR_4b_u2_N",I1,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I1,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I2,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I2,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I3,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I3,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I4,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I4,"_L",I2,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("IPR_4b_u2_N",I6,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I6,"_L",I2,".dat")')  N_val, L_val
         ENDIF
      ELSE
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("IPR_4b_u2_N",I1,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I1,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I2,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I2,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I3,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I3,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("IPR_4b_u2_N",I4,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I4,"_L",I3,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("IPR_4b_u2_N",I6,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_4b_u2_N",I6,"_L",I3,".dat")')  N_val, L_val
         ENDIF
      ENDIF
      !
@@ -328,11 +328,6 @@ PROGRAM ipr_4b_2DVM_u2
      !
      IF (Excitation_Log) THEN
         !
-        IF (L_val == 0_I4B) THEN
-           GS_energy = eigenval_vector(1)
-           IF (Iprint > 0) WRITE(UNIT = out_unit, FMT = *) "GS_energy = ", GS_energy
-        ENDIF
-        !
         eigenval_vector = eigenval_vector - GS_energy
         !
      ENDIF
@@ -354,7 +349,8 @@ PROGRAM ipr_4b_2DVM_u2
         !
         DO state_index = 1, dim_block
            !
-           WRITE(UNIT = out_unit, FMT = *) state_index, Eigenval_vector(state_index), &
+           WRITE(UNIT = out_unit, FMT = *) state_index, &
+                Eigenval_vector(state_index), &
                 Inv_Part_Ratio(Ham_matrix(1:dim_block, state_index))
            !
         ENDDO
@@ -363,7 +359,8 @@ PROGRAM ipr_4b_2DVM_u2
         !
         DO state_index = 1, dim_block
            !
-           WRITE(UNIT = out_unit, FMT = *) state_index, Eigenval_vector(state_index)
+           WRITE(UNIT = out_unit, FMT = *) state_index, &
+                Eigenval_vector(state_index)
            !
         ENDDO
         !

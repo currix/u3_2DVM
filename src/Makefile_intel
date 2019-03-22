@@ -72,17 +72,15 @@ IPR_so3_OBJ = $(IPR_so3_SRC:.f90=.o)
 #
 # ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL 4-Body HAMILTONIAN) Chain (i) U(3) -> U(2)
 #
-IPR_4b_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_u2.f90 
-IPR_4b_u2_OBJ = $(IPR_4b_u2_SRC:.f90=.o)
-#IPR_4b_u2_OPENMP_OBJ = $(IPR_4b_u2_SRC:.f90=.oOMP)
+vibron2D_H4b_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_u2.f90 
+vibron2D_H4b_u2_OBJ = $(vibron2D_H4b_u2_SRC:.f90=.o)
 #
 #
 #
 # ALGEBRAIC MODEL PARTICIPATION RATIO (GENERAL 4-Body HAMILTONIAN) Chain (i) U(3) -> SO(3)
 #
-IPR_4b_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_so3.f90 
-IPR_4b_so3_OBJ = $(IPR_4b_so3_SRC:.f90=.o)
-#IPR_4b_so3_OPENMP_OBJ = $(IPR_4b_so3_SRC:.f90=.oOMP)
+vibron2D_H4b_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_so3.f90 
+vibron2D_H4b_so3_OBJ = $(vibron2D_H4b_so3_SRC:.f90=.o)
 #
 #
 # ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
@@ -123,7 +121,7 @@ mklroot = ${MKLROOT}
 #
 MODLIB   =  -I$(mklroot)/include/intel64/lp64/	
 #
-LIBS = $(mklroot)/lib/intel64/libmkl_lapack95_lp64.a -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -mkl  -lmkl_sequential
+LIBS = $(mklroot)/lib/intel64/libmkl_lapack95_lp64.a -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -mkl  #-lmkl_sequential
 #
 ######################################################################
 ######################################################################
@@ -138,12 +136,6 @@ all: avec_U3_U2_mh avec_U3_SO3_mh avec_U3_U2 avec_U3_SO3 ipr_U3_U2_mh ipr_U3_SO3
 	$(info Compiling single thread object file ... )
 	$(FC) -c $(CPUFLAGS) $(FOPTIONS) $(MODLIB) -o "$@" "$<"
 	$(info Done)
-#################################################################
-# .f90.oOMP:
-# 	$(info )
-# 	$(info Compiling multi thread object file:)
-# 	$(FC) -c -fopenmp $(CPUFLAGS) $(FOPTIONS) $(MODLIB) -o "$@" "$<"
-#################################################################
 #################################################################
 #
 avec_U3_U2_mh: $(AVEC_modH_u2_OBJ) Makefile_intel 
@@ -203,17 +195,17 @@ ipr_U3_SO3: $(IPR_so3_OBJ) Makefile_intel
 	$(info Done)
 #################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 4 BODY HAMILTONIAN, Chain I)
-ipr_4b_U3_U2: $(IPR_4b_u2_OBJ) Makefile_intel
+vibron2D_H4b_U3_U2: $(vibron2D_H4b_u2_OBJ) Makefile_intel
 	$(info )
 	$(info Linking single thread IPR_4b_U3_U2 executable:)
-	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OBJ) $(LIBS) 
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(vibron2D_H4b_u2_OBJ) $(LIBS) 
 	$(info Done)
-
+#################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 4 BODY HAMILTONIAN, Chain II)
-ipr_4b_U3_SO3: $(IPR_4b_so3_OBJ) Makefile_intel
+vibron2D_H4b_U3_SO3: $(vibron2D_H4b_so3_OBJ) Makefile_intel
 	$(info )
 	$(info Linking single thread IPR_4b_U3_SO3 executable:)
-	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(IPR_4b_so3_OBJ) $(LIBS) 
+	$(FC) $(FOPTIONS) -o $(BINPATH)/$@_$(FC) $(vibron2D_H4b_so3_OBJ) $(LIBS) 
 	$(info Done)
 #################################################################
 # MODEL HAMILTONIAN HUSIMI IBR Chain (i)
