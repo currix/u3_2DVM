@@ -1,4 +1,5 @@
-&INP1 N_val=50, L_val=0, IPRINT=4, Eigenvec_log = .TRUE., Excitation_Log = .TRUE., Save_avec_Log = .TRUE. / 
+&INP1 IPRINT=0, Eigenvec_log = .TRUE., Excitation_Log = .TRUE., Save_avec_Log = .TRUE. /
+&INP2 N_val=50, L_min=0, L_max=5 / 
 &INP1b P11=2285.513 / 
 &INP2b P21=-41.53627, P22=21.39468, P23=-10.39699 / 
 &INP3b P31=0.04201787, P32=0.0, P33=0.0 / 

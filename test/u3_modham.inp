@@ -1,8 +1,8 @@
 #
 #       INPUT FILE FOR 2DVM U(3) Calculations
 #       Model Hamiltonian
-&par_aux Iprint = 1, Eigenvec_Log = .T., Excitation_Log = .F., Save_avec_Log = .T.  /
-&par_0   N_val = 10000, L_min = 0, L_max = 5 /
+&par_aux Iprint = 0, Eigenvec_Log = .T., Excitation_Log = .T., Save_avec_Log = .T.  /
+&par_0   N_val = 10, L_min = 0, L_max = 5 /
 &par_1   epsilon = 1.0,   xi = 0.4 /    
 
 
