@@ -75,7 +75,7 @@ IPR_so3_OBJ = $(IPR_so3_SRC:.f90=.o)
 #
 IPR_4b_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_u2.f90 
 IPR_4b_u2_OBJ = $(IPR_4b_u2_SRC:.f90=.o)
-#IPR_4b_u2_OPENMP_OBJ = $(IPR_4b_u2_SRC:.f90=.oOMP)
+IPR_4b_u2_OPENMP_OBJ = $(IPR_4b_u2_SRC:.f90=.oOMP)
 #
 #
 #
@@ -83,7 +83,7 @@ IPR_4b_u2_OBJ = $(IPR_4b_u2_SRC:.f90=.o)
 #
 IPR_4b_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 ipr_2dvm_4b_so3.f90 
 IPR_4b_so3_OBJ = $(IPR_4b_so3_SRC:.f90=.o)
-#IPR_4b_so3_OPENMP_OBJ = $(IPR_4b_so3_SRC:.f90=.oOMP)
+IPR_4b_so3_OPENMP_OBJ = $(IPR_4b_so3_SRC:.f90=.oOMP)
 #
 #	
 # ALGEBRAIC MODEL Chi^2 TO EXPERIMENT (GENERAL 4BODY HAMILTONIAN) Chains  (i) U(3) -> U(2) and (ii) U(3) -> SO(3)
@@ -117,7 +117,7 @@ ARCH = -march=native
 #
 # Module directories
 #MODLIB   = -I/opt/LAPACK95/lapack95_modules 
-MODLIB	= -I/home/jamil/usr/src_jamil/LAPACK95/lapack95_modules/
+MODLIB	= -I/home/jamil/usr/lib/lapack95_modules/
 #
 OPTFLAGS = $(FOPT)
 OPTFLAGS += $(ARCH)
@@ -125,11 +125,12 @@ OPTFLAGS += $(MODLIB)
 #
 # Libraries
 #LAPACK95 = -L/opt/LAPACK95/lapack95 -llapack95 -L/usr/local/lib -llapack95
-LAPACK95 = -L/home/jamil/usr/lib -llapack95
+LAPACK95 = /home/jamil/usr/lib/lapack95.a
 ## Debian Lapack and Blas Libraries
 #LAPACK77 = -llapack
-#BLAS	 = -lblas
-LAPACK77 = -L/home/jamil/usr/lib/ -llapack
+BLAS	 = /home/jamil/usr/lib/blas.a
+LAPACK77 = /home/jamil/usr/lib/lapack.a
+TMGLIB   = /home/jamil/usr/lib/tmglib.a
 #BLAS = -L/home/jamil/usr/lib/ -llibblas
 LIBS     = $(LAPACK95)  $(LAPACK77) $(BLAS) 
 #
@@ -252,10 +253,10 @@ ipr_4b_U3_U2: $(IPR_4b_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
 	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OBJ) $(OPTFLAGS) $(LIBS)
-# ipr_4b_U3_U2_openmp: $(IPR_4b_u2_OPENMP_OBJ) Makefile  .PHONY 
-# 	$(info )
-# 	$(info Linking multi thread $@ executable:)
-# 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
+ipr_4b_U3_U2_openmp: $(IPR_4b_u2_OPENMP_OBJ) Makefile  
+	$(info )
+	$(info Linking multi thread $@ executable:)
+	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES, EIGENVECTORS, AND PR (GENERAL 4 BODY HAMILTONIAN, Chain II)
 ipr_4b_U3_SO3: $(IPR_4b_so3_OBJ) Makefile

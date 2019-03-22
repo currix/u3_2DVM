@@ -442,6 +442,8 @@ PROGRAM avalavec_2DVM_u2
         STOP
      ENDIF
      !
+     close(out_unit)
+     !
   ENDDO
   !
   !$OMP END PARALLEL DO
