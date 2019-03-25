@@ -15,15 +15,15 @@ BINPATH = ../bin
 #
 # ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain (i) U(3) -> U(2)
 #
-AVEC_modH_u2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_u2.f90 
-AVEC_modH_u2_OBJ = $(AVEC_modH_u2_SRC:.f90=.o)
-AVEC_modH_u2_OPENMP_OBJ = $(AVEC_modH_u2_SRC:.f90=.oOMP)
+vibron2D_Hmod_U3_U2_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_u2.f90 
+vibron2D_Hmod_U3_U2_OBJ = $(vibron2D_Hmod_U3_U2_SRC:.f90=.o)
+vibron2D_Hmod_U3_U2_OPENMP_OBJ = $(vibron2D_Hmod_U3_U2_SRC:.f90=.oOMP)
 #
 # ALGEBRAIC MODEL ENERGIES AND EIGENVECTORS (MODEL HAMILTONIAN) Chain (ii) U(3) -> SO(3)
 #
-AVEC_modH_so3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_so3.f90 
-AVEC_modH_so3_OBJ = $(AVEC_modH_so3_SRC:.f90=.o)
-AVEC_modH_so3_OPENMP_OBJ = $(AVEC_modH_so3_SRC:.f90=.oOMP)
+vibron2D_Hmod_U3_SO3_SRC = nrtype.f90 defparam_2dvm.f90 u3_2dvm_mod.f90 loggamma.f90 avalavec_modelH_2dvm_so3.f90 
+vibron2D_Hmod_U3_SO3_OBJ = $(vibron2D_Hmod_U3_SO3_SRC:.f90=.o)
+vibron2D_Hmod_U3_SO3_OPENMP_OBJ = $(vibron2D_Hmod_U3_SO3_SRC:.f90=.oOMP)
 #
 #
 # ALGEBRAIC MODEL INVERSE PARTICIPATION RATIO (Husimi distribution MODEL HAMILTONIAN)
@@ -179,24 +179,24 @@ vibron2D_H2b_U3_SO3_openmp: $(vibron2D_H2b_U3_SO3_OPENMP_OBJ) Makefile
 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(vibron2D_H2b_U3_SO3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (i)
-avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile
+vibron2D_Hmod_U3_U2:  $(vibron2D_Hmod_U3_U2_OBJ) Makefile
 	$(info )
-	$(info Linking single thread avec_U3_U2_mh executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OBJ) $(OPTFLAGS) $(LIBS) 
-avec_U3_U2_mh_openmp:  $(AVEC_modH_u2_OPENMP_OBJ) Makefile
+	$(info Linking single thread $@ executable:)
+	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(vibron2D_Hmod_U3_U2_OBJ) $(OPTFLAGS) $(LIBS) 
+vibron2D_Hmod_U3_U2_openmp:  $(vibron2D_Hmod_U3_U2_OPENMP_OBJ) Makefile
 	$(info )
-	$(info Linking multithread avec_U3_U2_mh executable:)
-	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
+	$(info Linking multithread $@ executable:)
+	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(vibron2D_Hmod_U3_U2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
 # HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (ii)
-avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile
+vibron2D_Hmod_U3_SO3: $(vibron2D_Hmod_U3_SO3_OBJ) Makefile
 	$(info )
-	$(info Linking single thread avec_U3_SO3_mh executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
-avec_U3_SO3_mh_openmp: $(AVEC_modH_so3_OPENMP_OBJ) Makefile 
+	$(info Linking single thread $@ executable:)
+	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(vibron2D_Hmod_U3_SO3_OBJ) $(OPTFLAGS) $(LIBS)
+vibron2D_Hmod_U3_SO3_openmp: $(vibron2D_Hmod_U3_SO3_OPENMP_OBJ) Makefile 
 	$(info )
-	$(info Linking multi thread avec_U3_SO3_mh executable:)
-	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
+	$(info Linking multi thread $@ executable:)
+	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(vibron2D_Hmod_U3_SO3_OPENMP_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 # MODEL HAMILTONIAN HUSIMI IBR Chain (i)
 ipr_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile 

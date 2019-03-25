@@ -37,7 +37,7 @@ PROGRAM avalavec_modelH_u2_2DVM
   !
   INTEGER(KIND = I4B) :: out_unit
   !
-  CHARACTER(LEN=65) :: output_file
+  CHARACTER(LEN=65) :: output_file, input_file_name
   !
 #ifdef _OPENMP
   INTEGER(KIND = I4B) :: threads
@@ -54,16 +54,28 @@ PROGRAM avalavec_modelH_u2_2DVM
   CALL CPU_TIME(time_check_ref)
   !
   !
-  ! Read parameters
+  ! ! Read parameters
+  ! !
+  ! READ(UNIT = *, NML = par_aux)
+  ! !
+  ! IF (Iprint > 1) PRINT 10
+  ! READ(UNIT = *, NML = par_0)
+  ! !
+  ! IF (Iprint > 1) PRINT 20
+  ! READ(UNIT = *, NML = par_1)
   !
-  READ(UNIT = *, NML = par_aux)
+  ! Read Namelist
+  READ(5,*) input_file_name
   !
-  IF (Iprint > 1) PRINT 10
-  READ(UNIT = *, NML = par_0)
+  ! Open Namelist
+  OPEN(UNIT=10,FILE=TRIM(input_file_name),STATUS='OLD')
   !
-  IF (Iprint > 1) PRINT 20
-  READ(UNIT = *, NML = par_1)
+  ! Read data
+  READ(10,par_aux)
+  READ(10,par_0)
+  READ(10,par_1)
   !
+  close(10)
   !
   IF (Iprint > 1) THEN
      WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
@@ -207,39 +219,39 @@ PROGRAM avalavec_modelH_u2_2DVM
      ! Build filename
      IF (L_val < 10) THEN
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("eigval_u2_N",I1,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I1,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("eigval_u2_N",I2,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I2,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("eigval_u2_N",I3,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I3,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("eigval_u2_N",I4,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I4,"_L",I1,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("eigval_u2_N",I6,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I6,"_L",I1,".dat")')  N_val, L_val
         ENDIF
      ELSE IF (L_val >= 10 .AND. L_val<100) THEN
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("eigval_u2_N",I1,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I1,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("eigval_u2_N",I2,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I2,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("eigval_u2_N",I3,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I3,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("eigval_u2_N",I4,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I4,"_L",I2,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("eigval_u2_N",I6,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I6,"_L",I2,".dat")')  N_val, L_val
         ENDIF
      ELSE
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("eigval_u2_N",I1,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I1,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("eigval_u2_N",I2,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I2,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("eigval_u2_N",I3,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I3,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("eigval_u2_N",I4,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I4,"_L",I3,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("eigval_u2_N",I6,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_u2_N",I6,"_L",I3,".dat")')  N_val, L_val
         ENDIF
      ENDIF
      !
@@ -346,7 +358,6 @@ PROGRAM avalavec_modelH_u2_2DVM
      IF (Excitation_Log) THEN
         !
         IF (L_val == 0_I4B) THEN
-           GS_energy = eigenval_vector(1)
            IF (Iprint > 0) WRITE(UNIT = out_unit, FMT = *) "GS_energy = ", GS_energy
         ENDIF
         !
@@ -365,27 +376,41 @@ PROGRAM avalavec_modelH_u2_2DVM
      !
      IF (Iprint > 0) WRITE(UNIT = out_unit, FMT = *) "L_val = ", L_val
      !
-     DO state_index = 1, dim_block
+     IF (Eigenvec_Log) THEN 
         !
-        np = U2_Basis(state_index)%np_U2_val
-        !
-        WRITE(UNIT = out_unit, FMT = *) np, Eigenval_vector(state_index)
-        !
-        !
-        IF (Eigenvec_Log .AND. Iprint > 0) THEN
+        DO state_index = 1, dim_block
            !
-           ! Display eigenvectors
-           DO state_index_2 = 1, dim_block
-              !
-              np = U2_Basis(state_index_2)%np_U2_val
-              !
-              WRITE(UNIT = out_unit, FMT = *) Ham_matrix(state_index_2, state_index), "|",np,">"
-              !
-           ENDDO
+           np = U2_Basis(state_index)%np_U2_val
            !
-        ENDIF
+           WRITE(UNIT = out_unit, FMT = *) np, Eigenval_vector(state_index), &
+             Inv_Part_Ratio(Ham_matrix(1:dim_block, state_index))
+           !
+           !
+           IF ( Iprint > 0) THEN
+              !
+              ! Display eigenvectors
+              DO state_index_2 = 1, dim_block
+                 !
+                 np = U2_Basis(state_index_2)%np_U2_val
+                 !
+                 WRITE(UNIT = out_unit, FMT = *) Ham_matrix(state_index_2, state_index), "|",np,">"
+                 !
+              ENDDO
+              !
+           ENDIF
+           !
+        ENDDO
         !
-     ENDDO
+     ELSE
+        DO state_index = 1, dim_block
+           !
+           np = U2_Basis(state_index)%np_U2_val
+           !
+           WRITE(UNIT = out_unit, FMT = *) np, Eigenval_vector(state_index)
+           !
+        ENDDO
+        !
+     ENDIF
      !
      ! Save eigenvector components
      IF (Save_avec_Log) THEN
@@ -432,14 +457,16 @@ PROGRAM avalavec_modelH_u2_2DVM
         STOP
      ENDIF
      !
+     close(out_unit)
+     !
   ENDDO
   !
   !$OMP END PARALLEL DO
   !
 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2, "; Save_Avec_Log = ", L2)
-10 FORMAT(1X, "Reading  N_val, L_val")
+!10 FORMAT(1X, "Reading  N_val, L_val")
 15 FORMAT(1X, "N_val = ", I6, "; L_min = ", I6, "; L_max = ",I6)
-20 FORMAT(1X, "Reading  epsilon, xi")
+!20 FORMAT(1X, "Reading  epsilon, xi")
 25 FORMAT(1X, "epsilon = ", ES14.7, "; xi = ", ES14.7)
   !
   !

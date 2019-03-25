@@ -37,7 +37,7 @@ PROGRAM avalavec_modelH_2DVM_so3
   !
   INTEGER(KIND = I4B) :: out_unit
   !
-  CHARACTER(LEN=65) :: output_file
+  CHARACTER(LEN=65) :: output_file, input_file_name
   !
 #ifdef _OPENMP
   INTEGER(KIND = I4B) :: threads
@@ -51,16 +51,28 @@ PROGRAM avalavec_modelH_2DVM_so3
   !
   ! 
   !
-  ! Read parameters
+  ! ! Read parameters
+  ! !
+  ! READ(UNIT = *, NML = par_aux)
+  ! !
+  ! IF (Iprint > 1) PRINT 10
+  ! READ(UNIT = *, NML = par_0)
+  ! !
+  ! IF (Iprint > 1) PRINT 20
+  ! READ(UNIT = *, NML = par_1)
   !
-  READ(UNIT = *, NML = par_aux)
+  ! Read Namelist
+  READ(5,*) input_file_name
   !
-  IF (Iprint > 1) PRINT 10
-  READ(UNIT = *, NML = par_0)
+  ! Open Namelist
+  OPEN(UNIT=10,FILE=TRIM(input_file_name),STATUS='OLD')
   !
-  IF (Iprint > 1) PRINT 20
-  READ(UNIT = *, NML = par_1)
+  ! Read data
+  READ(10,par_aux)
+  READ(10,par_0)
+  READ(10,par_1)
   !
+  close(10)
   !
   IF (Iprint > 1) THEN
      WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log
@@ -197,39 +209,39 @@ PROGRAM avalavec_modelH_2DVM_so3
      ! Build filename
      IF (L_val < 10) THEN
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("eigval_so3_N",I1,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I1,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("eigval_so3_N",I2,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I2,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("eigval_so3_N",I3,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I3,"_L",I1,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("eigval_so3_N",I4,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I4,"_L",I1,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("eigval_so3_N",I6,"_L",I1,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I6,"_L",I1,".dat")')  N_val, L_val
         ENDIF
      ELSE IF (L_val >= 10 .AND. L_val<100) THEN
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("eigval_so3_N",I1,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I1,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("eigval_so3_N",I2,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I2,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("eigval_so3_N",I3,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I3,"_L",I2,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("eigval_so3_N",I4,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I4,"_L",I2,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("eigval_so3_N",I6,"_L",I2,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I6,"_L",I2,".dat")')  N_val, L_val
         ENDIF
      ELSE
         IF ( N_val < 10) THEN !to avoid spaces
-           WRITE(output_file, '("eigval_so3_N",I1,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I1,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 100) THEN 
-           WRITE(output_file, '("eigval_so3_N",I2,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I2,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 1000) THEN 
-           WRITE(output_file, '("eigval_so3_N",I3,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I3,"_L",I3,".dat")')  N_val, L_val
         ELSE IF ( N_val < 10000) THEN 
-           WRITE(output_file, '("eigval_so3_N",I4,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I4,"_L",I3,".dat")')  N_val, L_val
         ELSE
-           WRITE(output_file, '("eigval_so3_N",I6,"_L",I3,".dat")')  N_val, L_val
+           WRITE(output_file, '("autoval_mh_so3_N",I6,"_L",I3,".dat")')  N_val, L_val
         ENDIF
      ENDIF
      !
@@ -330,7 +342,6 @@ PROGRAM avalavec_modelH_2DVM_so3
      IF (Excitation_Log) THEN
         !
         IF (L_val == 0_I4B) THEN
-           GS_energy = eigenval_vector(1)
            IF (Iprint > 0) WRITE(UNIT = out_unit, FMT = *) "GS_energy = ", GS_energy
         ENDIF
         !
@@ -349,26 +360,40 @@ PROGRAM avalavec_modelH_2DVM_so3
      !
      IF (Iprint > 0) WRITE(UNIT = out_unit, FMT = *) "L_val = ", L_val
      !
-     DO state_index = 1, dim_block
+     IF (Eigenvec_Log) THEN
         !
-        omega = SO3_Basis(state_index)%omega_SO3_val
-        !
-        WRITE(UNIT = out_unit, FMT = *) omega, (N_val-omega)/2, Eigenval_vector(state_index)
-        !
-        ! Display eigenvectors
-        IF (Eigenvec_Log .AND. Iprint > 0) THEN
+        DO state_index = 1, dim_block
            !
-           DO state_index_2 = 1, dim_block
-              !
-              omega = SO3_Basis(state_index_2)%omega_SO3_val
-              !
-              WRITE(UNIT = out_unit, FMT = *) Ham_matrix(state_index_2, state_index), "|", omega, ">"
-              !
-           ENDDO
+           omega = SO3_Basis(state_index)%omega_SO3_val
            !
-        ENDIF
+           WRITE(UNIT = out_unit, FMT = *) omega, (N_val-omega)/2, Eigenval_vector(state_index), &
+                Inv_Part_Ratio(Ham_matrix(1:dim_block, state_index))
+           !
+           ! Display eigenvectors
+           IF (Iprint > 0) THEN
+              !
+              DO state_index_2 = 1, dim_block
+                 !
+                 omega = SO3_Basis(state_index_2)%omega_SO3_val
+                 !
+                 WRITE(UNIT = out_unit, FMT = *) Ham_matrix(state_index_2, state_index), "|", omega, ">"
+                 !
+              ENDDO
+              !
+           ENDIF
+           !
+        ENDDO
         !
-     ENDDO
+     ELSE
+        DO state_index = 1, dim_block
+           !
+           omega = SO3_Basis(state_index)%omega_SO3_val
+           !
+           WRITE(UNIT = out_unit, FMT = *) omega, (N_val-omega)/2, Eigenval_vector(state_index)
+           !
+        ENDDO
+        !
+     ENDIF
      !
      ! Save eigenvector components
      IF (Save_avec_Log) THEN
@@ -410,14 +435,16 @@ PROGRAM avalavec_modelH_2DVM_so3
         STOP
      ENDIF
      !
+     close(out_unit)
+     !
   ENDDO
   !
   !$OMP END PARALLEL DO
   !
 5 FORMAT(1X, " Iprint = ", I2, "; Eigenvec_LOG = ", L2, "; Excitation_Log = ", L2, "; Save_Avec_Log = ", L2)
-10 FORMAT(1X, "Reading  N_val, L_val")
+!10 FORMAT(1X, "Reading  N_val, L_val")
 15 FORMAT(1X, "N_val = ", I6, "; L_min = ", I6, "; L_max = ", I6)
-20 FORMAT(1X, "Reading  Hamiltonian Paramenters")
+!20 FORMAT(1X, "Reading  Hamiltonian Paramenters")
 25 FORMAT(1X, "epsilon = ", ES14.7, "; xi = ", ES14.7)
   !
   !
