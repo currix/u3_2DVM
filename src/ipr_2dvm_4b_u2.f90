@@ -38,13 +38,11 @@ PROGRAM ipr_4b_2DVM_u2
   REAL(KIND = DP) :: P31, P32, P33
   REAL(KIND = DP) :: P41, P42, P43, P44, P45, P46, P47
   !
-  CHARACTER(LEN = 64) :: input_file_name
-  !
   INTEGER(KIND = I4B) :: L, L_min, L_max
   !
   INTEGER(KIND = I4B) :: out_unit
   !
-  CHARACTER(LEN=65) :: output_file
+  CHARACTER(LEN=65) :: output_file, input_file_name
   !
 #ifdef _OPENMP
   INTEGER(KIND = I4B) :: threads
@@ -385,7 +383,11 @@ PROGRAM ipr_4b_2DVM_u2
         !
      ENDIF
      !
-     close(out_unit)
+     CLOSE(out_unit,IOSTAT=IERR)
+     IF (IERR /= 0) THEN
+        WRITE(UNIT = *, FMT = *) "Error closing the unit of eigenvalues."
+        STOP
+     ENDIF
      !
   ENDDO
   !
