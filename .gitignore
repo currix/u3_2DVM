@@ -3,3 +3,12 @@
 *.mod
 *~
 *.pyc
+*.oOMP
+*gfortran*
+*ifort*
+husimi_test/
+testing_nodes/
+*.out
+*.dat
+*output*
+*.i90
