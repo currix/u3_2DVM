@@ -1244,7 +1244,7 @@ CONTAINS
        !
        Eigenval_vector = 0.0_DP
        !
-#ifdef __GFORTRAN 
+#ifdef __GFORTRAN__ 
        !gfortran
        CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
 #else
