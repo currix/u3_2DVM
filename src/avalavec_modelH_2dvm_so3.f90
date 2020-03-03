@@ -26,7 +26,7 @@ PROGRAM avalavec_modelH_2DVM_so3
   !
   IMPLICIT NONE
   !
-  REAL(KIND = DP) :: epsilon_p, alpha_p, beta_p, A_p ! Model Hamiltonian Parameters
+  REAL(KIND = DP) :: epsilon, xi ! Model Hamiltonian Parameters
   !
   INTEGER(KIND = I4B) :: state_index, state_index_2, omega
   !
@@ -34,7 +34,7 @@ PROGRAM avalavec_modelH_2DVM_so3
   ! NAMELISTS
   NAMELIST/par_aux/ Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
   NAMELIST/par_0/ N_val, L_val
-  NAMELIST/par_1/ epsilon_p, alpha_p, beta_p, A_p
+  NAMELIST/par_1/ epsilon, xi
   !
   ! 
   !
@@ -50,23 +50,20 @@ PROGRAM avalavec_modelH_2DVM_so3
   !
   !
   IF (Iprint > 1) THEN
-     WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log
+     WRITE(UNIT = *, FMT = 5) Iprint, Eigenvec_Log, Excitation_Log, Save_avec_Log
      WRITE(UNIT = *, FMT = 15) N_val, L_val
-     WRITE(UNIT = *, FMT = 25) epsilon_p, alpha_p, beta_p, A_p
+     WRITE(UNIT = *, FMT = 25) epsilon, xi
   ENDIF
   !
   ! TESTS
   IF (N_val < L_val) STOP 'ERROR :: N_VAL < L_VAL. SAYONARA BABY'
   !
   ! HAMILTONIAN PARAMETERS
-  !ham_param(1) => n
-  Ham_parameter(1) = epsilon_p
-  !ham_param(2) => n(n+1)
-  Ham_parameter(2) = alpha_p
-  !ham_param(3) => l^2
-  Ham_parameter(3) = beta_p
-  !ham_param(4) =>       => P = N(N+1) - W^2
-  Ham_parameter(4) = A_p
+  ! HAMILTONIAN PARAMETERS
+  !modham_param(1) => n
+  ModHam_parameter(1) = epsilon*(1.0_DP - xi)
+  !modham_param(2) =>       => P = N(N+1) - W^2
+  ModHam_parameter(2) = epsilon*xi/REAL(N_val - 1_I4B,DP)
   !
   IF (Excitation_Log .AND. L_val /= 0) THEN
      ! Compute L = 0 Ground state Energy
@@ -97,7 +94,7 @@ PROGRAM avalavec_modelH_2DVM_so3
      ENDIF
      !
      Ham_matrix = 0.0_DP
-     CALL Build_Ham_SO3(N_val, 0, dim_block, SO3_Basis, Ham_matrix) 
+     CALL Build_Mod_Ham_SO3(N_val, 0, dim_block, SO3_Basis, Ham_matrix) 
      !
      ! Hamiltonian Diagonalization
      !
@@ -176,7 +173,7 @@ PROGRAM avalavec_modelH_2DVM_so3
   !
   !
   Ham_matrix = 0.0_DP
-  CALL Build_Ham_SO3(N_val, L_val, dim_block, SO3_Basis, Ham_matrix) 
+  CALL Build_Mod_Ham_SO3(N_val, L_val, dim_block, SO3_Basis, Ham_matrix) 
   !
   IF (Save_avec_Log) THEN
      !
@@ -326,7 +323,7 @@ PROGRAM avalavec_modelH_2DVM_so3
 10 FORMAT(1X, "Reading  N_val, L_val")
 15 FORMAT(1X, "N_val = ", I6, "; L_val = ", I6)
 20 FORMAT(1X, "Reading  Hamiltonian Paramenters")
-25 FORMAT(1X, "epsilon = ", ES14.7, "; alpha = ", ES14.7, " ; beta = ", ES14.7, "; A = ", ES14.7)
+25 FORMAT(1X, "epsilon = ", ES14.7, "; xi = ", ES14.7)
   !
   !
 END PROGRAM avalavec_modelH_2DVM_so3
