@@ -278,6 +278,11 @@ Min_minuit: $(Min_minuit_OBJ) Makefile
 		$(info )
 		$(info Linking single thread $@ executable:)
 		$(FC_Path) -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(OPTFLAGS) $(LIBS)
+#Minuit minimization:
+Min_minuit_static: $(Min_minuit_OBJ) Makefile
+		$(info )
+		$(info Linking single thread $@ executable:)
+		$(FC_Path) -static -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 
 clean:
