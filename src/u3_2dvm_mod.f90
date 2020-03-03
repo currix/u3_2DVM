@@ -915,6 +915,7 @@ CONTAINS
     WRITE(UNIT=76, FMT=*) "# Hamiltonian Diagonal "
     WRITE(UNIT=76, FMT=*) Diagonal(1:dim_block)
     !
+    WRITE(UNIT=76, FMT=*) "# Eigenvectors column-ordered "
     DO basis_index = 1, dim_block
        WRITE(UNIT=76, FMT=*) Ham_U3_mat(basis_index, 1:dim_block)
     ENDDO
