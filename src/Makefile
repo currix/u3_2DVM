@@ -182,7 +182,7 @@ avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile
 # 	$(info Linking multithread avec_U3_U2_mh executable:)
 # 	$(FC) -fopenmp -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OPENMP_OBJ) $(OPTFLAGS) $(LIBS) 
 #################################################################
-# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (i)
+# HAMILTONIAN EIGENVALUES AND EIGENVECTORS (MODEL HAMILTONIAN, Chain (ii)
 avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_SO3_mh executable:)

@@ -1,0 +1,30 @@
+#
+## CHI_2 INPUT
+#
+ &INP0 BENT=.T., exp_data_file='exp_CH3NCO.dat', output_file_0="output_bent" / 
+ &INP1 N_val=78, LMAX=7, VMAX=3, EMINL=.F. /
+#
+# PARAMETERS THAT TUNE THE OUTPUT
+#
+ &INP2 IPRINT=0, DIS_RES = .F. /
+ &INP1b P11=454.07D0 /
+ &INP2b P21=-5.5465D0, P22=7.85631D0, P23=-1.6414D0 /
+ &INP3b P31=0.0D0, P32=0.0D0, P33=0.01D0 /
+ &INP4b P41=0.0D0, P42=0.0D0, P43=0.0D0, P44=0.0D0, P45=0.0D0, P46=0.0D0, P47=0.0D0 /
+ &fix_par fixed_par = 'fix  5 6 8 9 10 11 12 13 14' /
+ 
+ # P11 ---> 1
+ # P21 ---> 2
+ # P22 ---> 3
+ # P23 ---> 4
+ # P31 ---> 5
+ # P32 ---> 6
+ # P33 ---> 7
+ # P41 ---> 8
+ # P42 ---> 9
+ # P43 ---> 10
+ # P44 ---> 11
+ # P45 ---> 12
+ # P46 ---> 13
+ # P47 ---> 14
+

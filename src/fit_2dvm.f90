@@ -6,8 +6,15 @@ MODULE Fit_2DVM
   USE u3_2dvm_mod
   !
   ! Lapack 95
+#ifdef  __GFORTRAN__
+  ! gfortran
   USE LA_PRECISION, ONLY: WP => DP
   USE F95_LAPACK, ONLY: LA_SYEVR
+#else
+  !ifort
+  USE F95_PRECISION, ONLY: WP => DP
+  USE LAPACK95, ONLY: SYEVR
+#endif 
   !
   IMPLICIT NONE
   !     
@@ -159,6 +166,23 @@ CONTAINS
        !
        !     ALLOCATE AND BUILD ALGEBRAIC BASIS & HAMILTONIAN OPERATORS AND HAMILTONIAN MATRIX
        !
+          !
+#ifndef __GFORTRAN__
+       IF (ALLOCATED(Eigenvec_array)) THEN
+          DEALLOCATE(Eigenvec_array, STAT=IERR)
+          IF (IERR /= 0) THEN
+             WRITE(UNIT = *, FMT = *) "Eigenvectors workspace deallocation request denied."
+             STOP
+          ENDIF
+       ENDIF
+       !
+       ALLOCATE(Eigenvec_array(1:dim_block, 1:dim_block), STAT = IERR)    
+       IF (IERR /= 0) THEN
+          WRITE(UNIT = *, FMT = *) "Eigenvec_array allocation request denied."
+          STOP
+       ENDIF
+#endif
+       !
        IF (BENT) THEN
           !
           ! Build U(3) > SO(3) > SO(2) Basis
@@ -216,7 +240,15 @@ CONTAINS
        !
        !     DIAGONALIZE HAMILTONIAN MATRIX
        Eigenval_vector = 0.0_DP
+#ifdef  __GFORTRAN__
+       !gfortran
        CALL LA_SYEVR(A=HAM_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
+#else
+       !ifort
+       Eigenvec_array = 0.0_DP
+       CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', Z = Eigenvec_array)
+       Ham_matrix = Eigenvec_array
+#endif
        !
        !    ASSIGN  COMPUTED DATA TO LOCAL BASIS STATES
        IF (IPRINT > 0) THEN 
@@ -1212,7 +1244,15 @@ CONTAINS
        !
        Eigenval_vector = 0.0_DP
        !
+#ifdef __GFORTRAN 
+       !gfortran
        CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
+#else
+       !ifort
+       Eigenvec_array = 0.0_DP
+       CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', Z = Eigenvec_array)
+       Ham_matrix = Eigenvec_array
+#endif
        !     
        !     LOOK FOR MAXIMUM COMPONENT
        !
@@ -1267,7 +1307,15 @@ CONTAINS
        !
        Eigenval_vector = 0.0_DP
        !
+#ifdef __GFORTRAN__
+       !gfortran
        CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
+#else       
+       !ifort
+       Eigenvec_array = 0.0_DP
+       CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', Z = Eigenvec_array)
+       Ham_matrix = Eigenvec_array
+#endif
        !
        !
        !     PROJECTING ONTO FORMER EIGENVECTORS SAVED IN HAM2
@@ -1373,7 +1421,15 @@ CONTAINS
           !
           Eigenval_vector = 0.0_DP
           !
+#ifdef __GFORTRAN__
+          !gfortran
           CALL LA_SYEVR(A=Ham_matrix, W=Eigenval_vector, JOBZ='V', UPLO='U')
+#else
+          !ifort
+          Eigenvec_array = 0.0_DP
+          CALL SYEVR(A=Ham_matrix, W=Eigenval_vector, UPLO='U', Z = Eigenvec_array)
+          Ham_matrix = Eigenvec_array
+#endif
           !     
           IF (IPRINT >= 1) WRITE(*,*) ICOUNT, ' ITERATIONS TO PROJECT'
           !
