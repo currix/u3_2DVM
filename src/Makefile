@@ -104,7 +104,7 @@ Min_minuit_OBJ = nrtype.o loggamma.o defparam_2dvm.o u3_2dvm_mod.o fit_2dvm.o mi
 .SUFFIXES: .o .f90 .oOMP .f
 #
 FC = gfortran
-FC_Path = /usr/bin/gfortran
+#FC_Path = /usr/bin/gfortran
 #
 FOPT=-O3 -Wall
 #
@@ -138,17 +138,17 @@ all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ip
 .f90.o:
 	$(info )
 	$(info Compiling single thread object file:)
-	$(FC_Path) -c $(PREP) $(OPTFLAGS)  "$<"
+	$(FC) -c $(PREP) $(OPTFLAGS)  "$<"
 #################################################################
 .f.o:
 	$(info )
 	$(info Compiling single thread fortran 77 object file:)
-	$(FC_Path) -c $(PREP) $(OPTFLAGS) "$<"
+	$(FC) -c $(PREP) $(OPTFLAGS) "$<"
 #################################################################
 .f90.oOMP:
 	$(info )
 	$(info Compiling multi thread object file:)
-	$(FC_Path) -c -fopenmp $(PREP) $(OPTFLAGS) -o "$@" "$<"
+	$(FC) -c -fopenmp $(PREP) $(OPTFLAGS) -o "$@" "$<"
 #################################################################
 #
 #################################################################
@@ -156,7 +156,7 @@ all: avec_U3_U2 avec_U3_U2_mh avec_U3_SO3  avec_U3_SO3_mh ipr_Husimi_U3_U2_mh ip
 avec_U3_U2:  $(AVEC_u2_OBJ) Makefile 
 	$(info )
 	$(info Linking single thread avec_U3_U2 executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OBJ) $(OPTFLAGS) $(LIBS) 
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_u2_OBJ) $(OPTFLAGS) $(LIBS) 
 # avec_U3_U2_openmp:  $(AVEC_u2_OPENMP_OBJ) Makefile .PHONY 
 # 	$(info )
 # 	$(info Linking multithread avec_U3_U2 executable:)
@@ -166,7 +166,7 @@ avec_U3_U2:  $(AVEC_u2_OBJ) Makefile
 avec_U3_SO3: $(AVEC_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_SO3 executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_so3_OBJ) $(OPTFLAGS) $(LIBS)
 # avec_U3_SO3_openmp: $(AVEC_so3_OPENMP_OBJ) Makefile .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread avec_U3_SO3 executable:)
@@ -176,7 +176,7 @@ avec_U3_SO3: $(AVEC_so3_OBJ) Makefile
 avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_U2_mh executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OBJ) $(OPTFLAGS) $(LIBS) 
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_u2_OBJ) $(OPTFLAGS) $(LIBS) 
 # avec_U3_U2_mh_openmp:  $(AVEC_modH_u2_OPENMP_OBJ) Makefile .PHONY 
 # 	$(info )
 # 	$(info Linking multithread avec_U3_U2_mh executable:)
@@ -186,7 +186,7 @@ avec_U3_U2_mh:  $(AVEC_modH_u2_OBJ) Makefile
 avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread avec_U3_SO3_mh executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(AVEC_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
 # avec_U3_SO3_mh_openmp: $(AVEC_modH_so3_OPENMP_OBJ) Makefile .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread avec_U3_SO3_mh executable:)
@@ -196,7 +196,7 @@ avec_U3_SO3_mh: $(AVEC_modH_so3_OBJ) Makefile
 ipr_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile 
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_modH_Hus_u2_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_Hus_u2_OBJ) $(OPTFLAGS) $(LIBS)
 # ipr_Husimi_U3_U2_mh_openmp: $(IPR_modH_Hus_u2_OPENMP_OBJ) Makefile  .PHONY
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -206,7 +206,7 @@ ipr_Husimi_U3_U2_mh: $(IPR_modH_Hus_u2_OBJ) Makefile
 ipr_U3_U2_mh: $(IPR_modH_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_modH_u2_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_u2_OBJ) $(OPTFLAGS) $(LIBS)
 # ipr_U3_U2_mh_openmp: $(IPR_modH_u2_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -216,7 +216,7 @@ ipr_U3_U2_mh: $(IPR_modH_u2_OBJ) Makefile
 ipr_U3_SO3_mh: $(IPR_modH_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_modH_so3_OBJ) $(OPTFLAGS) $(LIBS)
 # ipr_U3_SO3_mh_openmp: $(IPR_modH_so3_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -226,7 +226,7 @@ ipr_U3_SO3_mh: $(IPR_modH_so3_OBJ) Makefile
 ipr_U3_U2: $(IPR_u2_OBJ) Makefile 
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_u2_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_u2_OBJ) $(OPTFLAGS) $(LIBS)
 # ipr_U3_U2_openmp: $(IPR_u2_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -236,7 +236,7 @@ ipr_U3_U2: $(IPR_u2_OBJ) Makefile
 ipr_U3_SO3: $(IPR_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_so3_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_so3_OBJ) $(OPTFLAGS) $(LIBS)
 # ipr_U3_SO3_openmp: $(IPR_so3_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -246,7 +246,7 @@ ipr_U3_SO3: $(IPR_so3_OBJ) Makefile
 ipr_4b_U3_U2: $(IPR_4b_u2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_4b_u2_OBJ) $(OPTFLAGS) $(LIBS)
 # ipr_4b_U3_U2_openmp: $(IPR_4b_u2_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -256,7 +256,7 @@ ipr_4b_U3_U2: $(IPR_4b_u2_OBJ) Makefile
 ipr_4b_U3_SO3: $(IPR_4b_so3_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -o $(BINPATH)/$@_$(FC) $(IPR_4b_so3_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -o $(BINPATH)/$@_$(FC) $(IPR_4b_so3_OBJ) $(OPTFLAGS) $(LIBS)
 # ipr_4b_U3_SO3_openmp: $(IPR_4b_so3_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -267,7 +267,7 @@ ipr_4b_U3_SO3: $(IPR_4b_so3_OBJ) Makefile
 chi2_U3: $(CHI2_OBJ) Makefile
 	$(info )
 	$(info Linking single thread $@ executable:)
-	$(FC_Path) -Wall -o $(BINPATH)/$@_$(FC) $(CHI2_OBJ) $(OPTFLAGS) $(LIBS)
+	$(FC) -Wall -o $(BINPATH)/$@_$(FC) $(CHI2_OBJ) $(OPTFLAGS) $(LIBS)
 # chi2_U3_openmp: $(CHI2_OPENMP_OBJ) Makefile  .PHONY 
 # 	$(info )
 # 	$(info Linking multi thread $@ executable:)
@@ -277,12 +277,12 @@ chi2_U3: $(CHI2_OBJ) Makefile
 Min_minuit: $(Min_minuit_OBJ) Makefile
 		$(info )
 		$(info Linking single thread $@ executable:)
-		$(FC_Path) -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(OPTFLAGS) $(LIBS)
+		$(FC) -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(OPTFLAGS) $(LIBS)
 #Minuit minimization:
 Min_minuit_static: $(Min_minuit_OBJ) Makefile
 		$(info )
 		$(info Linking single thread $@ executable:)
-		$(FC_Path) -static -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(OPTFLAGS) $(LIBS)
+		$(FC) -static -o $(BINPATH)/$@_$(FC) $(Min_minuit_OBJ) $(OPTFLAGS) $(LIBS)
 #################################################################
 
 clean:
